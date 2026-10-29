@@ -1,0 +1,596 @@
+# indie:lang_version = 5
+from math import nan
+from indie import indicator, MainContext, param, plot, color, line_style
+from indie.plot import marker_style, marker_position
+from indie.drawings import LineSegment, LabelAbs, LabelRel, AbsolutePosition, RelativePosition, vertical_anchor, horizontal_anchor
+from indie.algorithms import Ema, Rsi, Atr, Adx, Sma, Highest, Lowest
+
+@indicator('ScalpFlow Pro', overlay_main_pane=True)
+@param.int('fast_len', default=9, min=2, title='Execution fast EMA')
+@param.int('mid_len', default=21, min=3, title='Execution pullback EMA')
+@param.int('trend_len', default=50, min=5, title='Execution trend EMA')
+@param.int('htf_minutes', default=15, min=15, max=60, step=15, title='Higher timeframe minutes')
+@param.int('htf_fast_len', default=21, min=2, title='Higher timeframe fast EMA')
+@param.int('htf_slow_len', default=50, min=5, title='Higher timeframe slow EMA')
+@param.int('rsi_len', default=14, min=2, title='RSI length')
+@param.int('adx_len', default=14, min=2, title='ADX and DI length')
+@param.float('adx_min', default=18.0, min=5.0, max=50.0, step=0.5, title='Minimum ADX')
+@param.bool('use_adx_filter', default=True, title='Require minimum ADX')
+@param.int('atr_len', default=14, min=2, title='ATR length')
+@param.float('min_atr_pct', default=0.0005, min=0.0, max=0.02, step=0.0001, title='Minimum ATR / price')
+@param.float('max_atr_pct', default=0.02, min=0.001, max=0.10, step=0.001, title='Maximum ATR / price')
+@param.bool('use_volume_filter', default=False, title='Require relative volume')
+@param.int('volume_len', default=20, min=2, title='Volume baseline length')
+@param.float('min_rel_volume', default=1.0, min=0.1, max=5.0, step=0.1, title='Minimum relative volume')
+@param.bool('enable_breakout', default=False, title='Enable breakout setups')
+@param.int('breakout_len', default=20, min=2, title='Breakout lookback')
+@param.int('structure_len', default=5, min=2, title='Stop structure lookback')
+@param.float('atr_stop_mult', default=1.2, min=0.2, max=5.0, step=0.1, title='ATR stop multiple')
+@param.float('atr_buffer', default=0.15, min=0.0, max=2.0, step=0.05, title='Structure stop ATR buffer')
+@param.float('max_stop_atr', default=3.0, min=0.5, max=10.0, step=0.1, title='Maximum stop distance in ATR')
+@param.float('reward_risk', default=1.5, min=0.5, max=5.0, step=0.1, title='Target reward / risk')
+@param.float('estimated_round_trip_cost_pct', default=0.0015, min=0.0, max=0.05, step=0.0001, title='Estimated round-trip fees and slippage / price')
+@param.float('minimum_net_reward_risk', default=0.5, min=0.0, max=5.0, step=0.1, title='Minimum target reward after costs / risk')
+@param.int('min_score', default=70, min=50, max=100, title='Minimum confluence points')
+@param.int('cooldown_bars', default=3, min=0, max=100, title='Signal cooldown bars')
+@param.int('max_entry_wait_bars', default=3, min=1, max=20, title='Limit setup expiry bars')
+@param.bool('show_ema_fast', default=False, title='Display: EMA 9')
+@param.bool('show_ema_mid', default=True, title='Display: EMA 21')
+@param.bool('show_ema_trend', default=False, title='Display: EMA 50')
+@param.bool('show_entry_markers', default=True, title='Display: BUY and SELL markers')
+@param.bool('show_trade_levels', default=True, title='Show entry, stop and target')
+@param.bool('show_score_labels', default=False, title='Display: signal score labels')
+@param.bool('show_status_panel', default=True, title='Display: market status panel')
+@param.bool('show_historical_levels', default=False, title='Display: recent completed levels')
+@param.int('historical_level_count', default=3, min=1, max=10, title='Display: completed setups to keep')
+@plot.line(id='ema_fast', color=color.AQUA, title='Execution fast EMA', display_options=plot.LineDisplayOptions(pane=True, status_line=False, price_label=False))
+@plot.line(id='ema_mid', color=color.YELLOW, title='Execution pullback EMA', display_options=plot.LineDisplayOptions(pane=True, status_line=False, price_label=False))
+@plot.line(id='ema_trend', color=color.ORANGE, title='Execution trend EMA', display_options=plot.LineDisplayOptions(pane=True, status_line=False, price_label=False))
+@plot.marker(color=color.LIME, style=marker_style.LABEL, position=marker_position.BELOW, size=3, title='Long setup')
+@plot.marker(color=color.RED, style=marker_style.LABEL, position=marker_position.ABOVE, size=3, title='Short setup')
+@plot.marker(color=color.YELLOW, style=marker_style.LABEL, position=marker_position.ABOVE, size=2, title='A grade setup')
+@plot.line(id='entry_level', color=color.WHITE, title='Reference entry', display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='stop_level', color=color.RED, title='Stop loss', display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='target_level', color=color.LIME, title='Take profit', display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='long_alert_output', color=color.TRANSPARENT, title='Long alert output', display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='short_alert_output', color=color.TRANSPARENT, title='Short alert output', display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='quality_alert_output', color=color.TRANSPARENT, title='A grade alert output', display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='target_alert_output', color=color.TRANSPARENT, title='Target reached alert output', display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='stop_alert_output', color=color.TRANSPARENT, title='Stop reached alert output', display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+class Main(MainContext):
+    def __init__(self, fast_len, mid_len, trend_len, htf_minutes, htf_fast_len, htf_slow_len,
+                 rsi_len, adx_len, adx_min, use_adx_filter, atr_len, min_atr_pct, max_atr_pct,
+                 use_volume_filter, volume_len, min_rel_volume, enable_breakout, breakout_len,
+                 structure_len, atr_stop_mult, atr_buffer, max_stop_atr, reward_risk,
+                 estimated_round_trip_cost_pct, minimum_net_reward_risk, min_score,
+                 cooldown_bars, max_entry_wait_bars, show_ema_fast, show_ema_mid, show_ema_trend, show_entry_markers,
+                 show_trade_levels, show_score_labels, show_status_panel,
+                 show_historical_levels, historical_level_count):
+        self._htf_fast: float = 0.0
+        self._htf_slow: float = 0.0
+        self._htf_prev_slow: float = 0.0
+        self._htf_count: int = 0
+        self._pending_dir: int = 0
+        self._pending_entry: float = 0.0
+        self._pending_stop: float = 0.0
+        self._pending_target: float = 0.0
+        self._pending_score: int = 0
+        self._pending_bar: int = -1
+        self._pending_is_breakout: bool = False
+        self._active_dir: int = 0
+        self._active_entry: float = 0.0
+        self._active_stop: float = 0.0
+        self._active_target: float = 0.0
+        self._last_signal_bar: int = -1000000
+        self._pending_time: float = 0.0
+        self._active_time: float = 0.0
+        point = AbsolutePosition(0.0, 0.0)
+        self._entry_line = LineSegment(point, point, color.AQUA, line_width=2)
+        self._stop_line = LineSegment(point, point, color.RED, line_width=2)
+        self._target_line = LineSegment(point, point, color.LIME, line_width=2)
+        self._entry_label = LabelAbs('', point, font_size=11, text_color=color.BLACK, bg_color=color.AQUA)
+        self._stop_label = LabelAbs('', point, font_size=11, text_color=color.WHITE, bg_color=color.RED)
+        self._target_label = LabelAbs('', point, font_size=11, text_color=color.BLACK, bg_color=color.LIME)
+        self._status_panel = LabelRel('', RelativePosition(vertical_anchor.TOP, horizontal_anchor.RIGHT, 0.04, 0.98),
+                                      font_size=11, text_color=color.WHITE, bg_color=color.BLACK)
+        self._historical_lines: list[LineSegment] = []
+
+    def calc(self, fast_len, mid_len, trend_len, htf_minutes, htf_fast_len, htf_slow_len,
+             rsi_len, adx_len, adx_min, use_adx_filter, atr_len, min_atr_pct, max_atr_pct,
+             use_volume_filter, volume_len, min_rel_volume, enable_breakout, breakout_len,
+             structure_len, atr_stop_mult, atr_buffer, max_stop_atr, reward_risk,
+             estimated_round_trip_cost_pct, minimum_net_reward_risk, min_score,
+             cooldown_bars, max_entry_wait_bars, show_ema_fast, show_ema_mid, show_ema_trend, show_entry_markers,
+             show_trade_levels, show_score_labels, show_status_panel,
+             show_historical_levels, historical_level_count):
+        fast = Ema.new(self.close, fast_len)
+        middle = Ema.new(self.close, mid_len)
+        trend = Ema.new(self.close, trend_len)
+        rsi = Rsi.new(self.close, rsi_len)
+        atr = Atr.new(atr_len)
+        minus_di, adx, plus_di = Adx.new(adx_len, adx_len)
+        volume_avg = Sma.new(self.volume, volume_len)
+        breakout_high = Highest.new(self.high, breakout_len)
+        breakout_low = Lowest.new(self.low, breakout_len)
+        structure_low = Lowest.new(self.low, structure_len)
+        structure_high = Highest.new(self.high, structure_len)
+
+        htf_seconds = htf_minutes * 60
+        bar_seconds = self.time_frame.to_seconds()
+        htf_supported = False
+        if bar_seconds > 0 and bar_seconds <= htf_seconds:
+            htf_supported = htf_seconds % bar_seconds == 0
+        if self.is_closed_bar and htf_supported:
+            start_bucket = int(self.time[0] / htf_seconds)
+            end_bucket = int((self.time[0] + bar_seconds) / htf_seconds)
+            if end_bucket > start_bucket:
+                if self._htf_count == 0:
+                    self._htf_fast = self.close[0]
+                    self._htf_slow = self.close[0]
+                    self._htf_prev_slow = self.close[0]
+                else:
+                    alpha_fast = 2.0 / (htf_fast_len + 1.0)
+                    alpha_slow = 2.0 / (htf_slow_len + 1.0)
+                    self._htf_prev_slow = self._htf_slow
+                    self._htf_fast = alpha_fast * self.close[0] + (1.0 - alpha_fast) * self._htf_fast
+                    self._htf_slow = alpha_slow * self.close[0] + (1.0 - alpha_slow) * self._htf_slow
+                self._htf_count += 1
+
+        htf_fast_now = self._htf_fast
+        htf_slow_now = self._htf_slow
+        htf_slow_prev = self._htf_prev_slow
+        trend_long = fast[0] > middle[0] and middle[0] > trend[0] and trend[0] > trend[1]
+        trend_short = fast[0] < middle[0] and middle[0] < trend[0] and trend[0] < trend[1]
+        htf_long = self._htf_count >= htf_slow_len and htf_fast_now > htf_slow_now and htf_slow_now > htf_slow_prev
+        htf_short = self._htf_count >= htf_slow_len and htf_fast_now < htf_slow_now and htf_slow_now < htf_slow_prev
+
+        atr_pct = 0.0
+        volatility_ok = False
+        if self.close[0] > 0.0 and atr[0] > 0.0:
+            atr_pct = atr[0] / self.close[0]
+            volatility_ok = atr_pct >= min_atr_pct and atr_pct <= max_atr_pct
+
+        candle_range = self.high[0] - self.low[0]
+        body_ratio = 0.0
+        if candle_range > 0.0:
+            body_ratio = abs(self.close[0] - self.open[0]) / candle_range
+        volume_ready = self.volume[0] > 0.0 and volume_avg[0] > 0.0
+        rel_volume = 0.0
+        if volume_ready:
+            rel_volume = self.volume[0] / volume_avg[0]
+        volume_ok = volume_ready and rel_volume >= min_rel_volume
+        adx_ok = adx[0] >= adx_min
+
+        pullback_long = self.low[0] <= max(fast[0], middle[0]) and self.close[0] > fast[0] and self.close[0] > self.high[1] and self.close[0] > self.open[0]
+        pullback_short = self.high[0] >= min(fast[0], middle[0]) and self.close[0] < fast[0] and self.close[0] < self.low[1] and self.close[0] < self.open[0]
+
+        breakout_level_high = breakout_high[1]
+        breakout_level_low = breakout_low[1]
+        breakout_long = enable_breakout and self.close[0] > breakout_level_high and self.close[1] <= breakout_high[2] and self.close[0] > self.open[0]
+        breakout_short = enable_breakout and self.close[0] < breakout_level_low and self.close[1] >= breakout_low[2] and self.close[0] < self.open[0]
+
+        long_setup = pullback_long or breakout_long
+        short_setup = pullback_short or breakout_short
+        long_score = 0
+        short_score = 0
+        if trend_long:
+            long_score += 20
+        if htf_long:
+            long_score += 20
+        if long_setup:
+            long_score += 10
+        if rsi[0] >= 50.0:
+            long_score += 5
+        if rsi[0] >= 55.0:
+            long_score += 5
+        if rsi[0] >= 60.0:
+            long_score += 5
+        if adx_ok:
+            long_score += 5
+        if adx[0] >= adx_min + 7.0:
+            long_score += 5
+        if adx[0] >= adx_min + 14.0:
+            long_score += 5
+        if volume_ok:
+            long_score += 10
+        if body_ratio >= 0.5:
+            long_score += 5
+        if body_ratio >= 0.7:
+            long_score += 5
+        if trend_short:
+            short_score += 20
+        if htf_short:
+            short_score += 20
+        if short_setup:
+            short_score += 10
+        if rsi[0] <= 50.0:
+            short_score += 5
+        if rsi[0] <= 45.0:
+            short_score += 5
+        if rsi[0] <= 40.0:
+            short_score += 5
+        if adx_ok:
+            short_score += 5
+        if adx[0] >= adx_min + 7.0:
+            short_score += 5
+        if adx[0] >= adx_min + 14.0:
+            short_score += 5
+        if volume_ok:
+            short_score += 10
+        if body_ratio >= 0.5:
+            short_score += 5
+        if body_ratio >= 0.7:
+            short_score += 5
+
+        entry = self.close[0]
+        long_stop = min(entry - atr_stop_mult * atr[0], structure_low[0] - atr_buffer * atr[0])
+        short_stop = max(entry + atr_stop_mult * atr[0], structure_high[0] + atr_buffer * atr[0])
+        long_risk = entry - long_stop
+        short_risk = short_stop - entry
+        long_risk_ok = long_risk > 0.0 and long_risk <= atr[0] * max_stop_atr
+        short_risk_ok = short_risk > 0.0 and short_risk <= atr[0] * max_stop_atr
+        long_target = entry + long_risk * reward_risk
+        short_target = entry - short_risk * reward_risk
+        estimated_round_trip_cost = entry * estimated_round_trip_cost_pct
+        long_net_reward_ok = long_target - entry - estimated_round_trip_cost >= long_risk * minimum_net_reward_risk
+        short_net_reward_ok = entry - short_target - estimated_round_trip_cost >= short_risk * minimum_net_reward_risk
+        long_hard = trend_long and htf_long and rsi[0] >= 50.0 and volatility_ok and (not use_adx_filter or adx_ok) and (not use_volume_filter or volume_ok) and long_setup and long_risk_ok
+        short_hard = trend_short and htf_short and rsi[0] <= 50.0 and volatility_ok and (not use_adx_filter or adx_ok) and (not use_volume_filter or volume_ok) and short_setup and short_risk_ok
+        long_signal = long_hard and long_score >= min_score and long_net_reward_ok
+        short_signal = short_hard and short_score >= min_score and short_net_reward_ok
+
+        fast_plot = fast[0]
+        middle_plot = middle[0]
+        trend_plot = trend[0]
+        if not show_ema_fast:
+            fast_plot = nan
+        if not show_ema_mid:
+            middle_plot = nan
+        if not show_ema_trend:
+            trend_plot = nan
+
+        long_marker = nan
+        short_marker = nan
+        quality_marker = nan
+        long_alert = nan
+        short_alert = nan
+        quality_alert = nan
+        target_alert = nan
+        stop_alert = nan
+        long_text = 'BUY'
+        short_text = 'SELL'
+        quality_text = 'A grade'
+        entry_plot = nan
+        stop_plot = nan
+        target_plot = nan
+        event_entry = nan
+        event_stop = nan
+        event_target = nan
+        expired_entry = nan
+        expired_stop = nan
+        expired_target = nan
+
+        if self.is_closed_bar:
+            exited_this_bar = False
+            expired_this_bar = False
+            if self._active_dir == 1:
+                stop_hit = self.low[0] <= self._active_stop
+                target_hit = self.high[0] >= self._active_target
+                if stop_hit or target_hit:
+                    exit_price = self._active_stop
+                    if self.open[0] <= self._active_stop:
+                        exit_price = self.open[0]
+                    if target_hit and not stop_hit:
+                        exit_price = self._active_target
+                        if self.open[0] >= self._active_target:
+                            exit_price = self.open[0]
+                        target_alert = exit_price
+                    else:
+                        stop_alert = exit_price
+                    event_entry = self._active_entry
+                    event_stop = self._active_stop
+                    event_target = self._active_target
+                    self._active_dir = 0
+                    exited_this_bar = True
+            elif self._active_dir == -1:
+                stop_hit = self.high[0] >= self._active_stop
+                target_hit = self.low[0] <= self._active_target
+                if stop_hit or target_hit:
+                    exit_price = self._active_stop
+                    if self.open[0] >= self._active_stop:
+                        exit_price = self.open[0]
+                    if target_hit and not stop_hit:
+                        exit_price = self._active_target
+                        if self.open[0] <= self._active_target:
+                            exit_price = self.open[0]
+                        target_alert = exit_price
+                    else:
+                        stop_alert = exit_price
+                    event_entry = self._active_entry
+                    event_stop = self._active_stop
+                    event_target = self._active_target
+                    self._active_dir = 0
+                    exited_this_bar = True
+
+            if not exited_this_bar and self._pending_dir != 0:
+                pending_age = self.bar_index - self._pending_bar
+                if self._pending_dir == 1 and (self.open[0] <= self._pending_entry or self.low[0] <= self._pending_entry):
+                    marketable_at_open = self.open[0] <= self._pending_entry
+                    fill_price = self._pending_entry
+                    if marketable_at_open:
+                        fill_price = self.open[0]
+                    self._active_dir = 1
+                    self._active_entry = fill_price
+                    self._active_stop = self._pending_stop
+                    self._active_target = self._pending_target
+                    self._active_time = self._pending_time
+                    self._pending_dir = 0
+                    stop_hit = self.low[0] <= self._active_stop
+                    target_hit = self.high[0] >= self._active_target and marketable_at_open
+                    if stop_hit or target_hit:
+                        if stop_hit:
+                            exit_price = self._active_stop
+                            if self.open[0] <= self._active_stop:
+                                exit_price = self.open[0]
+                            stop_alert = exit_price
+                        else:
+                            exit_price = self._active_target
+                            if self.open[0] >= self._active_target:
+                                exit_price = self.open[0]
+                            target_alert = exit_price
+                        event_entry = self._active_entry
+                        event_stop = self._active_stop
+                        event_target = self._active_target
+                        self._active_dir = 0
+                        exited_this_bar = True
+                elif self._pending_dir == -1 and (self.open[0] >= self._pending_entry or self.high[0] >= self._pending_entry):
+                    marketable_at_open = self.open[0] >= self._pending_entry
+                    fill_price = self._pending_entry
+                    if marketable_at_open:
+                        fill_price = self.open[0]
+                    self._active_dir = -1
+                    self._active_entry = fill_price
+                    self._active_stop = self._pending_stop
+                    self._active_target = self._pending_target
+                    self._active_time = self._pending_time
+                    self._pending_dir = 0
+                    stop_hit = self.high[0] >= self._active_stop
+                    target_hit = self.low[0] <= self._active_target and marketable_at_open
+                    if stop_hit or target_hit:
+                        if stop_hit:
+                            exit_price = self._active_stop
+                            if self.open[0] >= self._active_stop:
+                                exit_price = self.open[0]
+                            stop_alert = exit_price
+                        else:
+                            exit_price = self._active_target
+                            if self.open[0] <= self._active_target:
+                                exit_price = self.open[0]
+                            target_alert = exit_price
+                        event_entry = self._active_entry
+                        event_stop = self._active_stop
+                        event_target = self._active_target
+                        self._active_dir = 0
+                        exited_this_bar = True
+                elif pending_age >= max_entry_wait_bars:
+                    expired_entry = self._pending_entry
+                    expired_stop = self._pending_stop
+                    expired_target = self._pending_target
+                    self._pending_dir = 0
+                    expired_this_bar = True
+
+            if not exited_this_bar and not expired_this_bar and self._pending_dir == 0 and self._active_dir == 0:
+                if long_signal and not short_signal and self.bar_index - self._last_signal_bar >= cooldown_bars:
+                    self._pending_dir = 1
+                    self._pending_entry = entry
+                    self._pending_stop = long_stop
+                    self._pending_target = long_target
+                    self._pending_score = long_score
+                    self._pending_bar = self.bar_index
+                    self._pending_time = self.time[0]
+                    self._pending_is_breakout = breakout_long
+                    self._last_signal_bar = self.bar_index
+                    long_marker = entry
+                    long_alert = entry
+                    if long_score >= 85:
+                        quality_marker = entry
+                        quality_alert = entry
+                    grade = 'B'
+                    if long_score >= 85:
+                        grade = 'A'
+                    setup_name = 'PB'
+                    if breakout_long:
+                        setup_name = 'BO'
+                    if show_score_labels:
+                        long_text = 'BUY ' + grade + ' ' + str(long_score)
+                    else:
+                        long_text = 'BUY'
+                    if long_score >= 85:
+                        quality_text = 'A ' + str(long_score)
+                elif short_signal and not long_signal and self.bar_index - self._last_signal_bar >= cooldown_bars:
+                    self._pending_dir = -1
+                    self._pending_entry = entry
+                    self._pending_stop = short_stop
+                    self._pending_target = short_target
+                    self._pending_score = short_score
+                    self._pending_bar = self.bar_index
+                    self._pending_time = self.time[0]
+                    self._pending_is_breakout = breakout_short
+                    self._last_signal_bar = self.bar_index
+                    short_marker = entry
+                    short_alert = entry
+                    if short_score >= 85:
+                        quality_marker = entry
+                        quality_alert = entry
+                    grade = 'B'
+                    if short_score >= 85:
+                        grade = 'A'
+                    setup_name = 'PB'
+                    if breakout_short:
+                        setup_name = 'BO'
+                    if show_score_labels:
+                        short_text = 'SELL ' + grade + ' ' + str(short_score)
+                    else:
+                        short_text = 'SELL'
+                    if short_score >= 85:
+                        quality_text = 'A ' + str(short_score)
+
+            if self._active_dir != 0:
+                entry_plot = self._active_entry
+                stop_plot = self._active_stop
+                target_plot = self._active_target
+            elif self._pending_dir != 0:
+                entry_plot = self._pending_entry
+                stop_plot = self._pending_stop
+                target_plot = self._pending_target
+            elif event_entry == event_entry:
+                entry_plot = event_entry
+                stop_plot = event_stop
+                target_plot = event_target
+            elif expired_this_bar:
+                entry_plot = expired_entry
+                stop_plot = expired_stop
+                target_plot = expired_target
+
+        if self._active_dir != 0 and entry_plot != entry_plot:
+            entry_plot = self._active_entry
+            stop_plot = self._active_stop
+            target_plot = self._active_target
+        elif self._pending_dir != 0 and entry_plot != entry_plot:
+            entry_plot = self._pending_entry
+            stop_plot = self._pending_stop
+            target_plot = self._pending_target
+        if not show_trade_levels:
+            entry_plot = nan
+            stop_plot = nan
+            target_plot = nan
+
+        # Keep the legacy level output IDs, but render only the current setup
+        # with reusable drawings. This avoids painting every completed trade.
+        if not self.is_last_bar or (self._active_dir == 0 and self._pending_dir == 0):
+            entry_plot = nan
+            stop_plot = nan
+            target_plot = nan
+
+        # Grade is appended to the BUY/SELL marker when enabled. The separate
+        # quality marker would duplicate the signal on the same candle.
+        quality_marker = nan
+        if not show_entry_markers:
+            long_marker = nan
+            short_marker = nan
+
+        if self.is_closed_bar and show_historical_levels:
+            history_entry = event_entry
+            history_stop = event_stop
+            history_target = event_target
+            history_start = self._active_time
+            if history_entry != history_entry and expired_entry == expired_entry:
+                history_entry = expired_entry
+                history_stop = expired_stop
+                history_target = expired_target
+                history_start = self._pending_time
+            if history_entry == history_entry:
+                history_end = self.time[0]
+                if history_end <= history_start:
+                    history_end = history_start + (self.time[0] - self.time[1])
+                historical_entry = LineSegment(AbsolutePosition(history_start, history_entry),
+                                               AbsolutePosition(history_end, history_entry), color.WHITE,
+                                               line_style.DOTTED, 1)
+                historical_stop = LineSegment(AbsolutePosition(history_start, history_stop),
+                                              AbsolutePosition(history_end, history_stop), color.RED,
+                                              line_style.DOTTED, 1)
+                historical_target = LineSegment(AbsolutePosition(history_start, history_target),
+                                                AbsolutePosition(history_end, history_target), color.LIME,
+                                                line_style.DOTTED, 1)
+                self._historical_lines.append(historical_entry)
+                self._historical_lines.append(historical_stop)
+                self._historical_lines.append(historical_target)
+                self.chart.draw(historical_entry)
+                self.chart.draw(historical_stop)
+                self.chart.draw(historical_target)
+                while len(self._historical_lines) > historical_level_count * 3:
+                    self.chart.erase(self._historical_lines.pop(0))
+
+        if self.is_last_bar:
+            if show_trade_levels and entry_plot == entry_plot:
+                start_time = self._pending_time
+                if self._active_dir != 0:
+                    start_time = self._active_time
+                end_time = self.time[0] + 3.0 * (self.time[0] - self.time[1])
+                self._entry_line.point_a = AbsolutePosition(start_time, entry_plot)
+                self._entry_line.point_b = AbsolutePosition(end_time, entry_plot)
+                self._stop_line.point_a = AbsolutePosition(start_time, stop_plot)
+                self._stop_line.point_b = AbsolutePosition(end_time, stop_plot)
+                self._target_line.point_a = AbsolutePosition(start_time, target_plot)
+                self._target_line.point_b = AbsolutePosition(end_time, target_plot)
+                self._entry_label.position = AbsolutePosition(end_time, entry_plot)
+                self._stop_label.position = AbsolutePosition(end_time, stop_plot)
+                self._target_label.position = AbsolutePosition(end_time, target_plot)
+                self._entry_label.text = 'ENTRY ' + str(round(entry_plot, 4))
+                self._stop_label.text = 'SL ' + str(round(stop_plot, 4))
+                self._target_label.text = 'TP ' + str(round(target_plot, 4))
+                self.chart.draw(self._entry_line)
+                self.chart.draw(self._stop_line)
+                self.chart.draw(self._target_line)
+                self.chart.draw(self._entry_label)
+                self.chart.draw(self._stop_label)
+                self.chart.draw(self._target_label)
+            else:
+                self.chart.erase(self._entry_line)
+                self.chart.erase(self._stop_line)
+                self.chart.erase(self._target_line)
+                self.chart.erase(self._entry_label)
+                self.chart.erase(self._stop_label)
+                self.chart.erase(self._target_label)
+
+            if show_status_panel:
+                bias = 'NEUTRAL'
+                htf_state = 'NOT ALIGNED'
+                score = max(long_score, short_score)
+                if trend_long:
+                    bias = 'BULLISH'
+                    score = long_score
+                    if htf_long:
+                        htf_state = 'ALIGNED'
+                elif trend_short:
+                    bias = 'BEARISH'
+                    score = short_score
+                    if htf_short:
+                        htf_state = 'ALIGNED'
+                if self._htf_count < htf_slow_len:
+                    htf_state = 'UNAVAILABLE'
+                market = 'TRENDING'
+                if atr[0] != atr[0] or self.close[0] <= 0.0:
+                    market = 'UNAVAILABLE'
+                elif atr_pct < min_atr_pct:
+                    market = 'LOW VOLATILITY'
+                elif atr_pct > max_atr_pct:
+                    market = 'HIGH VOLATILITY'
+                elif not adx_ok:
+                    market = 'WEAK TREND'
+                setup = 'WAITING'
+                if self._pending_dir == 1:
+                    setup = 'BUY PENDING'
+                    score = self._pending_score
+                elif self._pending_dir == -1:
+                    setup = 'SELL PENDING'
+                    score = self._pending_score
+                elif self._active_dir == 1:
+                    setup = 'BUY ACTIVE'
+                    score = self._pending_score
+                elif self._active_dir == -1:
+                    setup = 'SELL ACTIVE'
+                    score = self._pending_score
+                self._status_panel.text = 'SCALPFLOW PRO\nBias: ' + bias + ' | HTF: ' + htf_state + '\nMarket: ' + market + '\nSetup: ' + setup + ' | Score: ' + str(score) + '/100'
+                if self._active_dir != 0:
+                    self._status_panel.text += '\nTrade: ' + ('BUY' if self._active_dir == 1 else 'SELL') + ' | Entry ' + str(round(self._active_entry, 4)) + ' | SL ' + str(round(self._active_stop, 4)) + ' | TP ' + str(round(self._active_target, 4))
+                self.chart.draw(self._status_panel)
+            else:
+                self.chart.erase(self._status_panel)
+
+        return fast_plot, middle_plot, trend_plot, \
+            plot.Marker(value=long_marker, text=long_text), \
+            plot.Marker(value=short_marker, text=short_text), \
+            plot.Marker(value=quality_marker, text=quality_text), \
+            entry_plot, stop_plot, target_plot, \
+            long_alert, short_alert, quality_alert, target_alert, stop_alert

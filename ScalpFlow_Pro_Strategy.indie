@@ -1,0 +1,225 @@
+# indie:lang_version = 5
+from indie import strategy, MainStrategyContext, Optional, param
+from indie.algorithms import Ema, Rsi, Atr, Adx, Sma, Highest, Lowest
+from indie.strategies import Order, order_side, order_status, Commission, commission_type, intrabar_order_filter
+
+@strategy(
+    'ScalpFlow Pro Strategy',
+    overlay_main_pane=True,
+    initial_capital=10000.0,
+    commission=Commission(0.0006, commission_type.PERCENT),
+    leverage=1.0,
+    intrabar_order_filter=intrabar_order_filter.ON_BAR_CLOSE)
+@param.float('order_qty', default=0.01, min=0.001, max=10.0, step=0.001, title='Order quantity')
+@param.int('fast_len', default=9, min=2, title='Execution fast EMA')
+@param.int('mid_len', default=21, min=3, title='Execution pullback EMA')
+@param.int('trend_len', default=50, min=5, title='Execution trend EMA')
+@param.int('htf_minutes', default=15, min=15, max=60, step=15, title='Higher timeframe minutes')
+@param.int('htf_fast_len', default=21, min=2, title='Higher timeframe fast EMA')
+@param.int('htf_slow_len', default=50, min=5, title='Higher timeframe slow EMA')
+@param.int('rsi_len', default=14, min=2, title='RSI length')
+@param.int('adx_len', default=14, min=2, title='ADX and DI length')
+@param.float('adx_min', default=18.0, min=5.0, max=50.0, step=0.5, title='Minimum ADX')
+@param.bool('use_adx_filter', default=True, title='Require minimum ADX')
+@param.int('atr_len', default=14, min=2, title='ATR length')
+@param.float('min_atr_pct', default=0.0005, min=0.0, max=0.02, step=0.0001, title='Minimum ATR / price')
+@param.float('max_atr_pct', default=0.02, min=0.001, max=0.10, step=0.001, title='Maximum ATR / price')
+@param.bool('use_volume_filter', default=False, title='Require relative volume')
+@param.int('volume_len', default=20, min=2, title='Volume baseline length')
+@param.float('min_rel_volume', default=1.0, min=0.1, max=5.0, step=0.1, title='Minimum relative volume')
+@param.bool('enable_breakout', default=False, title='Enable breakout setups')
+@param.int('breakout_len', default=20, min=2, title='Breakout lookback')
+@param.int('structure_len', default=5, min=2, title='Stop structure lookback')
+@param.float('atr_stop_mult', default=1.2, min=0.2, max=5.0, step=0.1, title='ATR stop multiple')
+@param.float('atr_buffer', default=0.15, min=0.0, max=2.0, step=0.05, title='Structure stop ATR buffer')
+@param.float('max_stop_atr', default=3.0, min=0.5, max=10.0, step=0.1, title='Maximum stop distance in ATR')
+@param.float('reward_risk', default=1.5, min=0.5, max=5.0, step=0.1, title='Target reward / risk')
+@param.float('estimated_round_trip_cost_pct', default=0.0015, min=0.0, max=0.05, step=0.0001, title='Estimated round-trip fees and slippage / price')
+@param.float('minimum_net_reward_risk', default=0.5, min=0.0, max=5.0, step=0.1, title='Minimum target reward after costs / risk')
+@param.int('min_score', default=70, min=50, max=100, title='Minimum confluence points')
+@param.int('cooldown_bars', default=3, min=0, max=100, title='Signal cooldown bars')
+@param.int('max_entry_wait_bars', default=3, min=1, max=20, title='Limit order expiry bars')
+class Main(MainStrategyContext):
+    def __init__(self):
+        self._htf_fast: float = 0.0
+        self._htf_slow: float = 0.0
+        self._htf_prev_slow: float = 0.0
+        self._htf_count: int = 0
+        self._entry_order: Optional[Order] = None
+        self._entry_bar: int = -1
+        self._cancel_requested: bool = False
+        self._was_in_position: bool = False
+        self._last_signal_bar: int = -1000000
+
+    def calc(self, order_qty, fast_len, mid_len, trend_len, htf_minutes, htf_fast_len,
+             htf_slow_len, rsi_len, adx_len, adx_min, use_adx_filter, atr_len,
+             min_atr_pct, max_atr_pct, use_volume_filter, volume_len, min_rel_volume,
+             enable_breakout, breakout_len, structure_len, atr_stop_mult, atr_buffer,
+             max_stop_atr, reward_risk, estimated_round_trip_cost_pct, minimum_net_reward_risk,
+             min_score, cooldown_bars, max_entry_wait_bars):
+        fast = Ema.new(self.close, fast_len)
+        middle = Ema.new(self.close, mid_len)
+        trend = Ema.new(self.close, trend_len)
+        rsi = Rsi.new(self.close, rsi_len)
+        atr = Atr.new(atr_len)
+        minus_di, adx, plus_di = Adx.new(adx_len, adx_len)
+        volume_avg = Sma.new(self.volume, volume_len)
+        breakout_high = Highest.new(self.high, breakout_len)
+        breakout_low = Lowest.new(self.low, breakout_len)
+        structure_low = Lowest.new(self.low, structure_len)
+        structure_high = Highest.new(self.high, structure_len)
+
+        htf_seconds = htf_minutes * 60
+        bar_seconds = self.time_frame.to_seconds()
+        htf_supported = False
+        if bar_seconds > 0 and bar_seconds <= htf_seconds:
+            htf_supported = htf_seconds % bar_seconds == 0
+        if self.is_closed_bar and htf_supported:
+            start_bucket = int(self.time[0] / htf_seconds)
+            end_bucket = int((self.time[0] + bar_seconds) / htf_seconds)
+            if end_bucket > start_bucket:
+                if self._htf_count == 0:
+                    self._htf_fast = self.close[0]
+                    self._htf_slow = self.close[0]
+                    self._htf_prev_slow = self.close[0]
+                else:
+                    alpha_fast = 2.0 / (htf_fast_len + 1.0)
+                    alpha_slow = 2.0 / (htf_slow_len + 1.0)
+                    self._htf_prev_slow = self._htf_slow
+                    self._htf_fast = alpha_fast * self.close[0] + (1.0 - alpha_fast) * self._htf_fast
+                    self._htf_slow = alpha_slow * self.close[0] + (1.0 - alpha_slow) * self._htf_slow
+                self._htf_count += 1
+
+        htf_long = self._htf_count >= htf_slow_len and self._htf_fast > self._htf_slow and self._htf_slow > self._htf_prev_slow
+        htf_short = self._htf_count >= htf_slow_len and self._htf_fast < self._htf_slow and self._htf_slow < self._htf_prev_slow
+        trend_long = fast[0] > middle[0] and middle[0] > trend[0] and trend[0] > trend[1]
+        trend_short = fast[0] < middle[0] and middle[0] < trend[0] and trend[0] < trend[1]
+
+        atr_pct = 0.0
+        volatility_ok = False
+        if self.close[0] > 0.0 and atr[0] > 0.0:
+            atr_pct = atr[0] / self.close[0]
+            volatility_ok = atr_pct >= min_atr_pct and atr_pct <= max_atr_pct
+        candle_range = self.high[0] - self.low[0]
+        body_ratio = 0.0
+        if candle_range > 0.0:
+            body_ratio = abs(self.close[0] - self.open[0]) / candle_range
+        volume_ready = self.volume[0] > 0.0 and volume_avg[0] > 0.0
+        rel_volume = 0.0
+        if volume_ready:
+            rel_volume = self.volume[0] / volume_avg[0]
+        volume_ok = volume_ready and rel_volume >= min_rel_volume
+        adx_ok = adx[0] >= adx_min
+
+        pullback_long = self.low[0] <= max(fast[0], middle[0]) and self.close[0] > fast[0] and self.close[0] > self.high[1] and self.close[0] > self.open[0]
+        pullback_short = self.high[0] >= min(fast[0], middle[0]) and self.close[0] < fast[0] and self.close[0] < self.low[1] and self.close[0] < self.open[0]
+        breakout_long = enable_breakout and self.close[0] > breakout_high[1] and self.close[1] <= breakout_high[2] and self.close[0] > self.open[0]
+        breakout_short = enable_breakout and self.close[0] < breakout_low[1] and self.close[1] >= breakout_low[2] and self.close[0] < self.open[0]
+        long_setup = pullback_long or breakout_long
+        short_setup = pullback_short or breakout_short
+
+        long_score = 0
+        short_score = 0
+        if trend_long:
+            long_score += 20
+        if htf_long:
+            long_score += 20
+        if long_setup:
+            long_score += 10
+        if rsi[0] >= 50.0:
+            long_score += 5
+        if rsi[0] >= 55.0:
+            long_score += 5
+        if rsi[0] >= 60.0:
+            long_score += 5
+        if adx_ok:
+            long_score += 5
+        if adx[0] >= adx_min + 7.0:
+            long_score += 5
+        if adx[0] >= adx_min + 14.0:
+            long_score += 5
+        if volume_ok:
+            long_score += 10
+        if body_ratio >= 0.5:
+            long_score += 5
+        if body_ratio >= 0.7:
+            long_score += 5
+        if trend_short:
+            short_score += 20
+        if htf_short:
+            short_score += 20
+        if short_setup:
+            short_score += 10
+        if rsi[0] <= 50.0:
+            short_score += 5
+        if rsi[0] <= 45.0:
+            short_score += 5
+        if rsi[0] <= 40.0:
+            short_score += 5
+        if adx_ok:
+            short_score += 5
+        if adx[0] >= adx_min + 7.0:
+            short_score += 5
+        if adx[0] >= adx_min + 14.0:
+            short_score += 5
+        if volume_ok:
+            short_score += 10
+        if body_ratio >= 0.5:
+            short_score += 5
+        if body_ratio >= 0.7:
+            short_score += 5
+
+        entry = self.close[0]
+        long_stop = min(entry - atr_stop_mult * atr[0], structure_low[0] - atr_buffer * atr[0])
+        short_stop = max(entry + atr_stop_mult * atr[0], structure_high[0] + atr_buffer * atr[0])
+        long_risk = entry - long_stop
+        short_risk = short_stop - entry
+        long_risk_ok = long_risk > 0.0 and long_risk <= atr[0] * max_stop_atr
+        short_risk_ok = short_risk > 0.0 and short_risk <= atr[0] * max_stop_atr
+        long_target = entry + long_risk * reward_risk
+        short_target = entry - short_risk * reward_risk
+        estimated_round_trip_cost = entry * estimated_round_trip_cost_pct
+        long_net_reward_ok = long_target - entry - estimated_round_trip_cost >= long_risk * minimum_net_reward_risk
+        short_net_reward_ok = entry - short_target - estimated_round_trip_cost >= short_risk * minimum_net_reward_risk
+        long_hard = trend_long and htf_long and rsi[0] >= 50.0 and volatility_ok and (not use_adx_filter or adx_ok) and (not use_volume_filter or volume_ok) and long_setup and long_risk_ok
+        short_hard = trend_short and htf_short and rsi[0] <= 50.0 and volatility_ok and (not use_adx_filter or adx_ok) and (not use_volume_filter or volume_ok) and short_setup and short_risk_ok
+        long_signal = long_hard and long_score >= min_score and long_net_reward_ok
+        short_signal = short_hard and short_score >= min_score and short_net_reward_ok
+
+        if self.is_closed_bar:
+            position_open = self.trading.position.size != 0.0
+            position_closed_this_bar = self._was_in_position and not position_open
+            block_new_signal = position_closed_this_bar
+            if self._entry_order is not None:
+                current_order = self._entry_order.value()
+                if current_order.status == order_status.FILLED or current_order.status == order_status.CANCELED or current_order.status == order_status.REJECTED or current_order.status == order_status.PARTIALLY_FILLED_CLOSED:
+                    if current_order.status == order_status.FILLED and not position_open:
+                        block_new_signal = True
+                    self._entry_order = None
+                    self._cancel_requested = False
+                elif self.bar_index - self._entry_bar >= max_entry_wait_bars and not self._cancel_requested:
+                    self.trading.cancel_order(current_order.id)
+                    self._cancel_requested = True
+
+            if not block_new_signal and self._entry_order is None and not position_open and self.bar_index - self._last_signal_bar >= cooldown_bars:
+                if long_signal and not short_signal:
+                    order = (self.trading.place_order(order_side.BUY, size=order_qty)
+                        .limit(price=entry)
+                        .take_profit(stop=long_target)
+                        .stop_loss(stop=long_stop)
+                        .submit())
+                    self._entry_order = order
+                    self._entry_bar = self.bar_index
+                    self._cancel_requested = False
+                    self._last_signal_bar = self.bar_index
+                elif short_signal and not long_signal:
+                    order = (self.trading.place_order(order_side.SELL, size=order_qty)
+                        .limit(price=entry)
+                        .take_profit(stop=short_target)
+                        .stop_loss(stop=short_stop)
+                        .submit())
+                    self._entry_order = order
+                    self._entry_bar = self.bar_index
+                    self._cancel_requested = False
+                    self._last_signal_bar = self.bar_index
+            self._was_in_position = position_open
