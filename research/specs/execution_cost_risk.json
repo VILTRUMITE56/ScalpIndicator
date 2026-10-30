@@ -1,9 +1,10 @@
 {
   "schema_version": 1,
-  "spec_version": "1.0.3",
-  "recorded_at_utc": "2026-10-30T12:46:12Z",
-  "status": "provisional_research_profile_user_confirmation_required",
+  "spec_version": "1.0.5",
+  "recorded_at_utc": "2026-10-30T13:01:30Z",
+  "status": "research_checkpoint_complete_deployment_requirements_pending",
   "purpose": "Record the current BTC perpetual research proxy, cost model, risk defaults, source trail, and decisions that remain open. This is not a live trading configuration.",
+  "checkpoint_resolution": "GitHub issue #3 is complete as a research-only input/specification checkpoint. The user explicitly kept Binance as a proxy, personal daily-loss/drawdown limits unset, and account fee rates unknown; isolated margin and an all-in $1 loss cap for fees/slippage are confirmed. No execution venue is selected and closure does not authorize live trading.",
   "venue_and_contract": {
     "user_selected_execution_venue": null,
     "user_selected_contract": null,
@@ -98,20 +99,20 @@
     "proposed_daily_loss_limit_r": 4,
     "proposed_peak_to_trough_drawdown_limit_fraction": 0.08,
     "status": "Provisional project research policy, not confirmed as the user's acceptable personal risk. Native daily/equity locks are not implemented or verified.",
-    "user_confirmation_status": "User reports variable leverage of 20x-50x, a maximum intended total loss of $1 per trade, and a take-profit goal above $5. Gross/net cost basis and account-equity percentage remain unknown.",
+    "user_confirmation_status": "User reports variable leverage of 20x-50x, isolated margin, a maximum intended total loss of $1 per trade including fees and slippage, and a take-profit goal above $5. Funding inclusion in the loss cap and net/gross target basis remain unspecified. Personal daily-loss/drawdown limits are intentionally left unset by the user.",
     "user_reported_trade_profile": {
       "margin_usd_range": [5, 10],
       "margin_confirmation": "user confirmed $5-$10 is margin posted per trade, not full position notional",
       "leverage_range_x": [20, 50],
-      "leverage_usage": "variable by trade; exact selected leverage and margin mode are unknown",
-      "margin_mode": null,
+      "leverage_usage": "variable by trade; user reports 20x-50x and selects the actual leverage per trade",
+      "margin_mode": "ISOLATED",
       "position_notional_estimate_usd_range": [100, 500],
       "position_notional_formula": "margin_usd * leverage, subject to venue and margin mode",
       "stop_pnl_usd_range": [0.5, 1],
       "target_pnl_usd_range": [5, 10],
       "maximum_intended_total_loss_usd_per_trade": 1,
       "target_pnl_minimum_usd_exclusive": 5,
-      "pnl_fee_basis": "unknown whether the $1 loss cap and target amount include commission, spread, slippage and funding",
+      "pnl_fee_basis": "user confirmed the $1 maximum loss cap includes fees and slippage; funding inclusion and whether the target is gross or net remain unspecified",
       "gross_reward_to_risk_ratio_bounds": [5, 20],
       "gross_break_even_win_rate_bounds_before_costs": [0.0476190476, 0.1666666667],
       "reward_to_risk_lower_bound_under_latest_rule": "greater than 5:1 if loss is at most $1 and target is greater than $5 on the same P&L basis",
@@ -124,8 +125,12 @@
         { "stop_usd": 1, "target_usd": 5, "win_rate": 0.1666666667 }
       ],
       "calculation_assumption": "Break-even bounds treat stop and target as fixed gross P&L outcomes, omit all costs and assume a target-or-stop outcome only. They are not a measured strategy win rate or profitability estimate.",
-      "margin_return_context": "A $1 loss is 10%-20% of $10-$5 posted margin. The usual $0.50-$1 stop and $5-$10 target are retained as prior typical amounts; the latest stated rule is total loss at most $1 and target greater than $5. These are P&L-to-margin comparisons, not underlying BTC price moves."
+      "margin_return_context": "A $1 loss is 10%-20% of $10-$5 posted margin. The usual $0.50-$1 stop and $5-$10 target are retained as prior typical amounts; the latest stated rule is total loss at most $1 including fees and slippage, with target greater than $5. These are P&L-to-margin comparisons, not underlying BTC price moves."
     },
+    "user_account_equity": null,
+    "user_daily_loss_limit": null,
+    "user_maximum_drawdown_limit": null,
+    "account_level_limits_status": "User explicitly directed that personal daily-loss and drawdown limits remain unset; account equity was not provided. Do not substitute the provisional research gates as personal settings.",
     "risk_lock_note": "The 4R daily and 8% drawdown values are proposed research gates inherited from the implementation plan. Preserve protective exits if an entry lock is triggered; do not claim a cash proxy is equity."
   },
   "holding_time_and_profiles": {
@@ -142,21 +147,23 @@
     "Actual maker/taker account rates are recorded; unresolved fills are costed as taker for research.",
     "Live contract filters are captured and entry/stop/target prices and quantity are rounded then risk is recalculated.",
     "Historical spread/slippage evidence and funding cash flows are added without double-counting native commission.",
-    "User confirms the per-trade leverage and margin mode before order sizing; size is derived from the $1 loss cap and actual stop/costs, and the stop must remain safely before liquidation.",
-    "User confirms whether the $1 loss cap and target are gross or net of fees/slippage/funding, plus acceptable daily loss/drawdown limits; the no-time-limit preference is recorded and longer holding/funding exposure is tested.",
+    "For any future order sizing, use isolated margin and the actual chosen leverage within the reported 20x-50x range; derive quantity from the $1 all-in fee/slippage loss cap and verify the stop/liquidation buffer.",
+    "Funding inclusion in the $1 cap and whether the greater-than-$5 target is gross or net remain deployment/modeling unknowns; daily-loss/drawdown limits are intentionally unset by the user.",
     "No live order automation until the remaining data, parity, execution and costed-performance checkpoints pass."
   ],
   "research_can_continue_before_user_confirmation": true,
   "user_decisions_received": {
     "research_proxy": "Keep Binance USDⓈ-M BTCUSDT as the research proxy.",
     "account_fee_rates": "Unknown; leave unconfirmed.",
-    "reported_trade_profile": "User reports $5-$10 margin, variable 20x-50x leverage, maximum intended total loss of $1 per trade and a TP goal above $5. Simple estimated notional is $100-$500; exact per-trade leverage, margin mode and gross/net treatment remain unknown. Prior usual stop/target amounts were $0.50-$1 and $5-$10.",
+    "reported_trade_profile": "User reports $5-$10 margin, variable 20x-50x leverage, isolated margin, maximum intended total loss of $1 per trade including fees/slippage and a TP goal above $5. Simple estimated notional is $100-$500. Exact leverage varies by trade; funding treatment and target net/gross basis remain unspecified. Prior usual stop/target amounts were $0.50-$1 and $5-$10.",
+    "research_scope": "User explicitly chose to keep Binance as a research proxy only; no actual execution venue is selected.",
+    "account_level_limits": "User explicitly chose to leave personal daily-loss and drawdown limits unset; account equity was not provided.",
     "holding_time": "User prefers to hold until TP or SL, with no time-based exit; no finite maximum duration specified."
   },
   "user_decisions_remaining": [
-    "Confirm the exact leverage and margin mode selected per trade; the reported 20x-50x is a variable range, not the exact open-position setting.",
-    "Confirm whether the $1 total-loss cap and target are gross or net of all trading costs.",
-    "Confirm actual account equity and acceptable daily loss and maximum drawdown; $5-$10 margin is not account equity.",
+    "No actual execution venue or account maker/taker fee rates were selected; Binance is research-only and account fees remain unknown by user request.",
+    "Funding inclusion in the $1 loss cap and the target's gross/net basis remain unspecified; include and report funding separately in future validation.",
+    "The user intentionally left personal daily-loss/drawdown limits unset and did not provide account equity; do not infer those from posted margin or research placeholders.",
     "The user selected TP/SL-only exits with no time cap; assess longer-than-scalp holding and funding exposure in validation."
   ],
   "sources": [

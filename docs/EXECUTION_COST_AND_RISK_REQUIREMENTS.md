@@ -1,10 +1,12 @@
 # BTC perpetual venue, cost and risk record
 
-Record version 1.0.3, reviewed 30 October 2026. This defines a provisional research setup and records the user's reported trade size, variable leverage range, per-trade loss cap, target and exit preference. It does not confirm an execution venue, account fee rate, full account risk policy, or profitable strategy.
+Record version 1.0.5, reviewed 30 October 2026. This defines a provisional research setup and records the user's reported trade size, variable leverage range, per-trade loss cap, target and exit preference. It does not confirm an execution venue, account fee rate, full account risk policy, or profitable strategy.
 
 The machine-readable record is [`research/specs/execution_cost_risk.json`](../research/specs/execution_cost_risk.json). GitHub checkpoint: [issue #3](https://github.com/VILTRUMITE56/ScalpIndicator/issues/3).
 
-The user confirmed Binance only as the research proxy and directed that personal account fee rates remain unknown. The user reports $5-$10 margin per trade, variable 20x-50x leverage, a maximum intended total loss of $1 per trade, a take-profit goal above $5, and a preference to hold until TP or SL without a time exit. The exact leverage/margin mode per position and whether the $1 cap includes fees and execution losses remain unknown. Account-equity, daily-loss and drawdown limits are also pending.
+Issue #3 is complete as a research-profile checkpoint: the proxy, reported per-trade limits, assumptions and unknowns are recorded. Closure does not mean the execution venue, account costs or deployment risk controls are confirmed; those remain deployment blockers.
+
+The user confirmed Binance only as the research proxy and directed that personal account fee rates remain unknown. The user reports $5-$10 margin per trade, variable 20x-50x leverage, isolated margin, a maximum intended total loss of $1 per trade including fees and slippage, a take-profit goal above $5, and a preference to hold until TP or SL without a time exit. The exact leverage is selected per trade. Funding inclusion in the $1 cap and the target's net/gross basis remain unspecified. The user explicitly chose to leave personal daily-loss and drawdown limits unset; account equity was not provided.
 
 ## Research proxy and user-selected venue
 
@@ -45,7 +47,7 @@ At the estimated $100-$500 notional, a $1 gross loss corresponds approximately t
 
 High leverage magnifies both exposure and liquidation sensitivity. Binance's USDⓈ-M guidance bases maintenance margin on notional tiers and says account leverage availability may be restricted; liquidation can also occur before a stop closes a position if the trigger, mark price, slippage or liquidation buffer is unfavorable. [Leverage and margin guidance](https://www.binance.com/en-AU/support/faq/detail/360033162192), [liquidation despite stop-loss guidance](https://www.binance.com/en/support/faq/detail/d82ce5274e974806a5842d1a109787b8). Binance remains only the research proxy here, so these details must be checked for whichever venue is eventually selected.
 
-For an implementation, derive quantity from the $1 maximum-loss budget, the actual structural stop distance, and a conservative allowance for fees/slippage; then check that the chosen leverage and margin mode leave liquidation safely beyond the stop. Leverage should not be used to set risk by itself. If the user means the $1 cap to be all-in, the stop's gross loss must be less than $1 to reserve room for execution costs.
+For an implementation, derive quantity from the $1 all-in loss budget, the actual structural stop distance, and estimated fees/slippage; then check that the chosen leverage and isolated margin leave liquidation safely beyond the stop. Leverage should not be used to set risk by itself. Funding inclusion in the $1 cap remains unspecified and must be shown separately if the hold crosses a funding event.
 
 The current B0 baseline uses a fixed 1.5R target. With a $0.50-$1.00 gross stop, 1.5R implies a $0.75-$1.50 gross target. The user's $5-$10 gross target would instead be 5R-20R across the reported ranges. That is a different exit model and should be evaluated as a separate, costed experiment; do not widen B0 targets or change sizing solely to match these dollar goals. The retained v16 backtests have zero completed trades and insufficient history, so the project has no evidence yet that either target model is profitable.
 
@@ -53,15 +55,15 @@ The user prefers TP/SL-only exits with no finite holding-time cap. That matches 
 
 ## Provisional research risk and holding time
 
-The strategy's existing simulation defaults are $10,000 starting capital, 0.25% risk per trade ($25 initial risk at that notional), and a 1x leverage backtest. The project plan proposes a 4R daily loss lock and 8% peak-to-trough drawdown gate; neither is implemented as an account-equity control. These are provisional research settings, not the user's account settings. The user's $1 per-trade loss cap is recorded, but its fee basis and relationship to account equity are unresolved; daily loss and maximum drawdown remain unknown.
+The strategy's existing simulation defaults are $10,000 starting capital, 0.25% risk per trade ($25 initial risk at that notional), and a 1x leverage backtest. The project plan proposes a 4R daily loss lock and 8% peak-to-trough drawdown gate; neither is implemented as an account-equity control. These are provisional research settings, not the user's account settings. The user's $1 loss cap is confirmed as including fees and slippage, but funding treatment and relationship to account equity are unresolved. The user explicitly left daily loss and maximum drawdown unset; do not substitute the research proposals for personal limits.
 
 The user has chosen no time-based exit, rather than a finite maximum scalp duration. The strategy has no timed exit, and execution timeframes do not determine holding time. Keep 5m execution / 15m completed bias and 15m execution / 1h completed bias as separate profiles; record actual trade durations once a valid costed ledger exists. Do not add a time exit until a reducing-close behavior is verified and the alternative is separately evaluated.
 
 ## Decisions still needed from the user
 
-- Confirm the exact leverage and margin mode used on each position; the user varies leverage from 20x to 50x.
-- Confirm whether the $1 loss cap and target above $5 are gross or net of commission, spread, slippage and funding.
-- Provide account equity and acceptable daily loss and maximum drawdown limits; posted margin does not establish account-level risk.
+- The user selected Binance as research-only; no actual execution venue or account fee rate is selected.
+- Funding inclusion in the $1 loss cap and the target's net/gross basis remain unspecified.
+- Personal daily loss and drawdown limits are intentionally unset; account equity was not supplied. Do not infer account-level limits from posted margin.
 
 The actual execution venue and account-level maker/taker fee remain unconfirmed. The user chose Binance for research and asked to leave account fee rates unknown; that is recorded, and the fee remains a deployment blocker.
 
