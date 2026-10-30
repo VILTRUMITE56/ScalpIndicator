@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "manifest_id": "btc-perp-contract-risk-p1-2026-10-30",
-  "generated_at_utc": "2026-10-30T16:28:22.646Z",
+  "generated_at_utc": "2026-10-30T16:44:32.520Z",
   "policy_id": "BTC-PERP-RISK-OPS-P1",
   "parent_commit": "ca2e55001d9c50a80878a8903ca9a79c1f7f184d",
-  "status": "paper_reference_fixtures_verified_live_filters_fills_and_personal_limits_unconfirmed",
+  "status": "paper_reference_fixtures_verified_live_filters_and_fills_unconfirmed_user_locks_disabled",
   "hash_normalization": "UTF-8 text; CRLF normalized to LF before SHA-256",
   "verification": {
     "command": "node research/risk_controls_reference.mjs",
@@ -109,17 +109,19 @@
     "funding_reserve": null,
     "daily_loss_limit": null,
     "max_drawdown_fraction": null,
+    "personal_locks_status": "DISABLED_BY_USER_REQUEST; do not substitute project research values or imply a personal lock is active",
+    "personal_locks_enabled": false,
     "observed_user_exchange_fills": "not supplied"
   },
   "acceptance": {
     "rounding_and_formula_engine": "PASS_ON_SYNTHETIC_FIXTURES",
     "live_binance_filter_snapshot": "OPEN_REQUIRED",
     "realized_user_fill_reconciliation": "OPEN_NO_OBSERVED_USER_OR_EXCHANGE_FILL_DATA; reference ledger reconciles supplied fill events",
-    "user_daily_drawdown_limits": "OPEN_UNSET_BY_USER; parameterized controls are fixture-tested but remain disabled without user values",
+    "user_daily_drawdown_limits": "APPROVED_DISABLED_BY_USER; parameterized controls are fixture-tested but personal locks are not active",
     "native_account_equity_locks": "NOT_AVAILABLE_IN_DOCUMENTED_STRATEGY_FIELDS",
     "risk_lock_fixtures": "PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_AND_LOCK_ACTIONS",
     "hold_policy_registration": "PASS_TP_SL_ONLY_VERSIONED_NO_TIME_EXIT_ADDED",
-    "issue_8_close": "BLOCKED_LIVE_FILTERS_OBSERVED_FILL_RECONCILIATION_AND_USER_LOCK_VALUES",
+    "issue_8_close": "BLOCKED_LIVE_FILTERS_AND_OBSERVED_FILL_COST_RECONCILIATION",
     "profitability": "NOT_EVALUATED; no claim"
   },
   "limitations": [
@@ -135,11 +137,11 @@
   "artifacts": [
     {
       "path": "research/specs/contract_risk_controls_p1.json",
-      "sha256": "e662941b9e7d72d1477e8c233e6fff407061a72bef4f72b72a918083d1751b50"
+      "sha256": "75f327bfe888e50f99c3e0cff3ec2be7142bf4a5f30bd3c291d177ab1daad826"
     },
     {
       "path": "research/risk_controls_reference.mjs",
-      "sha256": "541eeadb3c414ab54f0ec440e18f741b7e58cb726c413e4ff00c5e47b40f9717"
+      "sha256": "f1570037516cccd831f8adc80362bccb91b6474aded0025bb076e24d7d1d3e4b"
     },
     {
       "path": "research/capture_binance_contract_snapshot.mjs",
@@ -147,23 +149,23 @@
     },
     {
       "path": "research/build_contract_risk_manifest.mjs",
-      "sha256": "fc3bec8b0d03a08b10b16742e76c9bc9b91f34ac7131f20c675439d9aa934932"
+      "sha256": "9d31a4c8bee3670ca67c7c121587177a8eaa81ea6aaa0bc6f64dc2f56682a004"
     },
     {
       "path": "research/verify_contract_risk_manifest.mjs",
-      "sha256": "86f4bb3c7f489ab39b5ab17922f2393ff4fa631b895a8a37e7e9a3a5eef1cdf2"
+      "sha256": "b2b32d2ae33f08e26faac9a5711db833232231548316e5582a8152ef9479dfab"
     },
     {
       "path": "research/README_CANDIDATE_P1.md",
-      "sha256": "8050ffaaa7181d82fe455aa8ff41c1c1ab040a699a27f6b5f41a3f51658b6e39"
+      "sha256": "ba02f8bc0e4bc9f924a6de6a0e4ea7616c6fbb2f5920f010b7717fac787e82d9"
     },
     {
       "path": "research/reports/contract_risk_report.json",
-      "sha256": "1e3afd9b1a5e51aebffccecea97a32bff2f5202bbfcfaa112eef20d377c180f2"
+      "sha256": "4515ebaa1633e5de0bc0cc81644563ac71906853b5ae79eaa8c8bf4752de0364"
     },
     {
       "path": "research/reports/contract_risk_report.md",
-      "sha256": "47881fdc9134653026e3296a064c4dc4bef1678e9d3a0ee5a3c2211b15822fbe"
+      "sha256": "9ddf45e9adf5a42b73d5cbda5ca6daa2b07aca921957b12e30e8703a54f34697"
     },
     {
       "path": "research/reports/contract_risk_fixtures.csv",

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "policy_id": "BTC-PERP-RISK-OPS-P1",
-  "status": "paper_reference_only_live_venue_and_account_limits_unconfirmed",
+  "status": "paper_reference_only_live_venue_unconfirmed_personal_locks_disabled_by_user_choice",
   "parent_contract": "BTC-PERP-PULLBACK-P1",
   "signal_configurations_consumed": 0,
   "research_proxy": {
@@ -67,7 +67,9 @@
   "user_account_locks": {
     "daily_loss_limit_quote": null,
     "maximum_drawdown_fraction": null,
-    "status": "UNSET_BY_USER; do not substitute project research values",
+    "personal_locks_enabled": false,
+    "status": "DISABLED_BY_USER_REQUEST; do not substitute project research values or imply a personal lock is active",
+    "user_choice": "The user explicitly chose to leave personal daily-loss and drawdown thresholds unset.",
     "daily_reset": "UTC day boundary; establish the new day baseline from current marked equity including open unrealized PnL, then measure subsequent equity changes",
     "drawdown_reset": "latched until explicit operator reset while flat with no pending entry; never silently reset at a date boundary",
     "lock_actions": "block new entries; request cancellation of a pending entry but retain its identity through terminal status; preserve every active protective exit; do not automatically flatten by an unverified primitive"
@@ -97,7 +99,7 @@
     "The user selected Binance only as a research proxy; no execution venue is confirmed.",
     "Account fee rates and measured spread/slippage are unavailable.",
     "Funding inclusion in the per-trade $1 cap is unspecified.",
-    "Personal daily-loss and drawdown limits are intentionally unset by the user.",
+    "Personal daily-loss and drawdown locks are intentionally disabled by user choice; do not present them as active account protection.",
     "TakeProfit strategy API documents available cash/position/instrument minimums, not account-level marked equity or daily PnL controls.",
     "A stop-market order cannot guarantee the $1 cap through price gaps, liquidation or exchange failure."
   ]

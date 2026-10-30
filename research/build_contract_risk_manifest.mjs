@@ -31,7 +31,7 @@ const manifest = {
   generated_at_utc: new Date().toISOString(),
   policy_id: contract.policy_id,
   parent_commit: 'ca2e55001d9c50a80878a8903ca9a79c1f7f184d',
-  status: 'paper_reference_fixtures_verified_live_filters_fills_and_personal_limits_unconfirmed',
+  status: 'paper_reference_fixtures_verified_live_filters_and_fills_unconfirmed_user_locks_disabled',
   hash_normalization: 'UTF-8 text; CRLF normalized to LF before SHA-256',
   verification: {
     command: 'node research/risk_controls_reference.mjs',
@@ -47,6 +47,8 @@ const manifest = {
     funding_reserve: contract.per_trade_risk.funding_reserve_quote,
     daily_loss_limit: contract.user_account_locks.daily_loss_limit_quote,
     max_drawdown_fraction: contract.user_account_locks.maximum_drawdown_fraction,
+    personal_locks_status: contract.user_account_locks.status,
+    personal_locks_enabled: contract.user_account_locks.personal_locks_enabled,
     observed_user_exchange_fills: 'not supplied',
   },
   acceptance: report.acceptance_status,

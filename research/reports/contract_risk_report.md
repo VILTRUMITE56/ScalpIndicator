@@ -1,8 +1,8 @@
 # Contract rounding, fill risk and loss-control reference
 
-Generated: 2026-10-30T16:27:46.738Z
+Generated: 2026-10-30T16:44:22.166Z
 
-Status: PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_FILTERS_AND_PERSONAL_LOCKS_UNCONFIRMED. This is an offline paper/reference model; it is not connected to a trading account.
+Status: PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_UNCONFIRMED_PERSONAL_LOCKS_DISABLED_BY_USER_CHOICE. This is an offline paper/reference model; it is not connected to a trading account.
 
 ## What is implemented
 
@@ -18,7 +18,7 @@ Status: PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_FILTERS_AND_PERSONAL_LOCKS_UNCO
 - Synthetic deterministic fixtures: 22/22 pass. Fixture filter values are test data only.
 - Live Binance BTCUSDT filter snapshot: not captured. The official public exchangeInfo endpoint returned HTTP 451 from this environment. The capture script is included and writes a snapshot only after validating a successful live response.
 - Account maker/taker fees, user fills, historical slippage/spread and funding reserve remain unavailable. Sizing is blocked unless fees, slippage and funding reserve are explicitly supplied.
-- Personal daily-loss/drawdown limits remain unset by user instruction. The generic fixture thresholds are synthetic test inputs, not suggested personal limits.
+- Personal daily-loss/drawdown limits remain intentionally disabled by the user. Generic fixture thresholds test control behavior only; they are not personal limits, and no personal lock is active.
 - The $1 stop budget is an intended model cap. A gap, liquidation, exchange failure or fill race can exceed it; existing protection is kept and no unverified flatten order is invented.
 - TakeProfit strategy API exposes strategy cash, position information and instrument min order size/value. It does not document account equity, daily realized PnL, peak equity, exact BTCUSDT tick/lot filters or user margin tier as script fields.
 
@@ -26,7 +26,7 @@ Status: PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_FILTERS_AND_PERSONAL_LOCKS_UNCO
 
 - Reference rounding and post-rounding risk eligibility: fixture-verified with synthetic venue filters; current venue rules are still unverified.
 - Fill reconciliation: paper ledger behavior is fixture-verified; no user/exchange fill records were supplied.
-- Daily/drawdown policy: generic lock and reset behavior is fixture-verified; the user deliberately left personal thresholds unset, so account locks are disabled.
+- Daily/drawdown policy: the user-approved choice to leave personal thresholds unset is recorded; generic lock and reset behavior is fixture-verified, while personal account locks remain disabled.
 - Holding policy: TP/SL-only with no maximum hold is recorded as BTC-PERP-EXIT-TP-SL-ONLY-1; changes require a separate experiment.
 - Profitability: not evaluated by these engineering fixtures.
 
@@ -68,4 +68,4 @@ The capture command requires access to the public Binance USD-M exchangeInfo end
 
 ## Decision
 
-The reference rounding, fill, equity and lock behavior is testable and the synthetic fixtures pass. Issue #8 cannot be fully closed yet: current Binance filters, account fill/cost data, and user-approved personal daily/drawdown thresholds are absent. Keep the live risk/venue items open; do not enable live sizing from these fixtures.
+The reference rounding, fill, equity and lock behavior is testable and the synthetic fixtures pass. Issue #8 cannot be fully closed yet: current Binance filters and observed account fill/cost data are absent. The user-approved choice to keep personal daily/drawdown locks disabled is recorded; do not present those controls as active protection. Do not enable live sizing from these fixtures.

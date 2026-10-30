@@ -18,6 +18,9 @@ assert.equal(report.all_fixtures_pass, true, 'report records passing fixtures');
 assert.equal(contract.live_contract_snapshot.status, 'NOT_CAPTURED_HTTP_451', 'live filter absence remains explicit');
 assert.equal(contract.user_account_locks.daily_loss_limit_quote, null, 'unset daily limit is not inferred');
 assert.equal(contract.user_account_locks.maximum_drawdown_fraction, null, 'unset drawdown is not inferred');
+assert.equal(contract.user_account_locks.personal_locks_enabled, false, 'personal locks remain disabled by user choice');
+assert.ok(contract.user_account_locks.status.startsWith('DISABLED_BY_USER_REQUEST'), 'user lock decision is explicit');
+assert.equal(manifest.unresolved_inputs.personal_locks_enabled, false, 'disabled personal locks are recorded as a deliberate policy, not missing configuration');
 
 const seen = new Set();
 for (const artifact of manifest.artifacts) {
@@ -35,6 +38,6 @@ const fixtureLines = fs.readFileSync(path.join(root, 'research/reports/contract_
 assert.equal(fixtureLines.length - 1, report.fixture_count, 'CSV fixture rows match report fixture count');
 assert.ok(manifest.artifacts.some(item => item.path === 'research/reports/contract_risk_fixtures.csv'), 'fixture CSV is included');
 assert.ok(manifest.artifacts.some(item => item.path === 'research/reports/contract_risk_report.md'), 'human-readable report is included');
-assert.equal(manifest.acceptance.issue_8_close, 'BLOCKED_LIVE_FILTERS_OBSERVED_FILL_RECONCILIATION_AND_USER_LOCK_VALUES', 'manifest does not imply issue completion');
+assert.equal(manifest.acceptance.issue_8_close, 'BLOCKED_LIVE_FILTERS_AND_OBSERVED_FILL_COST_RECONCILIATION', 'manifest does not imply issue completion');
 
 console.log(JSON.stringify({ manifest: 'research/CONTRACT_RISK_MANIFEST.json', verified_artifacts: seen.size, fixtures: report.fixture_count, all_hashes_match: true, issue_8_close: manifest.acceptance.issue_8_close }, null, 2));
