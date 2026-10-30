@@ -1,0 +1,436 @@
+# indie:lang_version = 5
+from indie import strategy, MainStrategyContext, param, plot, color, Optional, MutSeries, MutSeriesF
+from indie.algorithms import Ema, Atr
+from indie.strategies import Commission, commission_type, order_side, Order, order_status, intrabar_order_filter
+from math import nan
+
+@strategy('BTC Perp Pullback Research v4', overlay_main_pane=True,
+          initial_capital=10000.0,
+          commission=Commission(0.0005, commission_type.PERCENT),
+          intrabar_order_filter=intrabar_order_filter.NO_FILTER)
+@param.float('risk_fraction', default=0.0025, min=0.0001, max=0.01)
+@param.float('cost_fraction', default=0.0015, min=0.0001, max=0.01)
+@param.float('quantity_step', default=0.001, min=0.00001, max=10.0)
+@plot.line('Entry EMA 20', color=color.AQUA)
+@plot.line('Entry EMA 50', color=color.ORANGE)
+@plot.line('HTF EMA 20', color=color.BLUE)
+@plot.line('HTF EMA 50', color=color.YELLOW)
+class Main(MainStrategyContext):
+    def __init__(self, risk_fraction, cost_fraction, quantity_step):
+        self._risk_fraction = risk_fraction
+        self._cost_fraction = cost_fraction
+        self._quantity_step = quantity_step
+        self._pending: Optional[Order] = None
+        self._pending_bar = -1
+        self._cancel_requested = False
+        self._last_exit_bar = -100
+        self._last_signal_bar = -100
+        self._long_pullback_armed = False
+        self._short_pullback_armed = False
+        self._long_pullback_bar = -1
+        self._short_pullback_bar = -1
+        self._long_pullback_source_bar = -1
+        self._short_pullback_source_bar = -1
+        self._long_used_touch_bar = -1
+        self._short_used_touch_bar = -1
+        self._long_pullback_extreme = nan
+        self._short_pullback_extreme = nan
+        self._long_setup_atr = nan
+        self._short_setup_atr = nan
+        self._long_invalidation = nan
+        self._short_invalidation = nan
+        self._long_stop_reference = nan
+        self._short_stop_reference = nan
+        self._long_wait_recovery = False
+        self._short_wait_recovery = False
+        self._long_recovery_bar = -1
+        self._short_recovery_bar = -1
+        self._was_in_position = False
+        self._last_htf_boundary_bar = -1
+        self._last_htf_boundary_complete = False
+
+    def calc(self):
+        entry_fast = Ema.new(self.close, 20)
+        entry_slow = Ema.new(self.close, 50)
+        atr = Atr.new(14)
+        htf_fast = MutSeriesF.new(init=nan)
+        htf_slow = MutSeriesF.new(init=nan)
+        htf_close = MutSeriesF.new(init=nan)
+        htf_slow_lag3 = MutSeriesF.new(init=nan)
+        htf_slow_hist1 = MutSeriesF.new(init=nan)
+        htf_slow_hist2 = MutSeriesF.new(init=nan)
+        htf_slow_hist3 = MutSeriesF.new(init=nan)
+        htf_count = MutSeries[int].new(init=0)
+
+        time_delta = 0.0
+        if self.bar_index > 0:
+            time_delta = self.time[0] - self.time[1]
+        execution_seconds = self.time_frame.to_seconds()
+        higher_seconds = 0
+        bars_per_higher = 0
+        if execution_seconds == 300:
+            higher_seconds = 900
+            bars_per_higher = 3
+        elif execution_seconds == 900:
+            higher_seconds = 3600
+            bars_per_higher = 4
+
+        profile_valid = execution_seconds == 300 or execution_seconds == 900
+        data_gap = profile_valid and self.bar_index > 0 and time_delta != execution_seconds
+        at_higher_boundary = False
+        complete_higher_bar = False
+        current_bucket = 0
+        previous_bucket = 0
+        if profile_valid and self.time[0] > 0.0 and self.time[1] > 0.0:
+            current_bucket = int(self.time[0] / higher_seconds)
+            previous_bucket = int(self.time[1] / higher_seconds)
+        if profile_valid and self.bar_index >= bars_per_higher:
+            at_higher_boundary = current_bucket != previous_bucket
+            if at_higher_boundary and current_bucket == previous_bucket + 1:
+                if execution_seconds == 300:
+                    complete_higher_bar = self.time[1] > 0.0 and self.time[2] > 0.0 and self.time[3] > 0.0 and int(self.time[2]) == int(self.time[1]) - 300 and int(self.time[3]) == int(self.time[2]) - 300
+                elif execution_seconds == 900:
+                    complete_higher_bar = (self.time[1] > 0.0 and self.time[2] > 0.0 and self.time[3] > 0.0 and self.time[4] > 0.0 and
+                                            int(self.time[2]) == int(self.time[1]) - 900 and
+                                            int(self.time[3]) == int(self.time[2]) - 900 and
+                                            int(self.time[4]) == int(self.time[3]) - 900)
+
+        boundary_event = at_higher_boundary and self.is_new_bar
+        if profile_valid and boundary_event:
+            self._last_htf_boundary_bar = self.bar_index
+            self._last_htf_boundary_complete = complete_higher_bar
+
+        if not profile_valid or data_gap or (at_higher_boundary and not complete_higher_bar):
+            htf_fast[0] = nan
+            htf_slow[0] = nan
+            htf_close[0] = nan
+            htf_slow_lag3[0] = nan
+            htf_slow_hist1[0] = nan
+            htf_slow_hist2[0] = nan
+            htf_slow_hist3[0] = nan
+            htf_count[0] = 0
+        elif at_higher_boundary:
+            if htf_count[1] == 0:
+                htf_fast[0] = self.close[1]
+                htf_slow[0] = self.close[1]
+                htf_close[0] = self.close[1]
+                htf_slow_lag3[0] = nan
+                htf_slow_hist1[0] = nan
+                htf_slow_hist2[0] = nan
+                htf_slow_hist3[0] = nan
+                htf_count[0] = 1
+            else:
+                htf_fast[0] = htf_fast[1] + (2.0 / 21.0) * (self.close[1] - htf_fast[1])
+                htf_slow[0] = htf_slow[1] + (2.0 / 51.0) * (self.close[1] - htf_slow[1])
+                htf_close[0] = self.close[1]
+                htf_slow_lag3[0] = htf_slow_hist2[1]
+                htf_slow_hist3[0] = htf_slow_hist2[1]
+                htf_slow_hist2[0] = htf_slow_hist1[1]
+                htf_slow_hist1[0] = htf_slow[1]
+                htf_count[0] = htf_count[1] + 1
+
+        position_size = self.trading.position.size
+        if position_size != 0 and not self._was_in_position:
+            self._was_in_position = True
+        if position_size == 0 and self._was_in_position:
+            self._was_in_position = False
+            self._last_exit_bar = self.bar_index
+
+        pending_was_resolved = False
+        if self._pending is not None:
+            pending_status = self._pending.value().status
+            if pending_status == order_status.FILLED:
+                if position_size == 0:
+                    self._last_exit_bar = self.bar_index
+                self._pending = None
+                self._cancel_requested = False
+                pending_was_resolved = True
+            elif pending_status == order_status.CANCELED or pending_status == order_status.REJECTED or pending_status == order_status.PARTIALLY_FILLED_CLOSED:
+                self._pending = None
+                self._cancel_requested = False
+                pending_was_resolved = True
+            else:
+                if self.bar_index > self._pending_bar and not self._cancel_requested:
+                    self.trading.cancel_order(self._pending.value().id)
+                    self._cancel_requested = True
+
+        htf_ready = profile_valid and htf_count[0] >= 250
+        if self.is_new_bar and (not profile_valid or data_gap or (at_higher_boundary and not complete_higher_bar)):
+            self._long_pullback_armed = False
+            self._short_pullback_armed = False
+            self._long_pullback_bar = -1
+            self._short_pullback_bar = -1
+            self._long_pullback_source_bar = -1
+            self._short_pullback_source_bar = -1
+            self._long_used_touch_bar = self.bar_index - 1
+            self._short_used_touch_bar = self.bar_index - 1
+            self._long_pullback_extreme = nan
+            self._short_pullback_extreme = nan
+            self._long_setup_atr = nan
+            self._short_setup_atr = nan
+            self._long_invalidation = nan
+            self._short_invalidation = nan
+            self._long_stop_reference = nan
+            self._short_stop_reference = nan
+            self._long_wait_recovery = True
+            self._short_wait_recovery = True
+            self._long_recovery_bar = -1
+            self._short_recovery_bar = -1
+
+        if self.is_new_bar and htf_ready and self.bar_index > 55:
+            long_signal = False
+            short_signal = False
+            long_anchor = nan
+            short_anchor = nan
+            long_setup_atr = nan
+            short_setup_atr = nan
+            touched_long = False
+            touched_short = False
+            long_touch_source_bar = -1
+            short_touch_source_bar = -1
+            long_touch_index = -1
+            short_touch_index = -1
+            long_touch_atr = nan
+            short_touch_atr = nan
+            past_closes_long = True
+            past_closes_short = True
+            for i in range(2, 5):
+                if self.low[i] <= entry_fast[i] and self.high[i] >= entry_fast[i]:
+                    touched_long = True
+                    if self.bar_index - i > long_touch_source_bar:
+                        long_touch_source_bar = self.bar_index - i
+                        long_touch_index = i
+                        long_touch_atr = atr[i]
+                if self.low[i] <= entry_fast[i] and self.high[i] >= entry_fast[i]:
+                    touched_short = True
+                    if self.bar_index - i > short_touch_source_bar:
+                        short_touch_source_bar = self.bar_index - i
+                        short_touch_index = i
+                        short_touch_atr = atr[i]
+                if self.close[i] <= entry_slow[i]:
+                    past_closes_long = False
+                if self.close[i] >= entry_slow[i]:
+                    past_closes_short = False
+
+            long_closes_hold = False
+            short_closes_hold = False
+            if long_touch_index == 2:
+                long_closes_hold = (self.close[2] > entry_slow[2] and self.close[3] > entry_slow[3] and self.close[4] > entry_slow[4])
+            elif long_touch_index == 3:
+                long_closes_hold = (self.close[3] > entry_slow[3] and self.close[4] > entry_slow[4] and self.close[5] > entry_slow[5])
+            elif long_touch_index == 4:
+                long_closes_hold = (self.close[4] > entry_slow[4] and self.close[5] > entry_slow[5] and self.close[6] > entry_slow[6])
+            if short_touch_index == 2:
+                short_closes_hold = (self.close[2] < entry_slow[2] and self.close[3] < entry_slow[3] and self.close[4] < entry_slow[4])
+            elif short_touch_index == 3:
+                short_closes_hold = (self.close[3] < entry_slow[3] and self.close[4] < entry_slow[4] and self.close[5] < entry_slow[5])
+            elif short_touch_index == 4:
+                short_closes_hold = (self.close[4] < entry_slow[4] and self.close[5] < entry_slow[5] and self.close[6] < entry_slow[6])
+
+            long_bias = htf_close[0] > htf_slow[0] and htf_fast[0] > htf_slow[0] and htf_slow[0] > htf_slow_lag3[0]
+            short_bias = htf_close[0] < htf_slow[0] and htf_fast[0] < htf_slow[0] and htf_slow[0] < htf_slow_lag3[0]
+            if not long_bias:
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if not short_bias:
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+            if self._long_pullback_armed and self.bar_index - 1 - self._long_pullback_source_bar > 6:
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if self._short_pullback_armed and self.bar_index - 1 - self._short_pullback_source_bar > 6:
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+            long_invalidated = self._long_pullback_armed and (self.close[1] <= entry_slow[1] or self.low[1] <= self._long_invalidation)
+            short_invalidated = self._short_pullback_armed and (self.close[1] >= entry_slow[1] or self.high[1] >= self._short_invalidation)
+            if long_invalidated:
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if short_invalidated:
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+            if self._long_wait_recovery and self.bar_index - 1 > self._long_used_touch_bar and self.close[1] > entry_fast[1]:
+                self._long_wait_recovery = False
+                self._long_recovery_bar = self.bar_index - 1
+            if self._short_wait_recovery and self.bar_index - 1 > self._short_used_touch_bar and self.close[1] < entry_fast[1]:
+                self._short_wait_recovery = False
+                self._short_recovery_bar = self.bar_index - 1
+            if long_bias and touched_long and long_closes_hold and not self._long_wait_recovery and not self._long_pullback_armed and long_touch_source_bar > self._long_used_touch_bar and long_touch_source_bar > self._long_recovery_bar:
+                self._long_pullback_armed = True
+                self._long_pullback_bar = self.bar_index
+                self._long_pullback_source_bar = long_touch_source_bar
+                anchor = self.low[long_touch_index]
+                previous_index = long_touch_index + 1
+                if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - previous_index:
+                    anchor = min(anchor, self.low[previous_index])
+                previous_index = long_touch_index + 2
+                if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - previous_index:
+                    anchor = min(anchor, self.low[previous_index])
+                self._long_pullback_extreme = anchor
+                self._long_setup_atr = long_touch_atr
+                self._long_invalidation = anchor - 0.10 * self._long_setup_atr
+                self._long_stop_reference = anchor - 0.15 * self._long_setup_atr
+            if short_bias and touched_short and short_closes_hold and not self._short_wait_recovery and not self._short_pullback_armed and short_touch_source_bar > self._short_used_touch_bar and short_touch_source_bar > self._short_recovery_bar:
+                self._short_pullback_armed = True
+                self._short_pullback_bar = self.bar_index
+                self._short_pullback_source_bar = short_touch_source_bar
+                anchor = self.high[short_touch_index]
+                previous_index = short_touch_index + 1
+                if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - previous_index:
+                    anchor = max(anchor, self.high[previous_index])
+                previous_index = short_touch_index + 2
+                if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - previous_index:
+                    anchor = max(anchor, self.high[previous_index])
+                self._short_pullback_extreme = anchor
+                self._short_setup_atr = short_touch_atr
+                self._short_invalidation = anchor + 0.10 * self._short_setup_atr
+                self._short_stop_reference = anchor + 0.15 * self._short_setup_atr
+            if self._long_pullback_armed and (self.close[1] <= entry_slow[1] or self.low[1] <= self._long_invalidation):
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if self._short_pullback_armed and (self.close[1] >= entry_slow[1] or self.high[1] >= self._short_invalidation):
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+            long_trigger = self.close[1] > entry_fast[1] and self.close[1] > entry_slow[1] and self.close[1] > self.open[1] and self.close[1] > self.high[2]
+            short_trigger = self.close[1] < entry_fast[1] and self.close[1] < entry_slow[1] and self.close[1] < self.open[1] and self.close[1] < self.low[2]
+            long_signal = (self._long_pullback_armed and long_trigger and
+                           self.close[1] > entry_slow[1] and self.low[1] > self._long_invalidation and
+                           self.bar_index - 1 - self._long_pullback_source_bar >= 1 and
+                           self.bar_index - 1 - self._long_pullback_source_bar <= 6)
+            short_signal = (self._short_pullback_armed and short_trigger and
+                            self.close[1] < entry_slow[1] and self.high[1] < self._short_invalidation and
+                            self.bar_index - 1 - self._short_pullback_source_bar >= 1 and
+                            self.bar_index - 1 - self._short_pullback_source_bar <= 6)
+            long_anchor = self._long_stop_reference
+            short_anchor = self._short_stop_reference
+            long_setup_atr = self._long_setup_atr
+            short_setup_atr = self._short_setup_atr
+            if long_signal:
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if short_signal:
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+
+            if (long_signal or short_signal) and position_size == 0 and self._pending is None and not pending_was_resolved and self.bar_index - self._last_exit_bar > 3 and self.bar_index - self._last_signal_bar > 3:
+                reference = self.open[0]
+                worst_entry = reference * 1.0002 if long_signal else reference * 0.9998
+                atr_value = long_setup_atr if long_signal else short_setup_atr
+                stop_reference = long_anchor if long_signal else short_anchor
+                if reference > 0.0 and atr_value > 0.0 and self.trading.cash > 0.0:
+                    structure_valid = False
+                    distance = 0.0
+                    if long_signal and stop_reference < worst_entry:
+                        structure_valid = True
+                        distance = max(worst_entry - stop_reference, atr_value)
+                    if short_signal and stop_reference > worst_entry:
+                        structure_valid = True
+                        distance = max(stop_reference - worst_entry, atr_value)
+                    stop_price = worst_entry - distance if long_signal else worst_entry + distance
+                    target_price = worst_entry + 1.5 * distance if long_signal else worst_entry - 1.5 * distance
+                    cost_per_btc = worst_entry * self._cost_fraction
+                    if structure_valid and distance <= 2.5 * atr_value and cost_per_btc / distance <= 0.2:
+                        risk_size = self.trading.cash * self._risk_fraction / (distance + cost_per_btc)
+                        cash_size = self.trading.cash / (worst_entry * 1.001)
+                        raw_size = min(risk_size, cash_size)
+                        if raw_size > 0.0:
+                            size = int(raw_size / self._quantity_step) * self._quantity_step
+                            instrument_info = self.trading.instrument_info
+                            if size >= instrument_info.min_order_size and size * worst_entry >= instrument_info.min_order_value:
+                                if long_signal:
+                                    self._pending = (self.trading.place_order(order_side.BUY, size=size)
+                                                     .limit(price=worst_entry)
+                                                     .stop_loss(stop=stop_price)
+                                                     .take_profit(stop=target_price)
+                                                     .submit())
+                                else:
+                                    self._pending = (self.trading.place_order(order_side.SELL, size=size)
+                                                     .limit(price=worst_entry)
+                                                     .stop_loss(stop=stop_price)
+                                                     .take_profit(stop=target_price)
+                                                     .submit())
+                                self._pending_bar = self.bar_index
+                                self._cancel_requested = False
+                                self._last_signal_bar = self.bar_index
+
+        return entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0]

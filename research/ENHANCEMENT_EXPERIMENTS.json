@@ -1,0 +1,159 @@
+{
+  "schema_version": 1,
+  "status": "diagnostic_b0_latest_windows_completed_feature_variants_not_executed",
+  "prepared_date_manila": "2026-10-30",
+  "current_code_implementation": {
+    "status": "b0_lifecycle_updated_latest_window_backtest_no_fills_indicator_diagnostic_unsaved",
+    "updated_date_manila": "2026-10-30",
+    "strategy_working_copy_version": 16,
+    "strategy_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+    "indicator_working_copy_version": 24,
+    "indicator_platform_version": 19,
+    "indicator_sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+    "compile_validated": true,
+    "runtime_quick_completed": true,
+    "runtime_quick_bars": 5000,
+    "diagnostic_edit_saved_to_private_platform": false,
+    "latest_private_platform_version": 19,
+    "diagnostic_edit_save_blocker": "Working copy v24 is based on private platform v16; latest is v19, and TakeProfit refused to load v19 while the current working copy had unsaved edits.",
+    "runtime_replay_completed": false,
+    "new_backtest_completed": true,
+    "backtest_report": "results/v4/backtests.json",
+    "backtest_reports": ["results/v3/backtests.json", "results/v4/backtests.json"],
+    "backtest_result": "Initial and refreshed 5m and 15m strategy v16 runs had zero completed trades; all report insufficient history. The refreshed runs end 2026-10-30 10:30 UTC.",
+    "chart_diagnostic_snapshot": {
+      "source": "user-provided TakeProfit chart screenshot",
+      "timeframe_minutes": 5,
+      "completed_higher_timeframe_bars": 1666,
+      "trend_pullback_trigger_counts": [3502, 254, 101],
+      "accepted_stop_rejected_cost_rejected_counts": [0, 10, 91],
+      "cost_rejection_share_of_trigger_candidates": 0.900990099,
+      "stop_rejection_share_of_trigger_candidates": 0.099009901,
+      "note": "Chart-model counters; screenshot date window is not known and does not establish strategy fills."
+    },
+    "candidate_parity_audited": false
+  },
+  "objective": "Improve BTC perpetual signal reliability and net expectancy through correctness repairs and bounded comparative research.",
+  "report": "docs/SCALPING_ENHANCEMENT_REPORT.md",
+  "implementation_plan": "docs/SCALPING_IMPLEMENTATION_PLAN.md",
+  "archived_reference": {
+    "label": "A0",
+    "strategy": {
+      "path": "indie/btc_pullback_strategy.indie",
+      "working_copy_version": 14,
+      "sha256": "e8a41a4da6a8683ac1a6ff719ff3e43bb3ecf00b3e0822262638f6ab2c9866ae"
+    },
+    "indicator": {
+      "path": "indie/btc_pullback_indicator.indie",
+      "working_copy_version": 19,
+      "platform_version": 13,
+      "platform_uid": "b0WWgU3721kqgpvBweE24",
+      "sha256": "48fa17fd93c2428f4b7c05fead107be3d5afd5164b801e717eac90e237f38cbe"
+    }
+  },
+  "profiles": [
+    {
+      "execution_minutes": 5,
+      "bias_minutes": 15
+    },
+    {
+      "execution_minutes": 15,
+      "bias_minutes": 60
+    }
+  ],
+  "assumptions": {
+    "research_venue": "Binance USD-M",
+    "symbol": "BTCUSDT perpetual",
+    "risk_fraction": 0.0025,
+    "target_r": 1.5,
+    "cost_gate_round_trip_fraction": 0.0015,
+    "commission_fraction_per_execution": 0.0005,
+    "max_cost_r": 0.2,
+    "venue_costs_verified": false,
+    "thresholds": "Experimental starting values; not validated live settings."
+  },
+  "prerequisites": [
+    "Resolve report findings F1-F9 as applicable before performance selection.",
+    "Audit complete history and scoring windows.",
+    "Reconcile candidate events and execution costs.",
+    "Freeze chronological folds and untouched or prospective final evaluation."
+  ],
+  "stage_a": [
+    {
+      "id": "B0",
+      "family": "ema_pullback",
+      "addition": "none",
+      "rule_contract": "Implementation plan section 2"
+    },
+    {
+      "id": "B1",
+      "family": "ema_pullback",
+      "addition": "adx",
+      "adx_length": 14,
+      "di_length": 14,
+      "min_closed_adx": 20
+    },
+    {
+      "id": "B2",
+      "family": "ema_pullback",
+      "addition": "daily_vwap",
+      "source": "HLC3",
+      "anchor": "00:00 UTC",
+      "min_completed_anchor_bars": 6,
+      "condition": "Long closed price above VWAP; short below."
+    },
+    {
+      "id": "B3",
+      "family": "ema_pullback",
+      "addition": "relative_volume",
+      "lookback": 20,
+      "min_ratio": 1.2,
+      "denominator": "Mean of 20 completed candles before trigger candle; excludes trigger."
+    },
+    {
+      "id": "B4",
+      "family": "ema_pullback",
+      "addition": "entry_extension",
+      "max_signed_close_to_ema20_atr": 1
+    },
+    {
+      "id": "B5",
+      "family": "donchian_breakout_retest",
+      "addition": "alternative entry",
+      "channel_length": 20,
+      "retest_bars": 3,
+      "retest_tolerance_breakout_atr": 0.1,
+      "rule_contract": "Implementation plan section 5; freeze channel excluding breakout candle."
+    }
+  ],
+  "budget": {
+    "stage_a": 12,
+    "stage_b_conditional_combinations": 2,
+    "stage_c_conditional_target_alternatives": 4,
+    "stage_d_sensitivity_variants": 4,
+    "max_unique_new_configurations": 22,
+    "cost_scenarios_and_folds": "Log each run; do not select favorable costs as strategy parameters.",
+    "past_trials": "Retain every earlier version and result; this replaces unexecuted earlier grids."
+  },
+  "conditional_targets_r": [
+    1.2,
+    2
+  ],
+  "deferred": [
+    "RSI",
+    "Stochastic",
+    "MACD",
+    "Supertrend",
+    "Bollinger squeeze or reversion",
+    "Room-to-target filter",
+    "Order flow/CVD",
+    "Timed exit until reducing-close semantics verified"
+  ],
+  "final_evaluation": {
+    "previously_reviewed_windows_are_not_holdout": true,
+    "min_paper_calendar_weeks": 8,
+    "min_paper_completed_trades": 100,
+    "extend_until_sample_and_coverage_gates_met": true
+  },
+  "performance_claim": "Initial and refreshed B0 diagnostics produced no completed trades in either timeframe and had incomplete history; no accuracy or profitability estimate is available. The chart screenshot shows cost rejection dominates, but B1-B5 variants and cost sensitivities have not been tested."
+}

@@ -1,0 +1,683 @@
+{
+  "indicator_instance_id": "e089da5d-2f8b-45d6-af84-9bd27f31d138",
+  "source": {
+    "kind": "script",
+    "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+    "script_version": 4
+  },
+  "request": {
+    "exchange_code": "CXBNF8",
+    "history_selector": {
+      "date_range": {
+        "from": "2026-09-01T00:00:00Z",
+        "to": "2026-10-15T23:45:00Z"
+      }
+    },
+    "inputs": {
+      "$commission_type": "Percent",
+      "$commission_value": 0.0005,
+      "$initial_capital": 10000,
+      "$intrabar_order_filter": "No Filter",
+      "$leverage": 1,
+      "$market_order_price": "Market Price",
+      "$risk_free_rate": 0.02,
+      "bias_fast_len": 80,
+      "bias_slow_len": 200,
+      "cost_fraction": 0.0005,
+      "risk_fraction": 0.0025
+    },
+    "plot_ids": [],
+    "runtime": "auto",
+    "session_types": [],
+    "ticker": "BTC/USDT.P",
+    "timeframe": {
+      "count": 15,
+      "unit": "MINUTE"
+    }
+  },
+  "captured_at": "2026-10-29T18:08:51.977943Z",
+  "last_bar_at": "2026-10-19T08:15:00Z",
+  "expires_at": "2026-10-29T18:23:50Z",
+  "is_history_depth_sufficient": false,
+  "has_more_items_on_the_left": true,
+  "has_more_items_on_the_right": false,
+  "metrics": {
+    "initial_capital": 10000,
+    "final_capital": 10289.732289496913,
+    "realized_pnl": -55.805210503087444,
+    "open_pnl": 345.5375,
+    "total_pnl_currency": 289.7322894969126,
+    "total_pnl_percent": 2.897322894969126,
+    "pnl_today_currency": 47.23896869999953,
+    "pnl_today_percent": 0.4614850650186483,
+    "avg_monthly_return": -0.3065969950587073,
+    "max_equity": 10628.790100896913,
+    "min_equity": 9713.410019896914,
+    "buy_hold_return_percent": 5.350631957387426,
+    "buy_hold_return_currency": 535.0631957387426,
+    "max_equity_drawdown_percent": 5.122251375573381,
+    "max_equity_drawdown_currency": 544.4333471499995,
+    "margin_calls": 0,
+    "avg_drawdown_percent": 0.9841323989732473,
+    "number_of_drawdowns": 17,
+    "max_drawdown_duration": 27.5,
+    "sharpe_ratio": 1.2316670137290073,
+    "sortino_ratio": 2.0788897989344153,
+    "calmar_ratio": 0.046172113944372276,
+    "annualized_return": 0.23650517416469174,
+    "daily_std_dev": 0.7862649350943554,
+    "annualized_volatility": 15.021570493061294,
+    "daily_var_95": 1.2372371254337529,
+    "daily_var_99": 1.7726835462330088,
+    "max_recovery_time": 2.65625,
+    "avg_recovery_time": 0.38671875,
+    "max_long_contracts_held": 0.097,
+    "max_short_contracts_held": 0.077,
+    "max_total_contracts_held": 0.097,
+    "avg_exposure_percent": 47.686429897720785,
+    "max_exposure_percent": 78.06360685708314,
+    "total_trades": 5,
+    "winning_trades": 1,
+    "losing_trades": 4,
+    "win_rate_percent": 20,
+    "avg_win": 31.626874987279997,
+    "avg_loss": -21.85802137259186,
+    "best_trade_net_pnl": 31.626874987279997,
+    "worst_trade_net_pnl": -29.13907260367214,
+    "expectancy": -11.16104210061749,
+    "risk_reward_ratio": 1.4469230516416947,
+    "profit_factor": 0.36173076291042366,
+    "avg_trade_duration": 0.05625,
+    "max_trade_duration": 0.07291666666666667,
+    "min_trade_duration": 0.020833333333333332,
+    "total_trading_period": 5.833333333333333,
+    "time_in_market_percent": 4.821428571428572,
+    "idle_time_percent": 95.17857142857143,
+    "avg_win_duration": 0.07291666666666667,
+    "avg_loss_duration": 0.052083333333333336,
+    "long_trades": 4,
+    "short_trades": 1,
+    "long_trades_percent": 80,
+    "short_trades_percent": 20,
+    "long_win_rate": 0,
+    "short_win_rate": 100,
+    "long_realized_pnl": -87.43208549036744,
+    "short_realized_pnl": 31.626874987279997,
+    "avg_long_trade_return": -21.85802137259186,
+    "avg_short_trade_return": 31.626874987279997,
+    "long_return_per_day": -419.6740103537637,
+    "short_return_per_day": 433.7399998255542,
+    "long_trade_duration_avg": 0.052083333333333336,
+    "short_trade_duration_avg": 0.07291666666666667,
+    "open_long_trades": 1,
+    "open_short_trades": 0,
+    "max_win_streak": 1,
+    "max_loss_streak": 4,
+    "total_commissions": 30.879737714337274,
+    "long_commissions": 24.83575484326645,
+    "short_commissions": 6.043982871070824,
+    "commission_to_profit_ratio": -123.88827275635266
+  },
+  "recent_orders": [
+    {
+      "index": 1,
+      "execution_type": "ORDER_EXECUTION_TYPE_LIMIT",
+      "size": 0.051,
+      "limit_price": 81274.7517,
+      "creation_time": "2026-09-03T23:30:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-03T23:45:00Z",
+          "size": 0.051,
+          "price": 81198.6
+        }
+      ],
+      "modification_time": "2026-09-03T23:45:00Z",
+      "direction": "ORDER_DIRECTION_BUY",
+      "avg_fill_price": 81198.6,
+      "filled_size": 0.051,
+      "trade_indexes": [
+        1
+      ],
+      "exposure": 4141.1286,
+      "commission": 2.0705643,
+      "slippage": -0.0936966258366159,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED"
+    },
+    {
+      "index": 2,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.051,
+      "creation_time": "2026-09-03T23:45:00Z",
+      "modification_time": "2026-09-04T01:15:00Z",
+      "stop_price": 81923.67004023495,
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": "NaN",
+      "slippage": "NaN",
+      "status_v2": "ORDER_STATUS_V2_CANCELED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "exbits": [],
+      "filled_size": 0,
+      "trade_indexes": [],
+      "exposure": 0,
+      "commission": 0
+    },
+    {
+      "index": 3,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.051,
+      "creation_time": "2026-09-03T23:45:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-04T01:15:00Z",
+          "size": 0.051,
+          "price": 80815.05330651003
+        }
+      ],
+      "modification_time": "2026-09-04T01:15:00Z",
+      "stop_price": 80815.05330651003,
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": 80815.05330651003,
+      "filled_size": 0.051,
+      "trade_indexes": [
+        1
+      ],
+      "exposure": 4121.567718632012,
+      "commission": 2.0607838593160057,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "slippage": 0
+    },
+    {
+      "index": 4,
+      "execution_type": "ORDER_EXECUTION_TYPE_LIMIT",
+      "size": 0.046,
+      "limit_price": 81243.34542,
+      "creation_time": "2026-09-04T04:30:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-04T04:45:00Z",
+          "size": 0.046,
+          "price": 81005
+        }
+      ],
+      "modification_time": "2026-09-04T04:45:00Z",
+      "direction": "ORDER_DIRECTION_BUY",
+      "avg_fill_price": 81005,
+      "filled_size": 0.046,
+      "trade_indexes": [
+        2
+      ],
+      "exposure": 3726.23,
+      "commission": 1.863115,
+      "slippage": -0.29337223715719046,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED"
+    },
+    {
+      "index": 5,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.046,
+      "creation_time": "2026-09-04T04:45:00Z",
+      "modification_time": "2026-09-04T06:15:00Z",
+      "stop_price": 81976.53586053243,
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": "NaN",
+      "slippage": "NaN",
+      "status_v2": "ORDER_STATUS_V2_CANCELED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "exbits": [],
+      "filled_size": 0,
+      "trade_indexes": [],
+      "exposure": 0,
+      "commission": 0
+    },
+    {
+      "index": 6,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.046,
+      "creation_time": "2026-09-04T04:45:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-04T06:15:00Z",
+          "size": 0.046,
+          "price": 80727.4760929784
+        }
+      ],
+      "modification_time": "2026-09-04T06:15:00Z",
+      "stop_price": 80727.4760929784,
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": 80727.4760929784,
+      "filled_size": 0.046,
+      "trade_indexes": [
+        2
+      ],
+      "exposure": 3713.463900277006,
+      "commission": 1.8567319501385031,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "slippage": 0
+    },
+    {
+      "index": 7,
+      "execution_type": "ORDER_EXECUTION_TYPE_LIMIT",
+      "size": 0.077,
+      "limit_price": 81055.80792,
+      "creation_time": "2026-09-04T10:45:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-04T11:00:00Z",
+          "size": 0.077,
+          "price": 81055.80792
+        }
+      ],
+      "modification_time": "2026-09-04T11:00:00Z",
+      "direction": "ORDER_DIRECTION_BUY",
+      "avg_fill_price": 81055.80792,
+      "filled_size": 0.077,
+      "trade_indexes": [
+        3
+      ],
+      "exposure": 6241.2972098400005,
+      "commission": 3.1206486049200004,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "slippage": 0
+    },
+    {
+      "index": 8,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.077,
+      "creation_time": "2026-09-04T11:00:00Z",
+      "modification_time": "2026-09-04T12:30:00Z",
+      "stop_price": 81461.57182147085,
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": "NaN",
+      "slippage": "NaN",
+      "status_v2": "ORDER_STATUS_V2_CANCELED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "exbits": [],
+      "filled_size": 0,
+      "trade_indexes": [],
+      "exposure": 0,
+      "commission": 0
+    },
+    {
+      "index": 9,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.077,
+      "creation_time": "2026-09-04T11:00:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-04T12:30:00Z",
+          "size": 0.077,
+          "price": 80758.28545235278
+        }
+      ],
+      "modification_time": "2026-09-04T12:30:00Z",
+      "stop_price": 80758.28545235278,
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": 80758.28545235278,
+      "filled_size": 0.077,
+      "trade_indexes": [
+        3
+      ],
+      "exposure": 6218.387979831164,
+      "commission": 3.109193989915582,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "slippage": 0
+    },
+    {
+      "index": 10,
+      "execution_type": "ORDER_EXECUTION_TYPE_LIMIT",
+      "size": 0.097,
+      "limit_price": 79985.99399999999,
+      "creation_time": "2026-09-06T21:15:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-06T21:30:00Z",
+          "size": 0.097,
+          "price": 79862.9
+        }
+      ],
+      "modification_time": "2026-09-06T21:30:00Z",
+      "direction": "ORDER_DIRECTION_BUY",
+      "avg_fill_price": 79862.9,
+      "filled_size": 0.097,
+      "trade_indexes": [
+        4
+      ],
+      "exposure": 7746.7013,
+      "commission": 3.87335065,
+      "slippage": -0.15389444306961708,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED"
+    },
+    {
+      "index": 11,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.097,
+      "creation_time": "2026-09-06T21:30:00Z",
+      "modification_time": "2026-09-06T22:00:00Z",
+      "stop_price": 80291.06219660747,
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": "NaN",
+      "slippage": "NaN",
+      "status_v2": "ORDER_STATUS_V2_CANCELED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "exbits": [],
+      "filled_size": 0,
+      "trade_indexes": [],
+      "exposure": 0,
+      "commission": 0
+    },
+    {
+      "index": 12,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.097,
+      "creation_time": "2026-09-06T21:30:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-06T22:00:00Z",
+          "size": 0.097,
+          "price": 79755.95853559503
+        }
+      ],
+      "modification_time": "2026-09-06T22:00:00Z",
+      "stop_price": 79755.95853559503,
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": 79755.95853559503,
+      "filled_size": 0.097,
+      "trade_indexes": [
+        4
+      ],
+      "exposure": 7736.327977952717,
+      "commission": 3.8681639889763586,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "slippage": 0
+    },
+    {
+      "index": 13,
+      "execution_type": "ORDER_EXECUTION_TYPE_LIMIT",
+      "size": 0.091,
+      "limit_price": 78291.73852,
+      "creation_time": "2026-09-08T13:30:00Z",
+      "modification_time": "2026-09-08T14:00:00Z",
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": "NaN",
+      "slippage": "NaN",
+      "status_v2": "ORDER_STATUS_V2_CANCELED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "exbits": [],
+      "filled_size": 0,
+      "trade_indexes": [],
+      "exposure": 0,
+      "commission": 0
+    },
+    {
+      "index": 14,
+      "execution_type": "ORDER_EXECUTION_TYPE_LIMIT",
+      "size": 0.077,
+      "limit_price": 78651.56654,
+      "creation_time": "2026-09-09T17:45:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-09T18:00:00Z",
+          "size": 0.077,
+          "price": 78737.9
+        }
+      ],
+      "modification_time": "2026-09-09T18:00:00Z",
+      "direction": "ORDER_DIRECTION_SELL",
+      "avg_fill_price": 78737.9,
+      "filled_size": 0.077,
+      "trade_indexes": [
+        5
+      ],
+      "exposure": 6062.8183,
+      "commission": 3.03140915,
+      "slippage": 0.10976699358694601,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED"
+    },
+    {
+      "index": 15,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.077,
+      "creation_time": "2026-09-09T18:00:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-09T19:45:00Z",
+          "size": 0.077,
+          "price": 78248.66807976167
+        }
+      ],
+      "modification_time": "2026-09-09T19:45:00Z",
+      "stop_price": 78248.66807976167,
+      "direction": "ORDER_DIRECTION_BUY",
+      "avg_fill_price": 78248.66807976167,
+      "filled_size": 0.077,
+      "trade_indexes": [
+        5
+      ],
+      "exposure": 6025.147442141649,
+      "commission": 3.0125737210708246,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "slippage": 0
+    },
+    {
+      "index": 16,
+      "execution_type": "ORDER_EXECUTION_TYPE_STOP",
+      "size": 0.077,
+      "creation_time": "2026-09-09T18:00:00Z",
+      "modification_time": "2026-09-09T19:45:00Z",
+      "stop_price": 78946.38794682556,
+      "direction": "ORDER_DIRECTION_BUY",
+      "avg_fill_price": "NaN",
+      "slippage": "NaN",
+      "status_v2": "ORDER_STATUS_V2_CANCELED",
+      "status": "ORDER_STATUS_UNSPECIFIED",
+      "exbits": [],
+      "filled_size": 0,
+      "trade_indexes": [],
+      "exposure": 0,
+      "commission": 0
+    },
+    {
+      "index": 17,
+      "execution_type": "ORDER_EXECUTION_TYPE_MARKET",
+      "size": 0.077,
+      "creation_time": "2026-09-09T19:30:00Z",
+      "exbits": [
+        {
+          "execution_time": "2026-09-09T19:45:00Z",
+          "size": 0.077,
+          "price": 78265
+        }
+      ],
+      "modification_time": "2026-09-09T19:45:00Z",
+      "direction": "ORDER_DIRECTION_BUY",
+      "avg_fill_price": 78265,
+      "filled_size": 0.077,
+      "trade_indexes": [
+        6
+      ],
+      "exposure": 6026.405,
+      "commission": 3.0132025000000002,
+      "slippage": 0.00012777119756854065,
+      "status_v2": "ORDER_STATUS_V2_FILLED",
+      "status": "ORDER_STATUS_UNSPECIFIED"
+    }
+  ],
+  "recent_trades": [
+    {
+      "index": 1,
+      "trade_updates": [
+        {
+          "order_index": 1,
+          "accounted_size": 0.051,
+          "exposure": 4141.1286
+        },
+        {
+          "order_index": 3,
+          "accounted_size": 0.051,
+          "exposure": 4121.567718632012
+        }
+      ],
+      "pnl": -19.56088,
+      "pnl_percent": -0.4723563,
+      "cumulative_pnl": -23.69223,
+      "cumulative_pnl_percent": -0.2369223,
+      "run_up": 9.9552,
+      "run_up_percent": 0.24039823,
+      "drawdown": -19.56088,
+      "drawdown_percent": -0.4723563,
+      "side": "TRADE_SIDE_LONG",
+      "open_time": "2026-09-03T23:45:00Z",
+      "close_time": "2026-09-04T01:15:00Z",
+      "state": "TRADE_STATE_CLOSE",
+      "size": 0
+    },
+    {
+      "index": 2,
+      "trade_updates": [
+        {
+          "order_index": 4,
+          "accounted_size": 0.046,
+          "exposure": 3726.23
+        },
+        {
+          "order_index": 6,
+          "accounted_size": 0.046,
+          "exposure": 3713.463900277006
+        }
+      ],
+      "pnl": -12.7661,
+      "pnl_percent": -0.34260097,
+      "cumulative_pnl": -40.178177,
+      "cumulative_pnl_percent": -0.40178177,
+      "run_up": 5.359,
+      "run_up_percent": 0.14381829,
+      "drawdown": -12.7661,
+      "drawdown_percent": -0.34260097,
+      "side": "TRADE_SIDE_LONG",
+      "open_time": "2026-09-04T04:45:00Z",
+      "close_time": "2026-09-04T06:15:00Z",
+      "state": "TRADE_STATE_CLOSE",
+      "size": 0
+    },
+    {
+      "index": 3,
+      "trade_updates": [
+        {
+          "order_index": 7,
+          "accounted_size": 0.077,
+          "exposure": 6241.2972098400005
+        },
+        {
+          "order_index": 9,
+          "accounted_size": 0.077,
+          "exposure": 6218.387979831164
+        }
+      ],
+      "pnl": -22.90923,
+      "pnl_percent": -0.36705878,
+      "cumulative_pnl": -69.317245,
+      "cumulative_pnl_percent": -0.6931725,
+      "run_up": 24.78569,
+      "run_up_percent": 0.39712402,
+      "drawdown": -22.90923,
+      "drawdown_percent": -0.36705878,
+      "side": "TRADE_SIDE_LONG",
+      "open_time": "2026-09-04T11:00:00Z",
+      "close_time": "2026-09-04T12:30:00Z",
+      "state": "TRADE_STATE_CLOSE",
+      "size": 0
+    },
+    {
+      "index": 4,
+      "trade_updates": [
+        {
+          "order_index": 10,
+          "accounted_size": 0.097,
+          "exposure": 7746.7013
+        },
+        {
+          "order_index": 12,
+          "accounted_size": 0.097,
+          "exposure": 7736.327977952717
+        }
+      ],
+      "pnl": -10.3733225,
+      "pnl_percent": -0.13390632,
+      "cumulative_pnl": -87.43208,
+      "cumulative_pnl_percent": -0.87432086,
+      "run_up": 10.3887,
+      "run_up_percent": 0.13410482,
+      "drawdown": -10.3733225,
+      "drawdown_percent": -0.13390632,
+      "side": "TRADE_SIDE_LONG",
+      "open_time": "2026-09-06T21:30:00Z",
+      "close_time": "2026-09-06T22:00:00Z",
+      "state": "TRADE_STATE_CLOSE",
+      "size": 0
+    },
+    {
+      "index": 5,
+      "trade_updates": [
+        {
+          "order_index": 14,
+          "accounted_size": 0.077,
+          "exposure": 6062.8183
+        },
+        {
+          "order_index": 15,
+          "accounted_size": 0.077,
+          "exposure": 6025.147442141649
+        }
+      ],
+      "pnl": 37.670856,
+      "pnl_percent": 0.62134236,
+      "cumulative_pnl": -55.80521,
+      "cumulative_pnl_percent": -0.5580521,
+      "run_up": 37.670856,
+      "run_up_percent": 0.62134236,
+      "drawdown": -1.7171,
+      "drawdown_percent": -0.028321812,
+      "side": "TRADE_SIDE_SHORT",
+      "open_time": "2026-09-09T18:00:00Z",
+      "close_time": "2026-09-09T19:45:00Z",
+      "state": "TRADE_STATE_CLOSE",
+      "size": 0
+    },
+    {
+      "index": 6,
+      "trade_updates": [
+        {
+          "order_index": 17,
+          "accounted_size": 0.077,
+          "exposure": 6026.405
+        }
+      ],
+      "size": 0.077,
+      "pnl": 345.5375,
+      "pnl_percent": 5.733725,
+      "cumulative_pnl": 289.7323,
+      "cumulative_pnl_percent": 2.897323,
+      "run_up": 702.2477,
+      "run_up_percent": 11.652846,
+      "drawdown": -258.3812,
+      "drawdown_percent": -4.2874846,
+      "side": "TRADE_SIDE_LONG",
+      "open_time": "2026-09-09T19:45:00Z",
+      "state": "TRADE_STATE_OPEN"
+    }
+  ],
+  "req_metadata": {
+    "request_id": "e5a6aab7707645d8ba455bd6b91fe9aa"
+  }
+}
