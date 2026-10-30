@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "manifest_id": "btc-perp-candidate-contract-p1-2026-10-30",
+  "generated_at_utc": "2026-10-30T14:25:39.778Z",
+  "contract_version": "BTC-PERP-PULLBACK-P1",
+  "parent_frozen_baseline": "BTC-PERP-B0-2026-10-30-v16-v24",
+  "status": "candidate-parity-checkpoint-complete_profitability-unproven",
+  "environment": {
+    "node_version": "v24.13.1",
+    "operating_system": "win32"
+  },
+  "frozen_b0_source_integrity": [
+    {
+      "path": "indie/btc_pullback_indicator.indie",
+      "sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+      "matches_frozen_manifest": true
+    },
+    {
+      "path": "indie/btc_pullback_strategy.indie",
+      "sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+      "matches_frozen_manifest": true
+    }
+  ],
+  "p1_platform_sources": [
+    {
+      "role": "indicator",
+      "path": "indie/btc_pullback_indicator_p1.indie",
+      "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+      "takeprofit_working_copy_version": 27,
+      "platform_saved": false,
+      "local_platform_source_match": true,
+      "compile": "PASS",
+      "runtime_quick": "PASS",
+      "runtime_full": "PASS",
+      "runtime_series_items": 5000,
+      "sha256": "0447509c6a126819cb2e371c0d8ab349d7d06fbfc6d67ee0056be065fb4e6a61"
+    },
+    {
+      "role": "strategy",
+      "path": "indie/btc_pullback_strategy_p1.indie",
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "takeprofit_working_copy_version": 20,
+      "platform_saved": false,
+      "local_platform_source_match": true,
+      "compile": "PASS",
+      "runtime_quick": "PASS",
+      "runtime_full": "PASS",
+      "runtime_series_items": 5000,
+      "sha256": "1532f92ecc3a2522164b3d3e6c062b62e5c79d242a941eb5319147e5d56dc262"
+    }
+  ],
+  "generated_shared_core": {
+    "sha256_lf_utf8": "d56a929f41c908489cacff6b72df9d5fadd7133a4d691cb02977b838848a4308",
+    "indicator_equals_strategy": true,
+    "source_equals_template": true
+  },
+  "reference_run": {
+    "report": "research/reports/candidate_parity_report.json",
+    "ledger": "research/reports/candidate_event_ledger.csv",
+    "independent_engine_source": "research/candidate_reference.mjs",
+    "input_history_manifest": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+    "profiles": [
+      {
+        "execution_minutes": 5,
+        "higher_minutes": 15,
+        "bars": 210240,
+        "source_csv": "trade_5m_resampled.csv",
+        "source_csv_sha256": "771c06242a587de639b880f7f32591ad132669e0e050a81df597129559589314",
+        "candidates": 5302,
+        "full_vs_truncated": {
+          "compared_candidates": 139,
+          "candidate_id_differences": 0,
+          "level_differences": 0,
+          "max_level_abs_delta": 0,
+          "tolerance": 0.000001
+        }
+      },
+      {
+        "execution_minutes": 15,
+        "higher_minutes": 60,
+        "bars": 70080,
+        "source_csv": "trade_15m_resampled.csv",
+        "source_csv_sha256": "8dd5cf61a54ae0d9be1450ddec6f2ef5cb9346af00c4d2d3108038f882c8352c",
+        "candidates": 1610,
+        "full_vs_truncated": {
+          "compared_candidates": 109,
+          "candidate_id_differences": 0,
+          "level_differences": 0,
+          "max_level_abs_delta": 0,
+          "tolerance": 0.000001
+        }
+      }
+    ],
+    "fixtures": {
+      "legacy_touch_window": "PASS",
+      "bias_at_touch": "PASS",
+      "recovery_ordering": "PASS",
+      "invalidating_trigger_wick": "PASS",
+      "six_bar_expiry": "PASS",
+      "long_short_symmetry": "PASS",
+      "execution_quote_separation": "PASS"
+    },
+    "unique_candidate_ids": 6912,
+    "profitability_status": "unproven; native P1 executions/fills were not part of this candidate parity run"
+  },
+  "event_level_native_runtime_export": "TakeProfit compile/runtime validation does not return candidate rows or plotted series values. Candidate event rows and historical fields are from the independently written reference engine; platform parity is verified by identical shared source code and plan fields consumed by each adapter.",
+  "artifacts": [
+    {
+      "path": "research/README_CANDIDATE_P1.md",
+      "sha256": "f4765dce4b3ad36badc92958b6635e270e052cf694d815e794a1d3324bef8d12"
+    },
+    {
+      "path": "research/specs/candidate_contract_p1.json",
+      "sha256": "bb1fa68f69d01d461f48d6effa3ce5637faf20997c5ce5b2ee82c4a065820588"
+    },
+    {
+      "path": "research/templates/shared_candidate_core.indie.in",
+      "sha256": "c8f20c859fe18b7f5bd1f115e14e21be15f5c938a04384097e2ab5d1c9ab671c"
+    },
+    {
+      "path": "research/templates/indicator_candidate_adapter.indie.in",
+      "sha256": "d2817c84469f1082f0e70358448ea6646dbb80080e4d097b6f2217fbaa0f5d5c"
+    },
+    {
+      "path": "research/templates/strategy_candidate_adapter.indie.in",
+      "sha256": "edb9a5354d50d64660a9b9e73b8ae4ffd9690aeaae93c61f90101b9f48865791"
+    },
+    {
+      "path": "research/generate_candidate_logic.mjs",
+      "sha256": "16810637fc7e1e1371b106b39ef70586995dab78ca007f9d6712f5436ca89c9c"
+    },
+    {
+      "path": "research/candidate_reference.mjs",
+      "sha256": "ed383207000c5cc576cd8c64f79de2628c651d1535c9f7b51df68cf49fdac608"
+    },
+    {
+      "path": "research/build_candidate_manifest.mjs",
+      "sha256": "4ecc212d842a80573f411f5b4dd6db9b4618c3673d30eafaf238be2f67cd1544"
+    },
+    {
+      "path": "research/reports/candidate_parity_report.json",
+      "sha256": "dfb85476cff7515f9bdb5b20ef0a1e99cff0a6f5c9a5f8fbc88b446ac4303069"
+    },
+    {
+      "path": "research/reports/candidate_parity_report.md",
+      "sha256": "e30abf732bd2e7ec8cf6fbb4bc2fff7ac7309fc0017ccc10891bcc5077870bd8"
+    },
+    {
+      "path": "research/reports/candidate_event_ledger.csv",
+      "sha256": "b06ab15662239ebcaff488a00546cff017162316212e21284d737ad1be948173"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418"
+    }
+  ]
+}

@@ -1,0 +1,56 @@
+        # BEGIN GENERATED INDICATOR CANDIDATE ADAPTER
+        if self.is_new_bar:
+            self._stop_reject_event = False
+            self._invalid_stop_event = False
+            self._wide_stop_event = False
+            self._cost_reject_event = False
+            self._model_signal_event = False
+            self._active_reject_event = False
+            self._cooldown_reject_event = False
+        if candidate_side != 0:
+            if self._active_side != 0:
+                self._active_reject_event = True
+                status_text = 'BLOCKED | ACTIVE MODEL'
+            elif self.bar_index - self._last_signal_bar <= 3 or self.bar_index - self._last_exit_bar <= 3:
+                self._cooldown_reject_event = True
+                status_text = 'BLOCKED | COOLDOWN'
+            elif candidate_blocker != 'NONE':
+                if candidate_blocker == 'INVALID STOP' or candidate_blocker == 'INVALID ENTRY OR ATR':
+                    self._invalid_stop_event = True
+                elif candidate_blocker == 'STOP > {{stop_cap_atr}} ATR':
+                    self._wide_stop_event = True
+                elif candidate_blocker == 'COST > {{cost_r_cap}}R':
+                    self._cost_reject_event = True
+                if candidate_blocker == 'INVALID STOP' or candidate_blocker == 'INVALID ENTRY OR ATR' or candidate_blocker == 'STOP > {{stop_cap_atr}} ATR':
+                    self._stop_reject_event = True
+                status_text = 'BLOCKED | ' + candidate_blocker
+            else:
+                self._model_signal_event = True
+                self._last_signal_bar = self.bar_index
+                self._signal_bar = self.bar_index
+                self._signal_direction = candidate_side
+                self._signal_price = candidate_planned_entry
+                self._outcome_text = ''
+                self._active_side = candidate_side
+                if candidate_side == 1:
+                    self._long_stop = candidate_stop
+                    self._long_target = candidate_target
+                    self._short_stop = nan
+                    self._short_target = nan
+                    long_marker = candidate_planned_entry
+                    status_text = 'MODEL | LONG | PLANNED OPEN'
+                else:
+                    self._short_stop = candidate_stop
+                    self._short_target = candidate_target
+                    self._long_stop = nan
+                    self._long_target = nan
+                    short_marker = candidate_planned_entry
+                    status_text = 'MODEL | SHORT | PLANNED OPEN'
+        if candidate_side == 0:
+            if long_bias and self._long_wait_recovery:
+                status_text = 'WAIT EMA20 RECOVERY'
+            elif short_bias and self._short_wait_recovery:
+                status_text = 'WAIT EMA20 RECOVERY'
+            elif self._long_pullback_armed or self._short_pullback_armed:
+                status_text = 'WAIT TRIGGER'
+        # END GENERATED INDICATOR CANDIDATE ADAPTER

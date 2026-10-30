@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "report_id": "btc-perp-p1-candidate-parity-2026-10-30",
+  "generated_at_utc": "2026-10-30T14:23:41.148Z",
+  "scope": "Independent reference calculation of P1 candidates and planned levels on the #4 audited resampled BTC perpetual history. No TakeProfit strategy fills or realized profitability are inferred.",
+  "contract_version": "BTC-PERP-PULLBACK-P1",
+  "reference_method": {
+    "implementation": "Separate JavaScript engine; not emitted from or imported by the Indie generator/template.",
+    "entry_ema": "SMA seed at length samples followed by alpha=2/(length+1), matching the documented Indie Ema source algorithm.",
+    "atr": "True range followed by Wilder RMA(14), initialized by the first 14-value SMA, matching the documented Indie Atr -> RMA algorithm.",
+    "higher_timeframe": "Execution bars grouped by UTC bucket; complete contiguous groups only; EMA20/EMA50 recursively updated from the first completed HTF close; slope uses three completed HTF bars.",
+    "touch_model": "Completed bars processed once in timestamp order; first eligible range intersection arms; eligibility checks touch bias and directional EMA50 closes only within the current recovery episode.",
+    "time_model": "Unix UTC seconds at bar opens; entry quote uses next execution candle open.",
+    "known_fill_limit": "No exchange order book, actual fills, fee tier, spread/slippage tape, or funding cash flows are included in this candidate parity report."
+  },
+  "fixtures": {
+    "legacy_touch_window": "PASS",
+    "bias_at_touch": "PASS",
+    "recovery_ordering": "PASS",
+    "invalidating_trigger_wick": "PASS",
+    "six_bar_expiry": "PASS",
+    "long_short_symmetry": "PASS",
+    "execution_quote_separation": "PASS"
+  },
+  "profiles": [
+    {
+      "execution_minutes": 5,
+      "higher_minutes": 15,
+      "bars": 210240,
+      "first_bar_utc": "2024-10-01T00:00:00.000Z",
+      "last_bar_utc": "2026-09-30T23:55:00.000Z",
+      "full_history_candidates": 5302,
+      "side_counts": {
+        "LONG": 2772,
+        "SHORT": 2530
+      },
+      "risk_blockers": {
+        "NONE": 117,
+        "COST > 0.2R": 4518,
+        "STOP > 2.5 ATR": 667
+      },
+      "full_vs_truncated_overlap": {
+        "compared_candidates": 139,
+        "candidate_id_differences": 0,
+        "level_differences": 0,
+        "max_level_abs_delta": 0,
+        "tolerance": 0.000001
+      },
+      "truncated_start_utc": "2026-09-01T11:40:00.000Z",
+      "comparison_start_utc": "2026-09-13T15:20:00.000Z",
+      "source_csv": "trade_5m_resampled.csv",
+      "source_csv_sha256": "771c06242a587de639b880f7f32591ad132669e0e050a81df597129559589314"
+    },
+    {
+      "execution_minutes": 15,
+      "higher_minutes": 60,
+      "bars": 70080,
+      "first_bar_utc": "2024-10-01T00:00:00.000Z",
+      "last_bar_utc": "2026-09-30T23:45:00.000Z",
+      "full_history_candidates": 1610,
+      "side_counts": {
+        "LONG": 853,
+        "SHORT": 757
+      },
+      "risk_blockers": {
+        "COST > 0.2R": 1197,
+        "NONE": 187,
+        "STOP > 2.5 ATR": 226
+      },
+      "full_vs_truncated_overlap": {
+        "compared_candidates": 109,
+        "candidate_id_differences": 0,
+        "level_differences": 0,
+        "max_level_abs_delta": 0,
+        "tolerance": 0.000001
+      },
+      "truncated_start_utc": "2026-07-04T11:00:00.000Z",
+      "comparison_start_utc": "2026-08-09T22:00:00.000Z",
+      "source_csv": "trade_15m_resampled.csv",
+      "source_csv_sha256": "8dd5cf61a54ae0d9be1450ddec6f2ef5cb9346af00c4d2d3108038f882c8352c"
+    }
+  ],
+  "overall": {
+    "candidates": 6912,
+    "unique_candidate_ids": 6912,
+    "event_ledger": "candidate_event_ledger.csv",
+    "full_history_vs_truncated_history": "PASS; see each profile row",
+    "id_and_timestamp_checks": "PASS",
+    "planned_level_geometry_checks": "PASS",
+    "actual_fills": "not simulated; retained as unknown in every event row",
+    "profitability": "unproven; this report does not measure strategy returns or prove profitability"
+  }
+}
