@@ -2,6 +2,10 @@
 
 Updated 30 October 2026. Strategy working copy v16 has refreshed 5m and 15m backtests; both produced zero completed trades and flag insufficient history. Strategy v16 passes compile and `runtime_quick` validation on 5,000 candles. The chart indicator working copy is now v24 (UID `dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3`) and also passes compile and `runtime_quick` on 5,000 candles. Its latest saved private platform version is v19 (UID `b0WWgU3721kqgpvBweE24`). The v24 diagnostic edit is unsaved because it is based on v16; TakeProfit blocks saving a stale copy and blocks loading v19 while the copy has unsaved changes.
 
+## Baseline freeze checkpoint
+
+GitHub issue [#2](https://github.com/VILTRUMITE56/ScalpIndicator/issues/2) is satisfied by the frozen B0 source/rule specification, reproducible source/run manifest, and reviewer index: [`research/specs/baseline.json`](../research/specs/baseline.json), [`research/BASELINE_MANIFEST.json`](../research/BASELINE_MANIFEST.json), and [`research/BASELINE_INDEX.md`](../research/BASELINE_INDEX.md). The manifest records current normalized source hashes and fresh runtime validation, and inventories all 22 historical backtest run records. It marks the two defective v1 sensitivity runs, incomplete historical windows, inferred version metadata in four v2 records, and missing old source bodies explicitly. The 22-configuration future research cap remains unchanged. No trading logic or performance result was changed by this freeze.
+
 ## Latest code changes
 
 The B0 pullback lifecycle now requires actual candle intersection with EMA20, records ATR and invalidation from the touch, checks the completed trigger candle against that frozen invalidation, expires from the source candle, and requires a later EMA20 recovery before accepting a fresh touch after invalidation, expiry, trigger, bias loss, or a data gap. The structural extreme is calculated from the touch candle and up to two preceding candles, clipped to the recovery period.

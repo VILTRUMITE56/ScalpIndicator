@@ -181,7 +181,7 @@ Keep optional indicator overlays subtle. Add a feature only when it has a declar
 
 ## Immediate recommended implementation batch
 
-1. Create a frozen baseline specification and source/run manifest for the canonical BTC files.
+1. **Complete:** freeze the canonical source/rule snapshot and index all retained reports in [the baseline index](../research/BASELINE_INDEX.md), [B0 specification](../research/specs/baseline.json), and [source/run manifest](../research/BASELINE_MANIFEST.json). The manifest identifies 22 historical run records, including defective and incomplete evidence.
 2. Build the data coverage and pre-cost candidate ledger, including the feasibility table above, independent of the blocked platform save.
 3. Reconcile the planned entry and risk levels between indicator and strategy; validate lifecycle and order transitions.
 4. Produce a usable, fully costed B0 report before implementing optional gates.

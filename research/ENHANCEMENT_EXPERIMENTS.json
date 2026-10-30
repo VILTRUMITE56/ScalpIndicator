@@ -33,6 +33,42 @@
     },
     "candidate_parity_audited": false
   },
+  "frozen_research_baseline": {
+    "baseline_id": "BTC-PERP-B0-2026-10-30-v16-v24",
+    "specification": "research/specs/baseline.json",
+    "source_run_manifest": "research/BASELINE_MANIFEST.json",
+    "reviewer_index": "research/BASELINE_INDEX.md",
+    "frozen_source_versions": {
+      "strategy": 16,
+      "indicator": 24
+    },
+    "retained_historical_run_records": 22,
+    "retained_historical_report_bundles": [
+      "results/v1/",
+      "results/v2/backtests.json",
+      "results/v3/backtests.json",
+      "results/v4/backtests.json"
+    ],
+    "historical_runs_are_not_new_configuration_budget_units": true,
+    "known_defects_and_gaps": [
+      "v1 sensitivity runs contain audited overlapping protective/entry exits that opened unintended positions",
+      "v2 first four per-run source versions are inferred from bundle initial version 7 because per-run fields were omitted",
+      "strategy source bodies/hashes for versions 7-13 were not retained",
+      "all retained native strategy runs have insufficient history; latest v16 runs have zero completed trades",
+      "the 15 bp round-trip cost fraction is not fully deducted as realized P&L"
+    ]
+  },
+  "prior_trial_history": {
+    "full_run_inventory": "research/BASELINE_MANIFEST.json#/runs",
+    "historical_run_records": 22,
+    "counting_note": "These prior runs are disclosed in the research record and are distinct from the 22-configuration future bounded experiment cap below.",
+    "bundles": [
+      { "path": "results/v1/", "runs": 4, "source_version": 4, "status": "superseded; sensitivity runs defective" },
+      { "path": "results/v2/backtests.json", "runs": 14, "source_versions": "7-14", "status": "superseded historical code iterations and cost-only diagnostics" },
+      { "path": "results/v3/backtests.json", "runs": 2, "source_version": 16, "status": "insufficient-history diagnostic; zero trades" },
+      { "path": "results/v4/backtests.json", "runs": 2, "source_version": 16, "status": "insufficient-history updated-window diagnostic; zero trades" }
+    ]
+  },
   "objective": "Improve BTC perpetual signal reliability and net expectancy through correctness repairs and bounded comparative research.",
   "report": "docs/SCALPING_ENHANCEMENT_REPORT.md",
   "implementation_plan": "docs/SCALPING_IMPLEMENTATION_PLAN.md",
