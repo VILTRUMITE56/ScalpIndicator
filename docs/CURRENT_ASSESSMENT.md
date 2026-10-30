@@ -8,7 +8,7 @@ GitHub issue [#2](https://github.com/VILTRUMITE56/ScalpIndicator/issues/2) is sa
 
 ## Venue, costs and risk checkpoint
 
-Issue [#3](https://github.com/VILTRUMITE56/ScalpIndicator/issues/3) now has a versioned provisional cost/contract/risk record in [`research/specs/execution_cost_risk.json`](../research/specs/execution_cost_risk.json) and [`docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md`](EXECUTION_COST_AND_RISK_REQUIREMENTS.md). Binance USDⓈ-M BTCUSDT remains only the research proxy. The 10/15/20 bp cases are hypothetical; actual account fees, spread, slippage, historical funding, user risk limits and maximum hold time are not confirmed. The task remains open for those account/user inputs. Official source pages and lookup methods are recorded with UTC timestamps; no API credentials are requested.
+Issue [#3](https://github.com/VILTRUMITE56/ScalpIndicator/issues/3) now has a versioned provisional cost/contract/risk record in [`research/specs/execution_cost_risk.json`](../research/specs/execution_cost_risk.json) and [`docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md`](EXECUTION_COST_AND_RISK_REQUIREMENTS.md). The user confirmed Binance USDⓈ-M BTCUSDT as the research proxy and directed that account fee rates remain unknown; neither choice confirms an execution account or venue. The 10/15/20 bp cases are hypothetical; actual account fees, spread, slippage, historical funding, user risk limits and maximum hold time remain unconfirmed. The user plans to provide risk and holding-time values. Official source pages and lookup methods are recorded with UTC timestamps; no API credentials are requested.
 
 ## Latest code changes
 

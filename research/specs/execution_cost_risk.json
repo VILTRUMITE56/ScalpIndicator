@@ -1,12 +1,14 @@
 {
   "schema_version": 1,
-  "spec_version": "1.0.0",
-  "recorded_at_utc": "2026-10-30T12:27:28Z",
+  "spec_version": "1.0.1",
+  "recorded_at_utc": "2026-10-30T12:32:34Z",
   "status": "provisional_research_profile_user_confirmation_required",
   "purpose": "Record the current BTC perpetual research proxy, cost model, risk defaults, source trail, and decisions that remain open. This is not a live trading configuration.",
   "venue_and_contract": {
     "user_selected_execution_venue": null,
     "user_selected_contract": null,
+    "user_confirmed_research_proxy": true,
+    "actual_execution_venue_confirmation": "not provided; Binance confirmation applies only to the research proxy",
     "research_proxy": {
       "exchange": "Binance",
       "product": "USDⓈ-M Futures",
@@ -15,7 +17,7 @@
       "intended_form": "linear, USDT-quoted and USDT-margined",
       "takeprofit_alias": "BTC/USDT.P",
       "takeprofit_exchange_code": "CXBNF8",
-      "status": "provisional research proxy only; not user-confirmed for execution"
+      "status": "provisional research proxy only; user confirmed Binance for research, not for execution"
     },
     "live_symbol_filters": {
       "status": "not captured",
@@ -37,7 +39,7 @@
     "backtest_commission_status": "Unverified placeholder inherited from strategy runs; not the user's Binance fee rate.",
     "user_account_maker_rate": null,
     "user_account_taker_rate": null,
-    "user_account_fee_status": "unknown; account rate depends on user-specific fee tier/discount and should be read from the user's fee page or authenticated user-commission endpoint. Do not share API keys or secrets.",
+    "user_account_fee_status": "user directed: unknown; leave unconfirmed. Actual account rate depends on user-specific fee tier/discount. It remains a deployment blocker. Do not share API keys or secrets.",
     "official_fee_page_note": "Binance's documentation gives example rates for fee calculations and directs users to the account fee table; those examples are not treated as the user's current rates."
   },
   "cost_components": {
@@ -96,11 +98,13 @@
     "proposed_daily_loss_limit_r": 4,
     "proposed_peak_to_trough_drawdown_limit_fraction": 0.08,
     "status": "Provisional project research policy, not confirmed as the user's acceptable personal risk. Native daily/equity locks are not implemented or verified.",
+    "user_confirmation_status": "User plans to specify personal risk limits; values remain pending.",
     "risk_lock_note": "The 4R daily and 8% drawdown values are proposed research gates inherited from the implementation plan. Preserve protective exits if an entry lock is triggered; do not claim a cash proxy is equity."
   },
   "holding_time_and_profiles": {
     "user_intended_minimum_holding_time_minutes": null,
     "user_intended_maximum_holding_time_minutes": null,
+    "user_confirmation_status": "User plans to specify an intended maximum holding duration; value remains pending.",
     "current_strategy_time_exit": "disabled; no verified reducing-close timer",
     "profile_a": "5m execution with completed 15m bias",
     "profile_b": "15m execution with completed 1h bias",
@@ -115,9 +119,12 @@
     "No live order automation until the remaining data, parity, execution and costed-performance checkpoints pass."
   ],
   "research_can_continue_before_user_confirmation": true,
+  "user_decisions_received": {
+    "research_proxy": "Keep Binance USDⓈ-M BTCUSDT as the research proxy.",
+    "account_fee_rates": "Unknown; leave unconfirmed.",
+    "risk_and_holding_time": "User will specify personal limits and desired holding time; values not yet supplied."
+  },
   "user_decisions_remaining": [
-    "Keep Binance USDⓈ-M BTCUSDT as the research proxy or name another venue/contract.",
-    "Provide account maker/taker rates and any applicable discounts, or leave them unknown; no credentials are needed.",
     "Confirm or replace the provisional $10,000 research notional, 0.25% risk per trade, 4R daily loss proposal and 8% drawdown proposal.",
     "Specify the intended maximum holding duration; current strategy has no timed exit."
   ],

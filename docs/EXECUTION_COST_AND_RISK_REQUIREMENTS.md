@@ -1,8 +1,10 @@
 # BTC perpetual venue, cost and risk record
 
-Record version 1.0.0, reviewed 30 October 2026. This defines a provisional research setup and makes the remaining user decisions visible. It does not confirm an execution venue, account fee rate, personal risk limit, or profitable strategy.
+Record version 1.0.1, reviewed 30 October 2026. This defines a provisional research setup and makes the remaining user decisions visible. It does not confirm an execution venue, account fee rate, personal risk limit, or profitable strategy.
 
 The machine-readable record is [`research/specs/execution_cost_risk.json`](../research/specs/execution_cost_risk.json). GitHub checkpoint: [issue #3](https://github.com/VILTRUMITE56/ScalpIndicator/issues/3).
+
+The user confirmed Binance only as the research proxy and directed that personal account fee rates remain unknown. The user plans to supply personal risk limits and maximum holding time; those values are pending.
 
 ## Research proxy and user-selected venue
 
@@ -41,9 +43,9 @@ The user has not stated a desired maximum scalp duration. The strategy has no ti
 
 ## Decisions still needed from the user
 
-- Confirm whether Binance USDⓈ-M BTCUSDT stays as the research proxy or identify the actual venue/contract.
-- Provide account maker and taker rates (and any discount status) if known; otherwise keep them unknown. Do not send credentials.
-- Confirm or replace the provisional $10,000 research notional, 0.25% per-trade risk, 4R daily-loss proposal and 8% drawdown proposal.
-- Specify the maximum holding duration the user intends for a scalp.
+- Provide personal account size, acceptable per-trade risk, daily loss and maximum drawdown limits, replacing the research-only defaults.
+- Specify the intended maximum holding duration for a scalp.
+
+The actual execution venue and account-level maker/taker fee remain unconfirmed. The user chose Binance for research and asked to leave account fee rates unknown; that is recorded, and the fee remains a deployment blocker.
 
 Local data, cost and parity research can continue using the provisional proxy. Venue-specific size/rounding, account economics and any deployment decision stay blocked until their inputs are confirmed and measured.
