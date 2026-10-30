@@ -1,5 +1,7 @@
 # BTC perpetual pullback research
 
+The [project assessment and upgrade roadmap](docs/PROJECT_LEVEL_UP_ASSESSMENT.md) evaluates the current evidence, compares established indicator families, derives the default cost/ATR feasibility constraint, and prioritizes the next work. Economic feasibility, shared signal/entry rules, and reliable data come before adding optional filters.
+
 This repository contains an Indie BTC perpetual research strategy and a chart-model indicator for TakeProfit. The current strategy requires an intersecting EMA20 touch, freezes setup ATR and invalidation, requires recovery before rearming, calculates bracket risk from the worst permitted entry limit, and models exits from completed candles. Strategy working copy v16 produced no filled trades on refreshed 5m and 15m runs; both report incomplete history. The chart diagnostic panel points to the cost gate as the main blocker: 91 of 101 trigger candidates were cost-rejected, 10 stop-rejected, and none accepted. Indicator working copy v24 adds a stop-rejection breakdown and passed compile plus a 5,000-candle runtime check, but TakeProfit has not saved it because the copy is based on platform v16 while the latest saved private version is v19. See the [current assessment](docs/CURRENT_ASSESSMENT.md), [diagnostic report](docs/BACKTEST_DIAGNOSTIC_REPORT.md), and [results](RESULTS.md).
 
 ## Files

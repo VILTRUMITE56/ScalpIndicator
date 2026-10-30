@@ -1,5 +1,7 @@
 # Implementation plan: a reliable BTC perpetual scalping indicator
 
+Priority update, 30 October 2026: use the [current assessment and upgrade roadmap](PROJECT_LEVEL_UP_ASSESSMENT.md) to order this work. First measure economic feasibility and the opportunity funnel, reconcile the indicator/strategy entry contract, and establish reliable data. The existing B1-B5 definitions and 22-configuration budget remain proposed experiments; they have not been executed. B4 entry extension is prioritized for the first isolated filter comparison after a usable B0 baseline exists.
+
 Prepared 30 October 2026. The first B0 lifecycle corrections are implemented in local sources and TakeProfit working copies. Strategy working copy v16 and indicator working copy v24 pass compile and `runtime_quick` on 5,000 bars. The latest saved private indicator version is v19, while v24 is unsaved because it is based on v16. Strategy v16 backtests through 30 October returned no completed trades and insufficient-history flags. Dashboard counts show the cost gate rejects most visible trigger candidates. No thresholds changed. See the [implementation status](CURRENT_ASSESSMENT.md), [diagnostic report](BACKTEST_DIAGNOSTIC_REPORT.md), and [full snapshots](../results/v4/backtests.json).
 
 The [planned experiment registry](../research/ENHANCEMENT_EXPERIMENTS.json) records the current source hashes, profiles, hypotheses, starting parameters, and trial limits in machine-readable form. Its entries are proposals, not executed results.
