@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "manifest_id": "btc-perp-p1-precost-feasibility-2026-10-30",
+  "generated_at_utc": "2026-10-30T15:41:11.884Z",
+  "status": "conditional_shadow_diagnostic_no_actual_orders_or_fills_no_profitability_claim",
+  "experiment_spec": "research/specs/candidate_economics_p1.json",
+  "experiment_spec_sha256": "a0e959afca89044549e893b1c737a6705a82f1badc7195de07495cc477bd2ddc",
+  "candidate_contract": "BTC-PERP-PULLBACK-P1",
+  "parent_frozen_baseline": "BTC-PERP-B0-2026-10-30-v16-v24",
+  "frozen_b0_sources_unchanged": true,
+  "candidate_contract_manifest_id": "btc-perp-candidate-contract-p1-2026-10-30",
+  "window": {
+    "start_utc": "2024-10-01T00:00:00.000Z",
+    "end_utc_exclusive": "2026-10-01T00:00:00.000Z",
+    "period_grouping": "UTC calendar month",
+    "untouched_holdout": false
+  },
+  "input_hashes": [
+    {
+      "path": "research/candidate_reference.mjs",
+      "sha256": "ba96b1b37c1b154733270c366f2e8abefa7ad08175b83bbb297823039e43a525"
+    },
+    {
+      "path": "research/specs/candidate_contract_p1.json",
+      "sha256": "bb1fa68f69d01d461f48d6effa3ce5637faf20997c5ce5b2ee82c4a065820588"
+    },
+    {
+      "path": "research/specs/candidate_economics_p1.json",
+      "sha256": "a0e959afca89044549e893b1c737a6705a82f1badc7195de07495cc477bd2ddc"
+    },
+    {
+      "path": "research/specs/execution_cost_risk.json",
+      "sha256": "fbaa2ab9621199340cb91ad88fa19399f2d717464b59dd7a8afcb98620d4e94e"
+    },
+    {
+      "path": "research/reports/candidate_event_ledger.csv",
+      "sha256": "a6b0fd1295af193e91c1951db44810e0761b67f08e5fc83eec3afd4941945e40"
+    },
+    {
+      "path": "research/reports/btc_history_coverage.json",
+      "sha256": "3fe690f677d544c7c42850e5e0c364d17c8681a48f987fbd9a0f8a8d55d39c94"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+      "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv",
+      "sha256": "2f9c12c66b7b12aaeb99ad0c381661e87e723f86a8a46697db4d3c4097939457"
+    }
+  ],
+  "sample_counts": {
+    "eligible_scored_bars": 275031,
+    "setups": 16991,
+    "triggers": 6815,
+    "risk_pass_15bp": 291,
+    "observed_orders": "NOT_OBSERVED",
+    "observed_fills": "UNKNOWN"
+  },
+  "cost_cases_bps": [
+    10,
+    15,
+    20
+  ],
+  "new_signal_configurations_consumed": 0,
+  "validation": {
+    "candidate_ids_match_existing_p1_ledger": true,
+    "baseline_risk_blockers_match_recalculation": true,
+    "b0_frozen_source_hashes_match": true,
+    "observed_orders_and_fills_available": false,
+    "profitability_claim": false
+  },
+  "limitation": "Assumed planned-quote fills, minute OHLC barrier paths and hypothetical execution-cost sensitivities are not realized fills or proof of profitability. Funding, liquidation, measured spread/slippage, account fees and the actual execution venue remain unresolved.",
+  "artifacts": [
+    {
+      "path": "research/candidate_reference.mjs",
+      "sha256": "ba96b1b37c1b154733270c366f2e8abefa7ad08175b83bbb297823039e43a525"
+    },
+    {
+      "path": "research/candidate_economics_shadow.mjs",
+      "sha256": "967022f3bf563f89ac39896f41b91bfab0ec20bd4729e162393445975e8b06b6"
+    },
+    {
+      "path": "research/build_candidate_economics_manifest.mjs",
+      "sha256": "7b86d259774a6c21ed4725c057cc3b721e211264e2435d35d4ecce30ae32ee7a"
+    },
+    {
+      "path": "research/verify_candidate_economics_manifest.mjs",
+      "sha256": "65c6a56129668f16888902e544fde9844ebc8b0067648dc8e077848cf5f23f5c"
+    },
+    {
+      "path": "research/specs/candidate_economics_p1.json",
+      "sha256": "a0e959afca89044549e893b1c737a6705a82f1badc7195de07495cc477bd2ddc"
+    },
+    {
+      "path": "research/specs/candidate_contract_p1.json",
+      "sha256": "bb1fa68f69d01d461f48d6effa3ce5637faf20997c5ce5b2ee82c4a065820588"
+    },
+    {
+      "path": "research/specs/execution_cost_risk.json",
+      "sha256": "fbaa2ab9621199340cb91ad88fa19399f2d717464b59dd7a8afcb98620d4e94e"
+    },
+    {
+      "path": "research/CANDIDATE_CONTRACT_MANIFEST.json",
+      "sha256": "476f4a4ac91a0c72841d51677cc8c0026b6aeeda11690c9ae274d1ea756f74f4"
+    },
+    {
+      "path": "research/BASELINE_MANIFEST.json",
+      "sha256": "fd64c65a63ab6bf68047b6e9581189878d832ca553b1d917afd8d82dc6c0c44b"
+    },
+    {
+      "path": "research/reports/candidate_event_ledger.csv",
+      "sha256": "a6b0fd1295af193e91c1951db44810e0761b67f08e5fc83eec3afd4941945e40"
+    },
+    {
+      "path": "research/reports/candidate_parity_report.json",
+      "sha256": "e3fba76713f26ea3a1939e901e7fb17c39ff3ad57e6caadae167b6645ba4286f"
+    },
+    {
+      "path": "research/reports/btc_history_coverage.json",
+      "sha256": "3fe690f677d544c7c42850e5e0c364d17c8681a48f987fbd9a0f8a8d55d39c94"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_5m_resampled.csv",
+      "sha256": "771c06242a587de639b880f7f32591ad132669e0e050a81df597129559589314"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_15m_resampled.csv",
+      "sha256": "8dd5cf61a54ae0d9be1450ddec6f2ef5cb9346af00c4d2d3108038f882c8352c"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+      "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv",
+      "sha256": "2f9c12c66b7b12aaeb99ad0c381661e87e723f86a8a46697db4d3c4097939457"
+    },
+    {
+      "path": "research/reports/pre_cost_shadow_ledger.csv",
+      "sha256": "bd70b1368660ffa1e55a29449ec7fadc407f900d64549435bf08183b0ccb6665"
+    },
+    {
+      "path": "research/reports/candidate_funnel_utc_month_volatility.csv",
+      "sha256": "d31517987225ad8cbefb09a09548164bf48feca358276867fb70d770cdb48762"
+    },
+    {
+      "path": "research/reports/cost_atr_frontier_utc_month_volatility.csv",
+      "sha256": "cc614a668b06257418a7faaebae174481731efc6a4cf0ad7bf749f4e8270ee31"
+    },
+    {
+      "path": "research/reports/candidate_economics_report.json",
+      "sha256": "a3aafd9f5d142649936c0997fc5b45eb6e48a2688653d650c6704dcb649335b3"
+    },
+    {
+      "path": "research/reports/candidate_economics_report.md",
+      "sha256": "cba871715194655336a49c5a6f2b2d1cabd4db5aa913faf914c4977e604c8e21"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "manifest_id": "btc-perp-candidate-contract-p1-2026-10-30",
-  "generated_at_utc": "2026-10-30T14:25:39.778Z",
+  "generated_at_utc": "2026-10-30T15:39:46.067Z",
   "contract_version": "BTC-PERP-PULLBACK-P1",
   "parent_frozen_baseline": "BTC-PERP-B0-2026-10-30-v16-v24",
   "status": "candidate-parity-checkpoint-complete_profitability-unproven",
@@ -63,10 +63,10 @@
       {
         "execution_minutes": 5,
         "higher_minutes": 15,
-        "bars": 210240,
+        "bars": 210237,
         "source_csv": "trade_5m_resampled.csv",
         "source_csv_sha256": "771c06242a587de639b880f7f32591ad132669e0e050a81df597129559589314",
-        "candidates": 5302,
+        "candidates": 5262,
         "full_vs_truncated": {
           "compared_candidates": 139,
           "candidate_id_differences": 0,
@@ -78,10 +78,10 @@
       {
         "execution_minutes": 15,
         "higher_minutes": 60,
-        "bars": 70080,
+        "bars": 70077,
         "source_csv": "trade_15m_resampled.csv",
         "source_csv_sha256": "8dd5cf61a54ae0d9be1450ddec6f2ef5cb9346af00c4d2d3108038f882c8352c",
-        "candidates": 1610,
+        "candidates": 1553,
         "full_vs_truncated": {
           "compared_candidates": 109,
           "candidate_id_differences": 0,
@@ -100,14 +100,14 @@
       "long_short_symmetry": "PASS",
       "execution_quote_separation": "PASS"
     },
-    "unique_candidate_ids": 6912,
+    "unique_candidate_ids": 6815,
     "profitability_status": "unproven; native P1 executions/fills were not part of this candidate parity run"
   },
   "event_level_native_runtime_export": "TakeProfit compile/runtime validation does not return candidate rows or plotted series values. Candidate event rows and historical fields are from the independently written reference engine; platform parity is verified by identical shared source code and plan fields consumed by each adapter.",
   "artifacts": [
     {
       "path": "research/README_CANDIDATE_P1.md",
-      "sha256": "f4765dce4b3ad36badc92958b6635e270e052cf694d815e794a1d3324bef8d12"
+      "sha256": "f6199e99f23700578f11d6b51e9e549360a5106e20b07844f01c8c34cdc9b0d3"
     },
     {
       "path": "research/specs/candidate_contract_p1.json",
@@ -131,7 +131,7 @@
     },
     {
       "path": "research/candidate_reference.mjs",
-      "sha256": "ed383207000c5cc576cd8c64f79de2628c651d1535c9f7b51df68cf49fdac608"
+      "sha256": "ba96b1b37c1b154733270c366f2e8abefa7ad08175b83bbb297823039e43a525"
     },
     {
       "path": "research/build_candidate_manifest.mjs",
@@ -139,15 +139,15 @@
     },
     {
       "path": "research/reports/candidate_parity_report.json",
-      "sha256": "dfb85476cff7515f9bdb5b20ef0a1e99cff0a6f5c9a5f8fbc88b446ac4303069"
+      "sha256": "e3fba76713f26ea3a1939e901e7fb17c39ff3ad57e6caadae167b6645ba4286f"
     },
     {
       "path": "research/reports/candidate_parity_report.md",
-      "sha256": "e30abf732bd2e7ec8cf6fbb4bc2fff7ac7309fc0017ccc10891bcc5077870bd8"
+      "sha256": "6006a8b0404670bcc2b4abfad4ead8f8a6507b5ba12c036137f99aaa707e1fb9"
     },
     {
       "path": "research/reports/candidate_event_ledger.csv",
-      "sha256": "b06ab15662239ebcaff488a00546cff017162316212e21284d737ad1be948173"
+      "sha256": "a6b0fd1295af193e91c1951db44810e0761b67f08e5fc83eec3afd4941945e40"
     },
     {
       "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",

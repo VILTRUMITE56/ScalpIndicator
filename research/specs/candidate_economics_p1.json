@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "experiment_id": "BTC-PERP-P1-PRECOST-FEASIBILITY-2026-10",
+  "status": "offline_shadow_diagnostic_not_profitability_evidence",
+  "candidate_contract": "BTC-PERP-PULLBACK-P1",
+  "frozen_b0_reference": "BTC-PERP-B0-2026-10-30-v16-v24",
+  "baseline_policy": "Keep B0 source frozen. Use the unified P1 contract from issue #5 as the shadow event stream and do not change its signal, stop, target or execution thresholds in this analysis.",
+  "instrument": {
+    "venue": "Binance USD-M Futures",
+    "symbol": "BTCUSDT perpetual",
+    "status": "research proxy only"
+  },
+  "history": {
+    "start_utc_inclusive": "2024-10-01T00:00:00.000Z",
+    "end_utc_exclusive": "2026-10-01T00:00:00.000Z",
+    "period_grouping": "UTC calendar month",
+    "execution_profiles": [
+      { "execution_minutes": 5, "higher_minutes": 15 },
+      { "execution_minutes": 15, "higher_minutes": 60 }
+    ],
+    "prices": ["trade OHLC primary", "mark OHLC sensitivity"]
+  },
+  "stage_definitions": {
+    "eligible_bar": "A complete execution bar processed by the P1 reference after execution and higher-timeframe warmup, labeled LONG, SHORT or NEUTRAL by completed higher-timeframe bias.",
+    "setup": "A first eligible EMA20 touch that arms the P1 pullback state machine; expiry, invalidation, bias loss, trigger and end-of-data dispositions are retained.",
+    "trigger": "A completed P1 trigger event with immutable planned next-bar-open quote, stop and target.",
+    "shadow_order_candidate": "A trigger satisfying both the existing 2.5 ATR stop cap and cost/R <= 0.20 for the named sensitivity. This is a gate calculation, not an exchange order.",
+    "assumed_quote_fill": "A conditional path diagnostic assumes entry at the planned next-execution-bar open for barrier sequencing. It does not infer a limit fill or queue position.",
+    "observed_orders_and_fills": "Not available in the retained matched-window data; remain unknown and must not be represented as zero observed fills."
+  },
+  "cost_sensitivities": {
+    "round_trip_basis_points": [10, 15, 20],
+    "fractions": [0.001, 0.0015, 0.002],
+    "classification": "Predeclared non-funding cost scenarios. The 10 bp case references two standard regular-tier taker commissions; the 15/20 bp cases add assumed 5/10 bp of non-fee execution drag. They are not measured historical all-in costs or the user's account rate.",
+    "scenario_labels": {
+      "10": "Public regular-tier taker commission reference: 5 bp entry + 5 bp exit; excludes spread, slippage and funding.",
+      "15": "10 bp commission reference + 5 bp assumed non-fee execution drag; hypothetical non-funding total-cost sensitivity.",
+      "20": "10 bp commission reference + 10 bp assumed non-fee execution drag; hypothetical non-funding total-cost stress sensitivity."
+    },
+    "public_fee_reference": {
+      "url": "https://www.binance.com/en/fee/futureFee",
+      "checked_utc_date": "2026-10-30",
+      "product": "Binance USDⓈ-M Futures, USDT maker/taker schedule",
+      "regular_user_maker_basis_points_per_side": 2,
+      "regular_user_taker_basis_points_per_side": 5,
+      "use_in_this_study": "Reference only: the 10 bp case equals two taker-side commissions at the displayed regular-user rate. User-specific tier, discounts, promotions, historical fee changes and actual order types are unknown."
+    },
+    "gate": "scenario_cost_fraction * planned_entry / planned_stop_distance <= 0.20",
+    "net_pnl": "Directional price PnL less scenario fraction times average entry/exit notional, divided by planned stop distance. Charge the scenario once; exclude funding and account-specific fills."
+  },
+  "risk_gates": {
+    "max_stop_distance_atr": 2.5,
+    "max_cost_to_initial_risk": 0.2,
+    "target_multiple_r": 1.5,
+    "selection_policy": "Do not relax gates or choose a new threshold from this inspected full-history diagnostic. Any later selected threshold/configuration must use the existing bounded experiment registry."
+  },
+  "outcome_model": {
+    "entry": "Assumed fill at immutable planned next-bar-open quote; compare with the first aligned 1m candle open and retain its price difference.",
+    "primary_path": "Trade 1m OHLC; mark 1m is a separate trigger-price sensitivity only.",
+    "barrier_order": "Search forward from decision time. An adverse open beyond stop is GAP_STOP at the open; an open beyond target exits at the open as price improvement; a 1m candle touching both barriers remains AMBIGUOUS and uses a separate conservative stop-first PnL bound.",
+    "data_end": "No forced time exit. Positions still open at history end are CENSORED; report mark-to-market separately and exclude them from realized shadow net-R averages.",
+    "overlap": "Every candidate is evaluated independently; no portfolio compounding, overlap suppression, position limit, liquidation or capital allocation is inferred.",
+    "excursion": "MFE/MAE in R use the observed 1m range from assumed entry through first barrier candle or data end; excursions in an ambiguous candle do not resolve intraminute ordering.",
+    "holding_time": "Report the lower and upper one-minute bounds for a barrier candle; same-minute exits are [0,1] minutes, not exact execution durations."
+  },
+  "stratification": {
+    "volatility": "Profile-specific tertiles of eligible-bar ATR/close percent; thresholds frozen across UTC months.",
+    "denominator_groups": ["profile", "side", "UTC month", "volatility bucket"],
+    "eligible_hours": "Eligible bar count times execution interval, grouped by the side of the current completed higher-timeframe bias; NEUTRAL is retained separately."
+  },
+  "configuration_budget": {
+    "new_signal_configurations_consumed": 0,
+    "note": "The 10/15/20 bp values already exist in the approved cost record and are sensitivities, not signal-parameter selection."
+  }
+}

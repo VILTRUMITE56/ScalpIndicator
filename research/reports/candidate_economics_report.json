@@ -1,0 +1,751 @@
+{
+  "schema_version": 1,
+  "report_id": "BTC-PERP-P1-PRECOST-FEASIBILITY-2026-10",
+  "generated_at_utc": "2026-10-30T15:40:57.603Z",
+  "status": "conditional_shadow_diagnostic_no_actual_orders_or_fills_no_profitability_claim",
+  "candidate_contract": "BTC-PERP-PULLBACK-P1",
+  "frozen_b0": {
+    "baseline_id": "BTC-PERP-B0-2026-10-30-v16-v24",
+    "hashes_unchanged": true,
+    "source_hashes": [
+      "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+      "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c"
+    ]
+  },
+  "window": {
+    "start_utc": "2024-10-01T00:00:00.000Z",
+    "end_utc_exclusive": "2026-10-01T00:00:00.000Z",
+    "period_grouping": "UTC calendar month",
+    "untouched_holdout": false
+  },
+  "definitions": {
+    "eligible_bar": "A complete execution bar processed by the P1 reference after execution and higher-timeframe warmup, labeled LONG, SHORT or NEUTRAL by completed higher-timeframe bias.",
+    "setup": "A first eligible EMA20 touch that arms the P1 pullback state machine; expiry, invalidation, bias loss, trigger and end-of-data dispositions are retained.",
+    "trigger": "A completed P1 trigger event with immutable planned next-bar-open quote, stop and target.",
+    "shadow_order_candidate": "A trigger satisfying both the existing 2.5 ATR stop cap and cost/R <= 0.20 for the named sensitivity. This is a gate calculation, not an exchange order.",
+    "assumed_quote_fill": "A conditional path diagnostic assumes entry at the planned next-execution-bar open for barrier sequencing. It does not infer a limit fill or queue position.",
+    "observed_orders_and_fills": "Not available in the retained matched-window data; remain unknown and must not be represented as zero observed fills."
+  },
+  "outcome_model": {
+    "entry": "Assumed fill at immutable planned next-bar-open quote; compare with the first aligned 1m candle open and retain its price difference.",
+    "primary_path": "Trade 1m OHLC; mark 1m is a separate trigger-price sensitivity only.",
+    "barrier_order": "Search forward from decision time. An adverse open beyond stop is GAP_STOP at the open; an open beyond target exits at the open as price improvement; a 1m candle touching both barriers remains AMBIGUOUS and uses a separate conservative stop-first PnL bound.",
+    "data_end": "No forced time exit. Positions still open at history end are CENSORED; report mark-to-market separately and exclude them from realized shadow net-R averages.",
+    "overlap": "Every candidate is evaluated independently; no portfolio compounding, overlap suppression, position limit, liquidation or capital allocation is inferred.",
+    "excursion": "MFE/MAE in R use the observed 1m range from assumed entry through first barrier candle or data end; excursions in an ambiguous candle do not resolve intraminute ordering.",
+    "holding_time": "Report the lower and upper one-minute bounds for a barrier candle; same-minute exits are [0,1] minutes, not exact execution durations."
+  },
+  "costs": {
+    "round_trip_basis_points": [
+      10,
+      15,
+      20
+    ],
+    "fractions": [
+      0.001,
+      0.0015,
+      0.002
+    ],
+    "classification": "Predeclared non-funding cost scenarios. The 10 bp case references two standard regular-tier taker commissions; the 15/20 bp cases add assumed 5/10 bp of non-fee execution drag. They are not measured historical all-in costs or the user's account rate.",
+    "scenario_labels": {
+      "10": "Public regular-tier taker commission reference: 5 bp entry + 5 bp exit; excludes spread, slippage and funding.",
+      "15": "10 bp commission reference + 5 bp assumed non-fee execution drag; hypothetical non-funding total-cost sensitivity.",
+      "20": "10 bp commission reference + 10 bp assumed non-fee execution drag; hypothetical non-funding total-cost stress sensitivity."
+    },
+    "public_fee_reference": {
+      "url": "https://www.binance.com/en/fee/futureFee",
+      "checked_utc_date": "2026-10-30",
+      "product": "Binance USDⓈ-M Futures, USDT maker/taker schedule",
+      "regular_user_maker_basis_points_per_side": 2,
+      "regular_user_taker_basis_points_per_side": 5,
+      "use_in_this_study": "Reference only: the 10 bp case equals two taker-side commissions at the displayed regular-user rate. User-specific tier, discounts, promotions, historical fee changes and actual order types are unknown."
+    },
+    "gate": "scenario_cost_fraction * planned_entry / planned_stop_distance <= 0.20",
+    "net_pnl": "Directional price PnL less scenario fraction times average entry/exit notional, divided by planned stop distance. Charge the scenario once; exclude funding and account-specific fills."
+  },
+  "risk_gates": {
+    "max_stop_distance_atr": 2.5,
+    "max_cost_to_initial_risk": 0.2,
+    "target_multiple_r": 1.5,
+    "selection_policy": "Do not relax gates or choose a new threshold from this inspected full-history diagnostic. Any later selected threshold/configuration must use the existing bounded experiment registry."
+  },
+  "volatility_buckets_by_profile": {
+    "5m": {
+      "p33": 0.11585127094204264,
+      "p67": 0.18613163689305262,
+      "count": 207967,
+      "min": 0.005023564436913434,
+      "max": 2.0927357695260307
+    },
+    "15m": {
+      "p33": 0.22528357205829613,
+      "p67": 0.3405593586902783,
+      "count": 67064,
+      "min": 0.0252626053321997,
+      "max": 2.037650036941453
+    }
+  },
+  "candidate_reference_fixtures": {
+    "legacy_touch_window": "PASS",
+    "bias_at_touch": "PASS",
+    "recovery_ordering": "PASS",
+    "invalidating_trigger_wick": "PASS",
+    "six_bar_expiry": "PASS",
+    "long_short_symmetry": "PASS",
+    "execution_quote_separation": "PASS"
+  },
+  "barrier_index_validation": {
+    "trade_1m": {
+      "status": "PASS",
+      "method": "segment-tree result compared with linear OHLC scan",
+      "sample_count": 128
+    },
+    "mark_1m": {
+      "status": "PASS",
+      "method": "segment-tree result compared with linear OHLC scan",
+      "sample_count": 128
+    }
+  },
+  "candidate_parity": {
+    "candidate_id_matches": 6815,
+    "existing_ledger_rows": 6815,
+    "mismatched_risk_blockers": 0
+  },
+  "profiles": [
+    {
+      "profile": "5m",
+      "higher_minutes": 15,
+      "source_bars": 210240,
+      "model_scored_bars": 207967,
+      "issue4_coverage_scored_bars": 207967,
+      "scored_bar_delta_vs_issue4": 0,
+      "eligible_side_hours": 14205.833333365168,
+      "setups": 13007,
+      "setup_outcomes": {
+        "TRIGGERED": 5262,
+        "STRUCTURAL_INVALIDATION": 5079,
+        "CLOSE_THROUGH_EMA50": 2401,
+        "EXPIRED": 182,
+        "BIAS_LOSS": 83
+      },
+      "triggers": 5262,
+      "baseline_blockers": {
+        "NONE": 117,
+        "COST > 0.2R": 4483,
+        "STOP > 2.5 ATR": 662
+      },
+      "cost_frontier": {
+        "10": {
+          "profile": "5m",
+          "triggers": 5262,
+          "stop_gate_pass": 4600,
+          "cost_r_gate_pass": 727,
+          "combined_pass": 482,
+          "pass_pct": 9.160015203344736,
+          "required_atr_pct_at_stop_cap": 0.2
+        },
+        "15": {
+          "profile": "5m",
+          "triggers": 5262,
+          "stop_gate_pass": 4600,
+          "cost_r_gate_pass": 225,
+          "combined_pass": 117,
+          "pass_pct": 2.2234891676168758,
+          "required_atr_pct_at_stop_cap": 0.3
+        },
+        "20": {
+          "profile": "5m",
+          "triggers": 5262,
+          "stop_gate_pass": 4600,
+          "cost_r_gate_pass": 76,
+          "combined_pass": 27,
+          "pass_pct": 0.5131128848346637,
+          "required_atr_pct_at_stop_cap": 0.4
+        }
+      },
+      "volatility_cuts_atr_pct": {
+        "p33": 0.11585127094204264,
+        "p67": 0.18613163689305262,
+        "observations": 207967
+      },
+      "measures": {
+        "stop_pct": {
+          "count": 5262,
+          "p10": 0.10831461207775345,
+          "p50": 0.24537491692414187,
+          "p90": 0.5581613958398152,
+          "mean": 0.30416318276221704
+        },
+        "stop_distance_ATR": {
+          "count": 5262,
+          "p10": 1.0099374912988917,
+          "p50": 1.6000339398548136,
+          "p90": 2.6526480326440245,
+          "mean": 1.7758199578322282
+        },
+        "touch_ATR_pct": {
+          "count": 5262,
+          "p10": 0.0721317877469778,
+          "p50": 0.15047931914107798,
+          "p90": 0.30944830949913826,
+          "mean": 0.17530263024981566
+        },
+        "trigger_ATR_pct": {
+          "count": 5262,
+          "p10": 0.07173653553830657,
+          "p50": 0.1496040959749259,
+          "p90": 0.3040164827167739,
+          "mean": 0.1738494739826264
+        },
+        "cost_R_10bp": {
+          "count": 5262,
+          "p10": 0.1791596502704557,
+          "p50": 0.40753972499313906,
+          "p90": 0.9232364720552492,
+          "mean": 0.5048994065339817
+        },
+        "cost_R_15bp": {
+          "count": 5262,
+          "p10": 0.26873947540568355,
+          "p50": 0.6113095874897085,
+          "p90": 1.3848547080828737,
+          "mean": 0.757349109800972
+        },
+        "cost_R_20bp": {
+          "count": 5262,
+          "p10": 0.3583193005409114,
+          "p50": 0.8150794499862781,
+          "p90": 1.8464729441104983,
+          "mean": 1.0097988130679634
+        }
+      },
+      "history": {
+        "first_bar_utc": "2024-10-01T00:00:00.000Z",
+        "last_bar_utc": "2026-09-30T23:55:00.000Z"
+      },
+      "source_file": "trade_5m_resampled.csv",
+      "source_sha256": "771c06242a587de639b880f7f32591ad132669e0e050a81df597129559589314"
+    },
+    {
+      "profile": "15m",
+      "higher_minutes": 60,
+      "source_bars": 70080,
+      "model_scored_bars": 67064,
+      "issue4_coverage_scored_bars": 67064,
+      "scored_bar_delta_vs_issue4": 0,
+      "eligible_side_hours": 13830,
+      "setups": 3984,
+      "setup_outcomes": {
+        "STRUCTURAL_INVALIDATION": 1581,
+        "TRIGGERED": 1553,
+        "CLOSE_THROUGH_EMA50": 757,
+        "EXPIRED": 83,
+        "BIAS_LOSS": 10
+      },
+      "triggers": 1553,
+      "baseline_blockers": {
+        "COST > 0.2R": 1159,
+        "NONE": 174,
+        "STOP > 2.5 ATR": 220
+      },
+      "cost_frontier": {
+        "10": {
+          "profile": "15m",
+          "triggers": 1553,
+          "stop_gate_pass": 1333,
+          "cost_r_gate_pass": 667,
+          "combined_pass": 473,
+          "pass_pct": 30.457179652285898,
+          "required_atr_pct_at_stop_cap": 0.2
+        },
+        "15": {
+          "profile": "15m",
+          "triggers": 1553,
+          "stop_gate_pass": 1333,
+          "cost_r_gate_pass": 316,
+          "combined_pass": 174,
+          "pass_pct": 11.204121056020606,
+          "required_atr_pct_at_stop_cap": 0.3
+        },
+        "20": {
+          "profile": "15m",
+          "triggers": 1553,
+          "stop_gate_pass": 1333,
+          "cost_r_gate_pass": 160,
+          "combined_pass": 72,
+          "pass_pct": 4.63618802318094,
+          "required_atr_pct_at_stop_cap": 0.4
+        }
+      },
+      "volatility_cuts_atr_pct": {
+        "p33": 0.22528357205829613,
+        "p67": 0.3405593586902783,
+        "observations": 67064
+      },
+      "measures": {
+        "stop_pct": {
+          "count": 1553,
+          "p10": 0.21231905760081604,
+          "p50": 0.45423678601064404,
+          "p90": 1.0186971427346372,
+          "mean": 0.5585974340114436
+        },
+        "stop_distance_ATR": {
+          "count": 1553,
+          "p10": 1,
+          "p50": 1.5440274854613487,
+          "p90": 2.7610825717970195,
+          "mean": 1.776912128821982
+        },
+        "touch_ATR_pct": {
+          "count": 1553,
+          "p10": 0.14883526075112696,
+          "p50": 0.2791541377961259,
+          "p90": 0.5185973543998733,
+          "mean": 0.31754120897921506
+        },
+        "trigger_ATR_pct": {
+          "count": 1553,
+          "p10": 0.14614095006042993,
+          "p50": 0.2839137067783228,
+          "p90": 0.5260982124629601,
+          "mean": 0.31630145899638296
+        },
+        "cost_R_10bp": {
+          "count": 1553,
+          "p10": 0.09816525125380086,
+          "p50": 0.22014949708995327,
+          "p90": 0.47098977024840666,
+          "mean": 0.2664030983023767
+        },
+        "cost_R_15bp": {
+          "count": 1553,
+          "p10": 0.1472478768807013,
+          "p50": 0.3302242456349299,
+          "p90": 0.70648465537261,
+          "mean": 0.39960464745356555
+        },
+        "cost_R_20bp": {
+          "count": 1553,
+          "p10": 0.19633050250760173,
+          "p50": 0.44029899417990653,
+          "p90": 0.9419795404968133,
+          "mean": 0.5328061966047534
+        }
+      },
+      "history": {
+        "first_bar_utc": "2024-10-01T00:00:00.000Z",
+        "last_bar_utc": "2026-09-30T23:45:00.000Z"
+      },
+      "source_file": "trade_15m_resampled.csv",
+      "source_sha256": "8dd5cf61a54ae0d9be1450ddec6f2ef5cb9346af00c4d2d3108038f882c8352c"
+    }
+  ],
+  "overall": {
+    "eligible_scored_bars": 275031,
+    "directional_setups": 16991,
+    "triggers": 6815,
+    "setup_to_trigger_pct": 40.10946971926314,
+    "risk_pass_15bp": 291,
+    "risk_pass_share_15bp": 4.269992663242847,
+    "closed_15bp_gate_shadow_outcomes": 291,
+    "cumulative_net_R_15bp_gate_shadow": -49.495078459957966,
+    "conditional_gate_candidate_count_15bp": 291,
+    "observed_order_count": "NOT_OBSERVED",
+    "observed_fill_count": "UNKNOWN",
+    "assumed_quote_paths_are_model_only": true,
+    "gate_off_performance_is_diagnostic_only": true,
+    "funding_applied": false,
+    "portfolio_overlap_or_capital_model": false,
+    "configuration_budget_signal_variants_consumed": 0,
+    "trade_mark_outcome_disagreement_count": 194,
+    "first_minute_entry_open_delta": {
+      "count": 6815,
+      "p10": 0,
+      "p50": 0,
+      "p90": 0,
+      "mean": 0
+    },
+    "profitability": "unproven; conditional path results do not establish realized expectancy or profitability"
+  },
+  "cost_frontier_overall": [
+    {
+      "bps": 10,
+      "fraction": 0.001,
+      "triggers": 6815,
+      "stop_gate_pass": 5933,
+      "cost_r_gate_pass": 1394,
+      "combined_pass": 955,
+      "pass_pct": 14.01320616287601,
+      "required_atr_pct_at_stop_cap": 0.2,
+      "median_candidate_touch_atr_pct": 0.17296292235918032,
+      "median_cost_R_at_named_case": 0.3538600251321809
+    },
+    {
+      "bps": 15,
+      "fraction": 0.0015,
+      "triggers": 6815,
+      "stop_gate_pass": 5933,
+      "cost_r_gate_pass": 541,
+      "combined_pass": 291,
+      "pass_pct": 4.269992663242847,
+      "required_atr_pct_at_stop_cap": 0.3,
+      "median_candidate_touch_atr_pct": 0.17296292235918032,
+      "median_cost_R_at_named_case": 0.5307900376982714
+    },
+    {
+      "bps": 20,
+      "fraction": 0.002,
+      "triggers": 6815,
+      "stop_gate_pass": 5933,
+      "cost_r_gate_pass": 236,
+      "combined_pass": 99,
+      "pass_pct": 1.4526779163609684,
+      "required_atr_pct_at_stop_cap": 0.4,
+      "median_candidate_touch_atr_pct": 0.17296292235918032,
+      "median_cost_R_at_named_case": 0.7077200502643618
+    }
+  ],
+  "outcome_summary": [
+    {
+      "profile": "5m",
+      "side": "LONG",
+      "bps": 10,
+      "candidate_count": 2741,
+      "gate_candidates": 182,
+      "target": 83,
+      "stop": 99,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -4.4336906236296105,
+      "net_R_per_closed_trade": -0.024360937492470387,
+      "net_R_per_eligible_day": -0.006627340244588356,
+      "closed_count": 182,
+      "eligible_days": 669,
+      "MFE_R_OHLC_p50": 1.197323606890508,
+      "MFE_R_OHLC_p90": 1.761292859998641,
+      "MAE_R_OHLC_p50": 1.0078048919281444,
+      "MAE_R_OHLC_p90": 1.1789832018229753,
+      "holding_minutes_p50": 68.5,
+      "holding_minutes_p90": 189.4,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "5m",
+      "side": "LONG",
+      "bps": 15,
+      "candidate_count": 2741,
+      "gate_candidates": 26,
+      "target": 11,
+      "stop": 15,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -2.9251719663597404,
+      "net_R_per_closed_trade": -0.11250661409075925,
+      "net_R_per_eligible_day": -0.004372454359282124,
+      "closed_count": 26,
+      "eligible_days": 669,
+      "MFE_R_OHLC_p50": 1.0242264349833405,
+      "MFE_R_OHLC_p90": 1.6038387416220805,
+      "MAE_R_OHLC_p50": 1.0114890573742588,
+      "MAE_R_OHLC_p90": 1.1440320967010282,
+      "holding_minutes_p50": 86.5,
+      "holding_minutes_p90": 289.5,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "5m",
+      "side": "LONG",
+      "bps": 20,
+      "candidate_count": 2741,
+      "gate_candidates": 4,
+      "target": 3,
+      "stop": 1,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": 2.795962028075344,
+      "net_R_per_closed_trade": 0.698990507018836,
+      "net_R_per_eligible_day": 0.004179315438079737,
+      "closed_count": 4,
+      "eligible_days": 669,
+      "MFE_R_OHLC_p50": 1.5738336790837688,
+      "MFE_R_OHLC_p90": 1.5861985396489549,
+      "MAE_R_OHLC_p50": 0.4550078903945818,
+      "MAE_R_OHLC_p90": 0.9260023226070802,
+      "holding_minutes_p50": 46,
+      "holding_minutes_p90": 220.80000000000004,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "5m",
+      "side": "SHORT",
+      "bps": 10,
+      "candidate_count": 2521,
+      "gate_candidates": 300,
+      "target": 122,
+      "stop": 178,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -40.468922416279206,
+      "net_R_per_closed_trade": -0.13489640805426403,
+      "net_R_per_eligible_day": -0.062259880640429546,
+      "closed_count": 300,
+      "eligible_days": 650,
+      "MFE_R_OHLC_p50": 1.0572354896760703,
+      "MFE_R_OHLC_p90": 1.7306703612304746,
+      "MAE_R_OHLC_p50": 1.015115349556961,
+      "MAE_R_OHLC_p90": 1.2093982972023336,
+      "holding_minutes_p50": 46,
+      "holding_minutes_p90": 187.4000000000002,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "5m",
+      "side": "SHORT",
+      "bps": 15,
+      "candidate_count": 2521,
+      "gate_candidates": 91,
+      "target": 33,
+      "stop": 58,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -23.621218569774364,
+      "net_R_per_closed_trade": -0.25957383043708093,
+      "net_R_per_eligible_day": -0.036340336261191326,
+      "closed_count": 91,
+      "eligible_days": 650,
+      "MFE_R_OHLC_p50": 0.8034908929394765,
+      "MFE_R_OHLC_p90": 1.6425635059355495,
+      "MAE_R_OHLC_p50": 1.0249568938809557,
+      "MAE_R_OHLC_p90": 1.1982662518321063,
+      "holding_minutes_p50": 51.5,
+      "holding_minutes_p90": 230.5,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "5m",
+      "side": "SHORT",
+      "bps": 20,
+      "candidate_count": 2521,
+      "gate_candidates": 23,
+      "target": 6,
+      "stop": 17,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -11.906303555779163,
+      "net_R_per_closed_trade": -0.5176653719903984,
+      "net_R_per_eligible_day": -0.018317390085814095,
+      "closed_count": 23,
+      "eligible_days": 650,
+      "MFE_R_OHLC_p50": 0.6858085966213843,
+      "MFE_R_OHLC_p90": 1.5944619994476183,
+      "MAE_R_OHLC_p50": 1.0380349036723957,
+      "MAE_R_OHLC_p90": 1.1585283153014818,
+      "holding_minutes_p50": 63.5,
+      "holding_minutes_p90": 180.50000000000003,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "15m",
+      "side": "LONG",
+      "bps": 10,
+      "candidate_count": 820,
+      "gate_candidates": 241,
+      "target": 99,
+      "stop": 142,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -29.706455520533034,
+      "net_R_per_closed_trade": -0.12326330091507483,
+      "net_R_per_eligible_day": -0.06267184708973214,
+      "closed_count": 241,
+      "eligible_days": 474,
+      "MFE_R_OHLC_p50": 1.028104551952871,
+      "MFE_R_OHLC_p90": 1.6672955735391217,
+      "MAE_R_OHLC_p50": 1.0163460212096318,
+      "MAE_R_OHLC_p90": 1.1809286120873215,
+      "holding_minutes_p50": 141.5,
+      "holding_minutes_p90": 602.5,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "15m",
+      "side": "LONG",
+      "bps": 15,
+      "candidate_count": 820,
+      "gate_candidates": 71,
+      "target": 29,
+      "stop": 42,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -9.83947561254758,
+      "net_R_per_closed_trade": -0.13858416355700817,
+      "net_R_per_eligible_day": -0.02075838736824384,
+      "closed_count": 71,
+      "eligible_days": 474,
+      "MFE_R_OHLC_p50": 0.7639115039533014,
+      "MFE_R_OHLC_p90": 1.6541050358800484,
+      "MAE_R_OHLC_p50": 1.0163460212096318,
+      "MAE_R_OHLC_p90": 1.1739942825595675,
+      "holding_minutes_p50": 188.5,
+      "holding_minutes_p90": 790.5,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "15m",
+      "side": "LONG",
+      "bps": 20,
+      "candidate_count": 820,
+      "gate_candidates": 24,
+      "target": 11,
+      "stop": 13,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -0.558557449538301,
+      "net_R_per_closed_trade": -0.023273227064095875,
+      "net_R_per_eligible_day": -0.0011783912437516898,
+      "closed_count": 24,
+      "eligible_days": 474,
+      "MFE_R_OHLC_p50": 1.1841987388004727,
+      "MFE_R_OHLC_p90": 1.7034044573839378,
+      "MAE_R_OHLC_p50": 1.0171296177697327,
+      "MAE_R_OHLC_p90": 1.1633278584259845,
+      "holding_minutes_p50": 325.5,
+      "holding_minutes_p90": 1050.5999999999997,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "15m",
+      "side": "SHORT",
+      "bps": 10,
+      "candidate_count": 733,
+      "gate_candidates": 232,
+      "target": 86,
+      "stop": 146,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -48.73068614818223,
+      "net_R_per_closed_trade": -0.2100460609835441,
+      "net_R_per_eligible_day": -0.11151186761597764,
+      "closed_count": 232,
+      "eligible_days": 437,
+      "MFE_R_OHLC_p50": 0.7915093026365172,
+      "MFE_R_OHLC_p90": 1.6723463782040187,
+      "MAE_R_OHLC_p50": 1.0251154310161388,
+      "MAE_R_OHLC_p90": 1.1750579825832834,
+      "holding_minutes_p50": 105,
+      "holding_minutes_p90": 433.3,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "15m",
+      "side": "SHORT",
+      "bps": 15,
+      "candidate_count": 733,
+      "gate_candidates": 103,
+      "target": 42,
+      "stop": 61,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": -13.109212311276279,
+      "net_R_per_closed_trade": -0.12727390593472115,
+      "net_R_per_eligible_day": -0.02999819750864137,
+      "closed_count": 103,
+      "eligible_days": 437,
+      "MFE_R_OHLC_p50": 0.9552701587621397,
+      "MFE_R_OHLC_p90": 1.6887991013982537,
+      "MAE_R_OHLC_p50": 1.0187452924698253,
+      "MAE_R_OHLC_p90": 1.1647996589790477,
+      "holding_minutes_p50": 107.5,
+      "holding_minutes_p90": 435.4999999999999,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    },
+    {
+      "profile": "15m",
+      "side": "SHORT",
+      "bps": 20,
+      "candidate_count": 733,
+      "gate_candidates": 48,
+      "target": 23,
+      "stop": 25,
+      "gap_stop": 0,
+      "ambiguous": 0,
+      "censored": 0,
+      "net_R_sum": 2.19009934518456,
+      "net_R_per_closed_trade": 0.045627069691345,
+      "net_R_per_eligible_day": 0.005011668982115698,
+      "closed_count": 48,
+      "eligible_days": 437,
+      "MFE_R_OHLC_p50": 1.358074968943472,
+      "MFE_R_OHLC_p90": 1.7054148696771285,
+      "MAE_R_OHLC_p50": 1.003009056392182,
+      "MAE_R_OHLC_p90": 1.1089300553884167,
+      "holding_minutes_p50": 124.5,
+      "holding_minutes_p90": 451.3,
+      "actual_order_count": "NOT_OBSERVED",
+      "actual_fill_count": "UNKNOWN"
+    }
+  ],
+  "decision": "REVISE before feature selection: under the declared planned-quote assumption, the current 15 bp eligible subset has non-positive cumulative net R after costs. Keep all cost and stop gates unchanged; inspect execution/exit assumptions and require an untouched, fill-reconciled follow-up before any promotion.",
+  "source_files": [
+    {
+      "path": "research/candidate_reference.mjs",
+      "sha256": "ba96b1b37c1b154733270c366f2e8abefa7ad08175b83bbb297823039e43a525"
+    },
+    {
+      "path": "research/specs/candidate_contract_p1.json",
+      "sha256": "bb1fa68f69d01d461f48d6effa3ce5637faf20997c5ce5b2ee82c4a065820588"
+    },
+    {
+      "path": "research/specs/candidate_economics_p1.json",
+      "sha256": "a0e959afca89044549e893b1c737a6705a82f1badc7195de07495cc477bd2ddc"
+    },
+    {
+      "path": "research/specs/execution_cost_risk.json",
+      "sha256": "fbaa2ab9621199340cb91ad88fa19399f2d717464b59dd7a8afcb98620d4e94e"
+    },
+    {
+      "path": "research/reports/candidate_event_ledger.csv",
+      "sha256": "a6b0fd1295af193e91c1951db44810e0761b67f08e5fc83eec3afd4941945e40"
+    },
+    {
+      "path": "research/reports/btc_history_coverage.json",
+      "sha256": "3fe690f677d544c7c42850e5e0c364d17c8681a48f987fbd9a0f8a8d55d39c94"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+      "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv",
+      "sha256": "2f9c12c66b7b12aaeb99ad0c381661e87e723f86a8a46697db4d3c4097939457"
+    }
+  ],
+  "artifacts": []
+}

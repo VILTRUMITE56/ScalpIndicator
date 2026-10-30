@@ -40,3 +40,20 @@ The run manifest `CANDIDATE_CONTRACT_MANIFEST.json` records source/data hashes, 
 ## Interpretation
 
 The report describes candidate parity and risk blockers only. The current cost gate rejects many candidates, and the retained history has no observed TakeProfit fills for this P1 run. Do not infer expectancy, win rate, or profitability from candidate counts. Venue filters, account fee tier, order-book spread, slippage, funding, and the cancel/fill race still need execution evidence.
+
+## Pre-cost economics checkpoint (#7)
+
+`candidate_reference.mjs` applies the exact issue #4 execution-conflict mask and disputed HTF-bar reseeding policy before replay. Its scored-bar counts now match issue #4 coverage for both profiles. The frozen B0 sources remain byte-for-byte unchanged; the economics study uses the P1 contract as a separately versioned shadow event stream.
+
+Run the complete diagnostic with:
+
+```powershell
+node candidate_reference.mjs
+node candidate_economics_shadow.mjs
+node build_candidate_economics_manifest.mjs
+node verify_candidate_economics_manifest.mjs
+```
+
+The first command regenerates the audited P1 candidate ledger. The second reports eligible bars, armed setups, triggers, gate-eligible shadow orders and assumed quote paths by profile, side, UTC month and profile-specific ATR tertile. It replays every P1 candidate on trade 1m OHLC and records a separate mark 1m sensitivity. The third freezes source, data and output hashes. The fourth verifies those hashes plus key report and frozen-baseline invariants.
+
+The cost cases are the already-declared 10/15/20 bp sensitivities; no signal configuration is selected or consumed. The 10 bp case references two standard regular-tier taker commissions on Binance's public fee table; it excludes spread and slippage and is not the user's account rate. The 15/20 bp cases add assumed 5/10 bp non-fee execution drag, which is not measured from historical quotes. A conditional quote fill is assumed only to evaluate barriers, and actual order/fill counts stay unknown. The full inspected history is not an untouched holdout; net R is not a portfolio backtest; funding, realized fees/spread/slippage, liquidation and exchange execution are absent. See `reports/candidate_economics_report.md`, `pre_cost_shadow_ledger.csv`, `candidate_funnel_utc_month_volatility.csv`, `cost_atr_frontier_utc_month_volatility.csv`, and `CANDIDATE_ECONOMICS_MANIFEST.json`.
