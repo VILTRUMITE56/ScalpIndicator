@@ -1,0 +1,89 @@
+scenario,sequence,update,bar,event,candidate_id,order_id,status,side,requested_qty,filled_qty,remaining_qty,position_qty,protected_qty,stop,target,detail
+repeated_updates_and_reload,1,0,1,CANDIDATE,C-RELOAD,,NONE,,0,0,0,0,0,,,
+repeated_updates_and_reload,2,0,1,SETUP_QUALIFIED,C-RELOAD,,NONE,,0,0,0,0,0,,,
+repeated_updates_and_reload,3,0,1,DUPLICATE_CANDIDATE_IGNORED,C-RELOAD,,NONE,,0,0,0,0,0,,,idempotent repeated update/reload
+repeated_updates_and_reload,4,0,1,SUBMISSION,C-RELOAD,O-RELOAD,CREATED,LONG,1,0,1,0,0,,,parent entry created; no fill assumed
+repeated_updates_and_reload,5,0,1,ACKNOWLEDGMENT,C-RELOAD,O-RELOAD,PLACED,LONG,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+repeated_updates_and_reload,6,1,2,NEXT_UPDATE,C-RELOAD,O-RELOAD,PLACED,LONG,1,0,1,0,0,,,
+repeated_updates_and_reload,7,1,2,DUPLICATE_CANDIDATE_IGNORED,C-RELOAD,O-RELOAD,PLACED,LONG,1,0,1,0,0,,,idempotent repeated update/reload
+repeated_updates_and_reload,8,1,2,FULL_FILL,C-RELOAD,O-RELOAD,FILLED,LONG,1,1,0,1,1,98,103,hypothetical fill at 100
+repeated_updates_and_reload,9,1,2,TAKE_PROFIT_EXIT,C-RELOAD,O-RELOAD,FILLED,LONG,1,1,0,0,0,,,reducing exit at 103; qty=1
+delayed_ack_and_fill,1,0,3,CANDIDATE,C-DELAY,,NONE,,0,0,0,0,0,,,
+delayed_ack_and_fill,2,0,3,SETUP_QUALIFIED,C-DELAY,,NONE,,0,0,0,0,0,,,
+delayed_ack_and_fill,3,0,3,SUBMISSION,C-DELAY,O-DELAY,CREATED,LONG,1,0,1,0,0,,,parent entry created; no fill assumed
+delayed_ack_and_fill,4,1,3,NEXT_UPDATE,C-DELAY,O-DELAY,CREATED,LONG,1,0,1,0,0,,,
+delayed_ack_and_fill,5,2,3,NEXT_UPDATE,C-DELAY,O-DELAY,CREATED,LONG,1,0,1,0,0,,,
+delayed_ack_and_fill,6,2,3,ACKNOWLEDGMENT,C-DELAY,O-DELAY,PLACED,LONG,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+delayed_ack_and_fill,7,3,4,NEXT_UPDATE,C-DELAY,O-DELAY,PLACED,LONG,1,0,1,0,0,,,
+delayed_ack_and_fill,8,3,4,FULL_FILL,C-DELAY,O-DELAY,FILLED,LONG,1,1,0,1,1,98,103,hypothetical fill at 100
+partial_fill_cancel_race_and_protected_exit,1,0,10,CANDIDATE,C-PARTIAL-CANCEL,,NONE,,0,0,0,0,0,,,
+partial_fill_cancel_race_and_protected_exit,2,0,10,SETUP_QUALIFIED,C-PARTIAL-CANCEL,,NONE,,0,0,0,0,0,,,
+partial_fill_cancel_race_and_protected_exit,3,0,10,SUBMISSION,C-PARTIAL-CANCEL,O-PARTIAL-CANCEL,CREATED,LONG,1,0,1,0,0,,,parent entry created; no fill assumed
+partial_fill_cancel_race_and_protected_exit,4,0,10,ACKNOWLEDGMENT,C-PARTIAL-CANCEL,O-PARTIAL-CANCEL,PLACED,LONG,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+partial_fill_cancel_race_and_protected_exit,5,0,11,PARTIAL_FILL,C-PARTIAL-CANCEL,O-PARTIAL-CANCEL,PARTIALLY_FILLED,LONG,1,0.4,0.6,0.4,0.4,98,103,hypothetical fill at 100
+partial_fill_cancel_race_and_protected_exit,6,0,12,EXPIRY,C-PARTIAL-CANCEL,O-PARTIAL-CANCEL,PARTIALLY_FILLED,LONG,1,0.4,0.6,0.4,0.4,98,103,"entry lifetime elapsed; expiry is a cancel request, not an acknowledgment"
+partial_fill_cancel_race_and_protected_exit,7,0,12,CANCELLATION_REQUEST,C-PARTIAL-CANCEL,O-PARTIAL-CANCEL,PARTIALLY_FILLED,LONG,1,0.4,0.6,0.4,0.4,98,103,expired parent entry
+partial_fill_cancel_race_and_protected_exit,8,0,12,PARTIAL_FILL,C-PARTIAL-CANCEL,O-PARTIAL-CANCEL,PARTIALLY_FILLED,LONG,1,0.6000000000000001,0.3999999999999999,0.6000000000000001,0.6000000000000001,98,103,hypothetical fill at 100.1
+partial_fill_cancel_race_and_protected_exit,9,0,13,CANCELLATION_ACKNOWLEDGMENT,C-PARTIAL-CANCEL,O-PARTIAL-CANCEL,PARTIALLY_FILLED_CLOSED,LONG,1,0.6000000000000001,0.3999999999999999,0.6000000000000001,0.6000000000000001,98,103,unfilled remainder is closed; any filled exposure remains bracket-protected
+partial_fill_cancel_race_and_protected_exit,10,0,13,CANDIDATE,C-BLOCKED-OPEN,O-PARTIAL-CANCEL,PARTIALLY_FILLED_CLOSED,LONG,1,0.6000000000000001,0.3999999999999999,0.6000000000000001,0.6000000000000001,98,103,
+partial_fill_cancel_race_and_protected_exit,11,0,13,CANDIDATE_BLOCKED,C-BLOCKED-OPEN,O-PARTIAL-CANCEL,PARTIALLY_FILLED_CLOSED,LONG,1,0.6000000000000001,0.3999999999999999,0.6000000000000001,0.6000000000000001,98,103,"position, active order, or same-update resolution"
+partial_fill_cancel_race_and_protected_exit,12,0,14,STOP_EXIT,C-PARTIAL-CANCEL,O-PARTIAL-CANCEL,PARTIALLY_FILLED_CLOSED,LONG,1,0.6000000000000001,0.3999999999999999,0,0,,,reducing exit at 98; qty=0.6000000000000001
+partial_fill_cancel_race_and_protected_exit,13,0,14,CANDIDATE,C-SAME-UPDATE,O-PARTIAL-CANCEL,PARTIALLY_FILLED_CLOSED,LONG,1,0.6000000000000001,0.3999999999999999,0,0,,,
+partial_fill_cancel_race_and_protected_exit,14,0,14,CANDIDATE_BLOCKED,C-SAME-UPDATE,O-PARTIAL-CANCEL,PARTIALLY_FILLED_CLOSED,LONG,1,0.6000000000000001,0.3999999999999999,0,0,,,"position, active order, or same-update resolution"
+partial_fill_cancel_race_and_protected_exit,15,1,15,NEXT_UPDATE,,,NONE,,0,0,0,0,0,,,
+partial_fill_cancel_race_and_protected_exit,16,1,15,CANDIDATE,C-AFTER-EXIT,,NONE,,0,0,0,0,0,,,
+partial_fill_cancel_race_and_protected_exit,17,1,15,SETUP_QUALIFIED,C-AFTER-EXIT,,NONE,,0,0,0,0,0,,,
+rejection,1,0,20,CANDIDATE,C-REJECT,,NONE,,0,0,0,0,0,,,
+rejection,2,0,20,SETUP_QUALIFIED,C-REJECT,,NONE,,0,0,0,0,0,,,
+rejection,3,0,20,SUBMISSION,C-REJECT,O-REJECT,CREATED,SHORT,1,0,1,0,0,,,parent entry created; no fill assumed
+rejection,4,0,20,REJECTION,C-REJECT,O-REJECT,REJECTED,SHORT,1,0,1,0,0,,,zero fill and zero exposure
+same_bar_entry_and_take_profit,1,0,30,CANDIDATE,C-SAME-BAR,,NONE,,0,0,0,0,0,,,
+same_bar_entry_and_take_profit,2,0,30,SETUP_QUALIFIED,C-SAME-BAR,,NONE,,0,0,0,0,0,,,
+same_bar_entry_and_take_profit,3,0,30,SUBMISSION,C-SAME-BAR,O-SAME-BAR,CREATED,LONG,1,0,1,0,0,,,parent entry created; no fill assumed
+same_bar_entry_and_take_profit,4,0,30,ACKNOWLEDGMENT,C-SAME-BAR,O-SAME-BAR,PLACED,LONG,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+same_bar_entry_and_take_profit,5,0,30,FULL_FILL,C-SAME-BAR,O-SAME-BAR,FILLED,LONG,1,1,0,1,1,98,103,hypothetical fill at 100
+same_bar_entry_and_take_profit,6,0,30,TAKE_PROFIT_EXIT,C-SAME-BAR,O-SAME-BAR,FILLED,LONG,1,1,0,0,0,,,reducing exit at 103; qty=1
+unfilled_expiry_and_cancel_ack,1,0,40,CANDIDATE,C-EXPIRE,,NONE,,0,0,0,0,0,,,
+unfilled_expiry_and_cancel_ack,2,0,40,SETUP_QUALIFIED,C-EXPIRE,,NONE,,0,0,0,0,0,,,
+unfilled_expiry_and_cancel_ack,3,0,40,SUBMISSION,C-EXPIRE,O-EXPIRE,CREATED,SHORT,1,0,1,0,0,,,parent entry created; no fill assumed
+unfilled_expiry_and_cancel_ack,4,0,40,ACKNOWLEDGMENT,C-EXPIRE,O-EXPIRE,PLACED,SHORT,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+unfilled_expiry_and_cancel_ack,5,0,41,EXPIRY,C-EXPIRE,O-EXPIRE,PLACED,SHORT,1,0,1,0,0,,,"entry lifetime elapsed; expiry is a cancel request, not an acknowledgment"
+unfilled_expiry_and_cancel_ack,6,0,41,CANCELLATION_REQUEST,C-EXPIRE,O-EXPIRE,PLACED,SHORT,1,0,1,0,0,,,expired parent entry
+unfilled_expiry_and_cancel_ack,7,0,42,CANCELLATION_ACKNOWLEDGMENT,C-EXPIRE,O-EXPIRE,CANCELED,SHORT,1,0,1,0,0,,,unfilled remainder is closed; any filled exposure remains bracket-protected
+lower_interval_target_first,1,0,50,CANDIDATE,C-target_first,,NONE,,0,0,0,0,0,,,
+lower_interval_target_first,2,0,50,SETUP_QUALIFIED,C-target_first,,NONE,,0,0,0,0,0,,,
+lower_interval_target_first,3,0,50,SUBMISSION,C-target_first,O-target_first,CREATED,LONG,1,0,1,0,0,,,parent entry created; no fill assumed
+lower_interval_target_first,4,0,50,ACKNOWLEDGMENT,C-target_first,O-target_first,PLACED,LONG,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+lower_interval_target_first,5,0,50,FULL_FILL,C-target_first,O-target_first,FILLED,LONG,1,1,0,1,1,98,103,hypothetical fill at 100
+lower_interval_target_first,6,0,51,TAKE_PROFIT_EXIT,C-target_first,O-target_first,FILLED,LONG,1,1,0,0,0,,,reducing exit at 103; qty=1
+lower_interval_stop_first,1,0,50,CANDIDATE,C-stop_first,,NONE,,0,0,0,0,0,,,
+lower_interval_stop_first,2,0,50,SETUP_QUALIFIED,C-stop_first,,NONE,,0,0,0,0,0,,,
+lower_interval_stop_first,3,0,50,SUBMISSION,C-stop_first,O-stop_first,CREATED,LONG,1,0,1,0,0,,,parent entry created; no fill assumed
+lower_interval_stop_first,4,0,50,ACKNOWLEDGMENT,C-stop_first,O-stop_first,PLACED,LONG,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+lower_interval_stop_first,5,0,50,FULL_FILL,C-stop_first,O-stop_first,FILLED,LONG,1,1,0,1,1,98,103,hypothetical fill at 100
+lower_interval_stop_first,6,0,51,STOP_EXIT,C-stop_first,O-stop_first,FILLED,LONG,1,1,0,0,0,,,reducing exit at 98; qty=1
+lower_interval_same_minute_ambiguous,1,0,50,CANDIDATE,C-same_minute_ambiguous,,NONE,,0,0,0,0,0,,,
+lower_interval_same_minute_ambiguous,2,0,50,SETUP_QUALIFIED,C-same_minute_ambiguous,,NONE,,0,0,0,0,0,,,
+lower_interval_same_minute_ambiguous,3,0,50,SUBMISSION,C-same_minute_ambiguous,O-same_minute_ambiguous,CREATED,LONG,1,0,1,0,0,,,parent entry created; no fill assumed
+lower_interval_same_minute_ambiguous,4,0,50,ACKNOWLEDGMENT,C-same_minute_ambiguous,O-same_minute_ambiguous,PLACED,LONG,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+lower_interval_same_minute_ambiguous,5,0,50,FULL_FILL,C-same_minute_ambiguous,O-same_minute_ambiguous,FILLED,LONG,1,1,0,1,1,98,103,hypothetical fill at 100
+lower_interval_same_minute_ambiguous,6,0,51,AMBIGUOUS_BARRIER_EXIT,C-same_minute_ambiguous,O-same_minute_ambiguous,FILLED,LONG,1,1,0,0,0,,,reducing exit at 98; qty=1
+gap_through_stop,1,0,60,CANDIDATE,C-GAP,,NONE,,0,0,0,0,0,,,
+gap_through_stop,2,0,60,SETUP_QUALIFIED,C-GAP,,NONE,,0,0,0,0,0,,,
+gap_through_stop,3,0,60,SUBMISSION,C-GAP,O-GAP,CREATED,LONG,1,0,1,0,0,,,parent entry created; no fill assumed
+gap_through_stop,4,0,60,ACKNOWLEDGMENT,C-GAP,O-GAP,PLACED,LONG,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+gap_through_stop,5,0,60,FULL_FILL,C-GAP,O-GAP,FILLED,LONG,1,1,0,1,1,98,103,hypothetical fill at 100
+gap_through_stop,6,0,61,GAP_THROUGH_STOP_EXIT,C-GAP,O-GAP,FILLED,LONG,1,1,0,0,0,,,reducing exit at 95; qty=1
+exit_cannot_reverse_or_increase,1,0,70,CANDIDATE,C-NO-REVERSE,,NONE,,0,0,0,0,0,,,
+exit_cannot_reverse_or_increase,2,0,70,SETUP_QUALIFIED,C-NO-REVERSE,,NONE,,0,0,0,0,0,,,
+exit_cannot_reverse_or_increase,3,0,70,SUBMISSION,C-NO-REVERSE,O-NO-REVERSE,CREATED,SHORT,1,0,1,0,0,,,parent entry created; no fill assumed
+exit_cannot_reverse_or_increase,4,0,70,ACKNOWLEDGMENT,C-NO-REVERSE,O-NO-REVERSE,PLACED,SHORT,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+exit_cannot_reverse_or_increase,5,0,70,FULL_FILL,C-NO-REVERSE,O-NO-REVERSE,FILLED,SHORT,1,1,0,-1,1,102,95,hypothetical fill at 100
+exit_cannot_reverse_or_increase,6,0,71,STOP_EXIT,C-NO-REVERSE,O-NO-REVERSE,FILLED,SHORT,1,1,0,0,0,,,reducing exit at 102; qty=1
+post_ack_late_fill_fails_closed,1,0,80,CANDIDATE,C-LATE-ACK,,NONE,,0,0,0,0,0,,,
+post_ack_late_fill_fails_closed,2,0,80,SETUP_QUALIFIED,C-LATE-ACK,,NONE,,0,0,0,0,0,,,
+post_ack_late_fill_fails_closed,3,0,80,SUBMISSION,C-LATE-ACK,O-LATE-ACK,CREATED,LONG,1,0,1,0,0,,,parent entry created; no fill assumed
+post_ack_late_fill_fails_closed,4,0,80,ACKNOWLEDGMENT,C-LATE-ACK,O-LATE-ACK,PLACED,LONG,1,0,1,0,0,,,parent accepted; fill remains asynchronous
+post_ack_late_fill_fails_closed,5,0,81,EXPIRY,C-LATE-ACK,O-LATE-ACK,PLACED,LONG,1,0,1,0,0,,,"entry lifetime elapsed; expiry is a cancel request, not an acknowledgment"
+post_ack_late_fill_fails_closed,6,0,81,CANCELLATION_REQUEST,C-LATE-ACK,O-LATE-ACK,PLACED,LONG,1,0,1,0,0,,,expired parent entry
+post_ack_late_fill_fails_closed,7,0,82,CANCELLATION_ACKNOWLEDGMENT,C-LATE-ACK,O-LATE-ACK,CANCELED,LONG,1,0,1,0,0,,,unfilled remainder is closed; any filled exposure remains bracket-protected

@@ -1,0 +1,217 @@
+{
+  "contract_version": "BTC-PERP-ORDER-LIFECYCLE-P1",
+  "observation_model": {
+    "entry": "The historical barrier-path sensitivity replay assumes a fill at the immutable planned next-bar-open quote. It does not infer a fill from a limit touch, queue position, or actual execution.",
+    "lower_interval": "Use aligned Binance trade 1m and mark 1m OHLC bars to determine which barrier was reached first across minutes.",
+    "within_one_minute": "If both barriers are inside the same 1m high-low range and the open did not gap through the stop, retain AMBIGUOUS and report a separate stop-first conservative bound.",
+    "stop_gap": "If a 1m open gaps beyond the stop, record the open as a hypothetical adverse gap fill; it is not an observed exchange fill.",
+    "brackets": "TakeProfit documents emulator brackets as position-level OCO orders whose quantity follows the current position. Live attached-order behavior is controlled by the selected exchange and remains unknown.",
+    "reload": "The deterministic model persists candidate IDs, order state, position, bracket state, cooldown state, and event sequence; replaying the same event suffix after restoration must produce identical outputs."
+  },
+  "fixture_count": 12,
+  "fixture_results": [
+    {
+      "scenario": "repeated_updates_and_reload",
+      "final_position": 0,
+      "final_status": "FILLED",
+      "event_count": 9,
+      "submission_count": 1,
+      "reload_suffix_equal": true
+    },
+    {
+      "scenario": "delayed_ack_and_fill",
+      "final_position": 1,
+      "final_status": "FILLED",
+      "event_count": 8,
+      "delayed_updates_before_ack": 2,
+      "exposure_after_fill": 1
+    },
+    {
+      "scenario": "partial_fill_cancel_race_and_protected_exit",
+      "final_position": 0,
+      "final_status": "NEXT_CANDIDATE_QUALIFIED",
+      "event_count": 17,
+      "max_exposure": 0.6
+    },
+    {
+      "scenario": "rejection",
+      "final_position": 0,
+      "final_status": "REJECTED",
+      "event_count": 4,
+      "exposure_after_rejection": 0,
+      "bracket_after_rejection": false
+    },
+    {
+      "scenario": "same_bar_entry_and_take_profit",
+      "final_position": 0,
+      "final_status": "FILLED",
+      "event_count": 6,
+      "outcome": "TARGET",
+      "entry_bar": 30,
+      "exit_bar": 30
+    },
+    {
+      "scenario": "unfilled_expiry_and_cancel_ack",
+      "final_position": 0,
+      "final_status": "CANCELED",
+      "event_count": 7,
+      "exposure": 0
+    },
+    {
+      "scenario": "lower_interval_target_first",
+      "final_position": 0,
+      "final_status": "FILLED",
+      "event_count": 6,
+      "outcome": "TARGET",
+      "ambiguity_retained": false,
+      "conservative_bound": ""
+    },
+    {
+      "scenario": "lower_interval_stop_first",
+      "final_position": 0,
+      "final_status": "FILLED",
+      "event_count": 6,
+      "outcome": "STOP",
+      "ambiguity_retained": false,
+      "conservative_bound": ""
+    },
+    {
+      "scenario": "lower_interval_same_minute_ambiguous",
+      "final_position": 0,
+      "final_status": "FILLED",
+      "event_count": 6,
+      "outcome": "AMBIGUOUS",
+      "ambiguity_retained": true,
+      "conservative_bound": "STOP_FIRST"
+    },
+    {
+      "scenario": "gap_through_stop",
+      "final_position": 0,
+      "final_status": "FILLED",
+      "event_count": 6,
+      "outcome": "GAP_STOP",
+      "hypothetical_fill": 95,
+      "stop_price": 98
+    },
+    {
+      "scenario": "exit_cannot_reverse_or_increase",
+      "final_position": 0,
+      "final_status": "FILLED",
+      "event_count": 6,
+      "invalid_overclose_rejected": true
+    },
+    {
+      "scenario": "post_ack_late_fill_fails_closed",
+      "final_position": 0,
+      "final_status": "CANCELED",
+      "event_count": 7,
+      "post_ack_fill_rejected": true
+    }
+  ],
+  "fixture_event_count": 88,
+  "historical_replay": {
+    "source_files": [
+      "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+      "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv"
+    ],
+    "paired_1m_bars": 1051200,
+    "risk_pass_candidates": 304,
+    "fill_assumption": "assumed fill at the immutable planned quote; not an observed fill",
+    "trade_1m": {
+      "STOP": 186,
+      "TARGET": 118
+    },
+    "mark_1m": {
+      "STOP": 187,
+      "TARGET": 116,
+      "GAP_STOP": 1
+    },
+    "by_timeframe": {
+      "5m": {
+        "candidates": 117,
+        "trade_1m": {
+          "STOP": 73,
+          "TARGET": 44
+        },
+        "mark_1m": {
+          "STOP": 74,
+          "TARGET": 43
+        }
+      },
+      "15m": {
+        "candidates": 187,
+        "trade_1m": {
+          "TARGET": 74,
+          "STOP": 113
+        },
+        "mark_1m": {
+          "TARGET": 73,
+          "STOP": 113,
+          "GAP_STOP": 1
+        }
+      }
+    },
+    "boundary_rule": "1m OHLC determines ordering across minutes; if one 1m bar touches both barriers, outcome stays ambiguous and is not reported as observed stop-first."
+  },
+  "platform_validation": {
+    "strategy": {
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "working_copy_version": 21,
+      "saved": false,
+      "local_source_matches_working_copy": true,
+      "compile": "PASS",
+      "runtime_quick": {
+        "result": "PASS",
+        "series_items": 5000,
+        "orders_emitted": 0
+      },
+      "runtime_full": {
+        "result": "PASS",
+        "series_items": 5000,
+        "orders_emitted": 0
+      }
+    },
+    "indicator": {
+      "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+      "working_copy_version": 28,
+      "saved": false,
+      "local_source_matches_working_copy": true,
+      "compile": "PASS",
+      "runtime_quick": {
+        "result": "PASS",
+        "series_items": 5000,
+        "markers": 3
+      },
+      "runtime_full": {
+        "result": "UNCONFIRMED_INFRASTRUCTURE_ERROR",
+        "error": "[wasm] Compilation is not finished yet, retry later"
+      }
+    }
+  },
+  "platform_backtest": {
+    "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+    "working_copy_version": 21,
+    "ticker": "BTC/USDT.P",
+    "exchange_code": "CXBNF8",
+    "timeframe": "5m",
+    "requested_range_utc": {
+      "from": "2026-09-14T00:00:00Z",
+      "to": "2026-09-30T23:59:59Z"
+    },
+    "returned_last_bar_utc": "2026-10-27T03:45:00Z",
+    "plan_bar_limit": 5060,
+    "history_sufficient": false,
+    "has_more_items_on_left": true,
+    "has_more_items_on_right": false,
+    "total_trades": 0,
+    "recent_orders": 0,
+    "recent_trades": 0,
+    "interpretation": "The bounded platform run emitted no orders or trades and its returned last bar fell outside the requested range. It does not validate order fill/exit transitions; fixture coverage is local and deterministic."
+  },
+  "limitations": [
+    "Historical 1m path replay is conditional on a hypothetical fill at the planned quote and is not a trade or profitability backtest.",
+    "OHLC cannot resolve event ordering inside one minute; ambiguous bars retain the ambiguity and expose a stop-first conservative bound.",
+    "The TakeProfit emulator bracket model is not a Binance live-exchange execution guarantee.",
+    "Fee, queue position, actual partial-fill quantity, slippage, and funding are not inferred from OHLC."
+  ]
+}

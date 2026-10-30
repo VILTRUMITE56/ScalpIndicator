@@ -63,13 +63,13 @@ const mdReportPath = 'research/reports/candidate_parity_report.md';
 const scripts = [
   {
     role: 'indicator', path: p1IndicatorPath, script_id: 'dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3',
-    takeprofit_working_copy_version: 27, platform_saved: false,
-    local_platform_source_match: true, compile: 'PASS', runtime_quick: 'PASS', runtime_full: 'PASS',
+    takeprofit_working_copy_version: 28, platform_saved: false,
+    local_platform_source_match: true, compile: 'PASS', runtime_quick: 'PASS', runtime_full: 'UNCONFIRMED_INFRASTRUCTURE_ERROR',
     runtime_series_items: 5000,
   },
   {
     role: 'strategy', path: p1StrategyPath, script_id: '6daa5166-bfc5-4960-8f84-e714a3b2aff2',
-    takeprofit_working_copy_version: 20, platform_saved: false,
+    takeprofit_working_copy_version: 21, platform_saved: false,
     local_platform_source_match: true, compile: 'PASS', runtime_quick: 'PASS', runtime_full: 'PASS',
     runtime_series_items: 5000,
   },
@@ -88,6 +88,13 @@ const artifacts = [
   mdReportPath,
   ledgerPath,
   dataManifestPath,
+  'research/specs/order_lifecycle_p1.json',
+  'research/order_lifecycle_check.mjs',
+  'research/build_order_lifecycle_manifest.mjs',
+  'research/reports/order_lifecycle_report.md',
+  'research/reports/order_lifecycle_report.json',
+  'research/reports/order_lifecycle_fixtures.csv',
+  'research/reports/order_lifecycle_barrier_paths.csv',
 ].map(file => ({ path: file, sha256: fileHash(file) }));
 
 const manifest = {

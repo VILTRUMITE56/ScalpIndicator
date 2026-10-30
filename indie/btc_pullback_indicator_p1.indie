@@ -200,7 +200,7 @@ class Main(MainContext):
         if self.is_new_bar and self._active_side != 0:
             if self._active_side == 1:
                 if self.low[1] <= self._long_stop and self.high[1] >= self._long_target:
-                    self._outcome_text = 'SIM SL | AMBIGUOUS BAR'
+                    self._outcome_text = 'AMBIG | SL BOUND'
                     self._outcome_price = self._long_stop
                 elif self.low[1] <= self._long_stop:
                     self._outcome_text = 'SIM STOP'
@@ -218,7 +218,7 @@ class Main(MainContext):
                     self._last_exit_bar = self.bar_index
             elif self._active_side == -1:
                 if self.high[1] >= self._short_stop and self.low[1] <= self._short_target:
-                    self._outcome_text = 'SIM SL | AMBIGUOUS BAR'
+                    self._outcome_text = 'AMBIG | SL BOUND'
                     self._outcome_price = self._short_stop
                 elif self.high[1] >= self._short_stop:
                     self._outcome_text = 'SIM STOP'
@@ -664,7 +664,7 @@ class Main(MainContext):
             self._table.add_row(['State', status_text])
             self._table.add_row(['Latest candidate ID', self._last_candidate_id if self._last_candidate_id != '' else '--'])
             self._table.add_row(['Armed setup', setup_text])
-            self._table.add_row(['Outcome model', 'Closed candle | ambiguous = stop first'])
+            self._table.add_row(['Outcome model', 'OHLC only | ambiguous = stop-first bound'])
             self._table.add_row(['Mode', 'RESEARCH | planned next-open quote; fill unknown'])
             self._table.add_row(['Bias | profile', bias_text + ' | ' + profile_text])
             self._table.add_row(['Bar interval | HTF bars', str(round(time_delta, 1)) + 's | ' + str(htf_count[0])])
