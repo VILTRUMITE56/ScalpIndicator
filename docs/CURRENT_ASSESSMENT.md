@@ -6,6 +6,10 @@ Updated 30 October 2026. Strategy working copy v16 has refreshed 5m and 15m back
 
 GitHub issue [#2](https://github.com/VILTRUMITE56/ScalpIndicator/issues/2) is satisfied by the frozen B0 source/rule specification, reproducible source/run manifest, and reviewer index: [`research/specs/baseline.json`](../research/specs/baseline.json), [`research/BASELINE_MANIFEST.json`](../research/BASELINE_MANIFEST.json), and [`research/BASELINE_INDEX.md`](../research/BASELINE_INDEX.md). The manifest records current normalized source hashes and fresh runtime validation, and inventories all 22 historical backtest run records. It marks the two defective v1 sensitivity runs, incomplete historical windows, inferred version metadata in four v2 records, and missing old source bodies explicitly. The 22-configuration future research cap remains unchanged. No trading logic or performance result was changed by this freeze.
 
+## Venue, costs and risk checkpoint
+
+Issue [#3](https://github.com/VILTRUMITE56/ScalpIndicator/issues/3) now has a versioned provisional cost/contract/risk record in [`research/specs/execution_cost_risk.json`](../research/specs/execution_cost_risk.json) and [`docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md`](EXECUTION_COST_AND_RISK_REQUIREMENTS.md). Binance USDⓈ-M BTCUSDT remains only the research proxy. The 10/15/20 bp cases are hypothetical; actual account fees, spread, slippage, historical funding, user risk limits and maximum hold time are not confirmed. The task remains open for those account/user inputs. Official source pages and lookup methods are recorded with UTC timestamps; no API credentials are requested.
+
 ## Latest code changes
 
 The B0 pullback lifecycle now requires actual candle intersection with EMA20, records ATR and invalidation from the touch, checks the completed trigger candle against that frozen invalidation, expires from the source candle, and requires a later EMA20 recovery before accepting a fresh touch after invalidation, expiry, trigger, bias loss, or a data gap. The structural extreme is calculated from the touch candle and up to two preceding candles, clipped to the recovery period.

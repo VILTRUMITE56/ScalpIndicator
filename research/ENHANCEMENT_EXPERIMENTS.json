@@ -69,6 +69,20 @@
       { "path": "results/v4/backtests.json", "runs": 2, "source_version": 16, "status": "insufficient-history updated-window diagnostic; zero trades" }
     ]
   },
+  "execution_cost_risk_requirements": {
+    "specification": "research/specs/execution_cost_risk.json",
+    "human_summary": "docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md",
+    "spec_version": "1.0.0",
+    "status": "provisional_research_proxy_user_confirmation_required",
+    "research_proxy": "Binance USDⓈ-M BTCUSDT perpetual",
+    "user_execution_venue_confirmed": false,
+    "account_fee_rates_confirmed": false,
+    "spread_slippage_measured": false,
+    "funding_ingested": false,
+    "risk_and_holding_time_confirmed": false,
+    "cost_scenarios_bps_round_trip": [10, 15, 20],
+    "scenarios_are_hypothetical": true
+  },
   "objective": "Improve BTC perpetual signal reliability and net expectancy through correctness repairs and bounded comparative research.",
   "report": "docs/SCALPING_ENHANCEMENT_REPORT.md",
   "implementation_plan": "docs/SCALPING_IMPLEMENTATION_PLAN.md",

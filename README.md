@@ -13,6 +13,8 @@ This repository contains an Indie BTC perpetual research strategy and a chart-mo
 - [research/specs/baseline.json](research/specs/baseline.json): frozen B0 rule and execution-assumption contract, recorded as implemented.
 - [research/BASELINE_MANIFEST.json](research/BASELINE_MANIFEST.json): current normalized source hashes, fresh validation evidence, report hashes, and source/config mapping for every retained run.
 - [research/build_baseline_manifest.mjs](research/build_baseline_manifest.mjs): reproducibly rebuilds the baseline evidence manifest without running a backtest.
+- [docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md](docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md): provisional Binance research proxy, cost-component status, research risk defaults, and user decisions still needed for GitHub issue #3.
+- [research/specs/execution_cost_risk.json](research/specs/execution_cost_risk.json): versioned machine-readable venue/cost/risk assumptions with official source links and checked timestamps.
 - [PROJECT_PLAN.md](PROJECT_PLAN.md): objective, original rules, validation gates, and recorded platform-driven changes.
 - [indie/btc_pullback_strategy.indie](indie/btc_pullback_strategy.indie): position sizing, bounded limit entries, attached stop and target, and pending-entry cancellation. A timer exit is disabled until safely verified.
 - [indie/btc_pullback_indicator.indie](indie/btc_pullback_indicator.indie): LONG/SHORT model markers, modeled entry/SL/TP, state/cost panel, and counts for signal-stage diagnostics. It does not know exchange fills or positions.
