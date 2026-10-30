@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "manifest_id": "btc-perp-contract-risk-p1-2026-10-30",
+  "generated_at_utc": "2026-10-30T16:28:22.646Z",
+  "policy_id": "BTC-PERP-RISK-OPS-P1",
+  "parent_commit": "ca2e55001d9c50a80878a8903ca9a79c1f7f184d",
+  "status": "paper_reference_fixtures_verified_live_filters_fills_and_personal_limits_unconfirmed",
+  "hash_normalization": "UTF-8 text; CRLF normalized to LF before SHA-256",
+  "verification": {
+    "command": "node research/risk_controls_reference.mjs",
+    "fixture_count": 22,
+    "all_fixtures_pass": true,
+    "outcomes": [
+      {
+        "fixture": "linear_long_rounding_directions",
+        "status": "PASS"
+      },
+      {
+        "fixture": "linear_short_rounding_directions",
+        "status": "PASS"
+      },
+      {
+        "fixture": "nonzero_filter_origins_and_common_limit_market_lot_grid",
+        "status": "PASS"
+      },
+      {
+        "fixture": "minimum_quantity_rejected_not_rounded_up",
+        "status": "PASS"
+      },
+      {
+        "fixture": "minimum_entry_notional_rejected_with_false_status",
+        "status": "PASS"
+      },
+      {
+        "fixture": "protective_exit_minimum_notional_rejected",
+        "status": "PASS"
+      },
+      {
+        "fixture": "size_recomputed_after_rounding_and_all_in_costs",
+        "status": "PASS"
+      },
+      {
+        "fixture": "short_size_recomputed_after_rounding_and_all_in_costs",
+        "status": "PASS"
+      },
+      {
+        "fixture": "minimum_order_over_budget_rejected",
+        "status": "PASS"
+      },
+      {
+        "fixture": "inverse_contract_formula_explicit",
+        "status": "PASS"
+      },
+      {
+        "fixture": "partial_fills_fees_funding_marked_equity_and_protection",
+        "status": "PASS"
+      },
+      {
+        "fixture": "daily_lock_open_loss_pending_cancel_protection_and_utc_reset",
+        "status": "PASS"
+      },
+      {
+        "fixture": "utc_rollover_baseline_includes_new_mark",
+        "status": "PASS"
+      },
+      {
+        "fixture": "drawdown_lock_latches_until_explicit_flat_reset",
+        "status": "PASS"
+      },
+      {
+        "fixture": "partial_fill_after_cancel_request_is_tracked_and_protected",
+        "status": "PASS"
+      },
+      {
+        "fixture": "latched_lock_rejects_new_pending_entry",
+        "status": "PASS"
+      },
+      {
+        "fixture": "entry_increment_without_protection_is_reported",
+        "status": "PASS"
+      },
+      {
+        "fixture": "overclose_rejected_without_mutating_ledger",
+        "status": "PASS"
+      },
+      {
+        "fixture": "gap_through_stop_exposes_budget_limit_and_locks_entries",
+        "status": "PASS"
+      },
+      {
+        "fixture": "missing_funding_reserve_blocks_risk_sizing",
+        "status": "PASS"
+      },
+      {
+        "fixture": "missing_account_fees_or_slippage_blocks_risk_sizing",
+        "status": "PASS"
+      },
+      {
+        "fixture": "wrong_side_protective_level_rejected",
+        "status": "PASS"
+      }
+    ]
+  },
+  "unresolved_inputs": {
+    "live_binance_filters": "NOT_CAPTURED_HTTP_451",
+    "actual_execution_venue_confirmed": false,
+    "account_fee_rates": null,
+    "measured_spread_slippage": null,
+    "funding_reserve": null,
+    "daily_loss_limit": null,
+    "max_drawdown_fraction": null,
+    "observed_user_exchange_fills": "not supplied"
+  },
+  "acceptance": {
+    "rounding_and_formula_engine": "PASS_ON_SYNTHETIC_FIXTURES",
+    "live_binance_filter_snapshot": "OPEN_REQUIRED",
+    "realized_user_fill_reconciliation": "OPEN_NO_OBSERVED_USER_OR_EXCHANGE_FILL_DATA; reference ledger reconciles supplied fill events",
+    "user_daily_drawdown_limits": "OPEN_UNSET_BY_USER; parameterized controls are fixture-tested but remain disabled without user values",
+    "native_account_equity_locks": "NOT_AVAILABLE_IN_DOCUMENTED_STRATEGY_FIELDS",
+    "risk_lock_fixtures": "PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_AND_LOCK_ACTIONS",
+    "hold_policy_registration": "PASS_TP_SL_ONLY_VERSIONED_NO_TIME_EXIT_ADDED",
+    "issue_8_close": "BLOCKED_LIVE_FILTERS_OBSERVED_FILL_RECONCILIATION_AND_USER_LOCK_VALUES",
+    "profitability": "NOT_EVALUATED; no claim"
+  },
+  "limitations": [
+    "Fixture exchange filters and cost inputs are synthetic test values and are not Binance metadata or account settings.",
+    "A modeled stop-market fill is not a guaranteed loss cap through gaps, liquidation, exchange failure or fill races.",
+    "No profitability statistic is produced by contract and ledger fixtures."
+  ],
+  "docs_basis": [
+    "https://developers.binance.com/en/docs/products/derivatives-trading-usds-futures/common-definition",
+    "https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usds-margined-futures/api/rest-api/market-data#exchange-information",
+    "https://takeprofit.com/docs/indie/Library-reference/package-indie-strategies"
+  ],
+  "artifacts": [
+    {
+      "path": "research/specs/contract_risk_controls_p1.json",
+      "sha256": "e662941b9e7d72d1477e8c233e6fff407061a72bef4f72b72a918083d1751b50"
+    },
+    {
+      "path": "research/risk_controls_reference.mjs",
+      "sha256": "541eeadb3c414ab54f0ec440e18f741b7e58cb726c413e4ff00c5e47b40f9717"
+    },
+    {
+      "path": "research/capture_binance_contract_snapshot.mjs",
+      "sha256": "9149b140a79a36a4e411a65f6d216fc313bfa3a2e6cafda73d6fd5013480580b"
+    },
+    {
+      "path": "research/build_contract_risk_manifest.mjs",
+      "sha256": "fc3bec8b0d03a08b10b16742e76c9bc9b91f34ac7131f20c675439d9aa934932"
+    },
+    {
+      "path": "research/verify_contract_risk_manifest.mjs",
+      "sha256": "86f4bb3c7f489ab39b5ab17922f2393ff4fa631b895a8a37e7e9a3a5eef1cdf2"
+    },
+    {
+      "path": "research/README_CANDIDATE_P1.md",
+      "sha256": "8050ffaaa7181d82fe455aa8ff41c1c1ab040a699a27f6b5f41a3f51658b6e39"
+    },
+    {
+      "path": "research/reports/contract_risk_report.json",
+      "sha256": "1e3afd9b1a5e51aebffccecea97a32bff2f5202bbfcfaa112eef20d377c180f2"
+    },
+    {
+      "path": "research/reports/contract_risk_report.md",
+      "sha256": "47881fdc9134653026e3296a064c4dc4bef1678e9d3a0ee5a3c2211b15822fbe"
+    },
+    {
+      "path": "research/reports/contract_risk_fixtures.csv",
+      "sha256": "a2b348beb7fa56bd9fff61406363d08fde993d5ccca23c4cc2f353e2e183c462"
+    }
+  ]
+}

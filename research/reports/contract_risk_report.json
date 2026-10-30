@@ -1,0 +1,140 @@
+{
+  "schema_version": 1,
+  "policy_id": "BTC-PERP-RISK-OPS-P1",
+  "generated_at_utc": "2026-10-30T16:27:46.738Z",
+  "status": "PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_FILTERS_AND_PERSONAL_LOCKS_UNCONFIRMED",
+  "venue_proxy": "Binance USD-M BTCUSDT perpetual; research-only",
+  "live_filter_snapshot": "NOT_CAPTURED: official public exchangeInfo returned HTTP 451 in the research environment; no filter values were invented",
+  "user_per_trade_loss_budget_quote": 1,
+  "user_daily_loss_limit_quote": null,
+  "user_max_drawdown_fraction": null,
+  "user_account_fees": null,
+  "user_funding_reserve": null,
+  "hold_policy": "TP/SL only; no maximum holding time or timed exit added",
+  "native_platform_limit": "TakeProfit documents strategy cash, position and instrument min size/value; no strategy-facing marked account equity, daily PnL, high-water equity, tick size or lot step field was found.",
+  "fixture_count": 22,
+  "all_fixtures_pass": true,
+  "fixtures": [
+    {
+      "fixture": "linear_long_rounding_directions",
+      "status": "PASS",
+      "detail": "{\"ok\":true,\"side\":\"LONG\",\"quantity\":1.23,\"entry\":100,\"stop\":96.5,\"target\":106,\"entry_notional_quote\":123,\"stop_notional_quote\":118.695,\"target_notional_quote\":130.38,\"limit_market_lot_alignment_iterations\":0}"
+    },
+    {
+      "fixture": "linear_short_rounding_directions",
+      "status": "PASS",
+      "detail": "{\"ok\":true,\"side\":\"SHORT\",\"quantity\":1.23,\"entry\":100.5,\"stop\":104,\"target\":94,\"entry_notional_quote\":123.615,\"stop_notional_quote\":127.92,\"target_notional_quote\":115.62,\"limit_market_lot_alignment_iterations\":0}"
+    },
+    {
+      "fixture": "nonzero_filter_origins_and_common_limit_market_lot_grid",
+      "status": "PASS",
+      "detail": "{\"ok\":true,\"side\":\"LONG\",\"quantity\":0.05,\"entry\":0.25,\"stop\":0.15,\"target\":0.55,\"entry_notional_quote\":0.0125,\"stop_notional_quote\":0.0075,\"target_notional_quote\":0.027500000000000004,\"limit_market_lot_alignment_iterations\":2}"
+    },
+    {
+      "fixture": "minimum_quantity_rejected_not_rounded_up",
+      "status": "PASS",
+      "detail": "{\"ok\":false,\"reason\":\"MIN_LIMIT_QUANTITY\"}"
+    },
+    {
+      "fixture": "minimum_entry_notional_rejected_with_false_status",
+      "status": "PASS",
+      "detail": "{\"ok\":false,\"entry\":100,\"stop\":99,\"target\":102,\"reason\":\"MIN_NOTIONAL\",\"quantity\":0.01,\"entry_notional_quote\":1}"
+    },
+    {
+      "fixture": "protective_exit_minimum_notional_rejected",
+      "status": "PASS",
+      "detail": "{\"ok\":false,\"entry\":100,\"stop\":99,\"target\":101,\"reason\":\"MIN_PROTECTIVE_EXIT_NOTIONAL\",\"quantity\":0.1,\"entry_notional_quote\":10,\"stop_notional_quote\":9.9,\"target_notional_quote\":10.100000000000001,\"minimum_exit_notional_quote\":15}"
+    },
+    {
+      "fixture": "size_recomputed_after_rounding_and_all_in_costs",
+      "status": "PASS",
+      "detail": "{\"unscaled_one_unit_stress\":{\"status\":\"MODELED_WITH_EXPLICIT_ASSUMPTIONS\",\"entry_fill_stress\":100.02,\"stop_fill_stress\":98.802,\"gross_stop_pnl_quote\":-1.2179999999999893,\"entry_fee_quote\":0.05001,\"exit_fee_quote\":0.04940100000000001,\"funding_reserve_quote\":0,\"all_in_loss_quote\":1.3174109999999892},\"accepted\":{\"ok\":true,\"plan\":{\"ok\":true,\"side\":\"LONG\",\"quantity\":1,\"entry\":100,\"stop\":99.5,\"target\":102,\"entry_notional_quote\":100,\"stop_notional_quote\":99.5,\"target_notional_quote\":102,\"limit_market_lot_alignment_iterations\":0},\"risk\":{\"status\":\"MODELED_WITH_EXPLICIT_ASSUMPTIONS\",\"entry_fill_stress\":100.02,\"stop_fill_stress\":99.301,\"gross_stop_pnl_quote\":-0.7189999999999941,\"entry_fee_quote\":0.05001,\"exit_fee_quote\":0.0496505,\"funding_reserve_quote\":0,\"all_in_loss_quote\":0.8186604999999941},\"notional_quote\":100,\"posted_margin_usd\":5,\"leverage\":20}}"
+    },
+    {
+      "fixture": "short_size_recomputed_after_rounding_and_all_in_costs",
+      "status": "PASS",
+      "detail": "{\"ok\":true,\"plan\":{\"ok\":true,\"side\":\"SHORT\",\"quantity\":0.99,\"entry\":100.5,\"stop\":101,\"target\":98,\"entry_notional_quote\":99.495,\"stop_notional_quote\":99.99,\"target_notional_quote\":97.02,\"limit_market_lot_alignment_iterations\":0},\"risk\":{\"status\":\"MODELED_WITH_EXPLICIT_ASSUMPTIONS\",\"entry_fill_stress\":100.4799,\"stop_fill_stress\":101.202,\"gross_stop_pnl_quote\":-0.7148789999999975,\"entry_fee_quote\":0.0497375505,\"exit_fee_quote\":0.05009499,\"funding_reserve_quote\":0,\"all_in_loss_quote\":0.8147115404999974},\"notional_quote\":99.495,\"posted_margin_usd\":5,\"leverage\":20}"
+    },
+    {
+      "fixture": "minimum_order_over_budget_rejected",
+      "status": "PASS",
+      "detail": "{\"ok\":false,\"reason\":\"MIN_LIMIT_QUANTITY\"}"
+    },
+    {
+      "fixture": "inverse_contract_formula_explicit",
+      "status": "PASS",
+      "detail": "{\"pnl_quote\":-2.0000000000000018,\"risk\":{\"status\":\"MODELED_WITH_EXPLICIT_ASSUMPTIONS\",\"entry_fill_stress\":10000,\"stop_fill_stress\":9900,\"gross_stop_pnl_quote\":-2.0000000000000018,\"entry_fee_quote\":0,\"exit_fee_quote\":0,\"funding_reserve_quote\":0,\"all_in_loss_quote\":2.0000000000000018}}"
+    },
+    {
+      "fixture": "partial_fills_fees_funding_marked_equity_and_protection",
+      "status": "PASS",
+      "detail": "{\"initial_equity_quote\":100,\"realized_gross_pnl_quote\":-0.6499999999999986,\"commissions_paid_quote\":0.06255,\"signed_funding_cashflow_quote\":-0.1,\"unrealized_mark_pnl_quote\":-1.9499999999999957,\"marked_equity_quote\":97.23745,\"position_size_signed\":0.75,\"average_entry\":100.6,\"mark_price\":98,\"daily_loss_limit_quote\":null,\"max_drawdown_fraction\":null,\"daily_lock_latched\":false,\"drawdown_lock_latched\":false,\"pending_entry_id\":null,\"protective_orders_active\":true,\"protective_quantity\":0.75,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"can_enter\":false}"
+    },
+    {
+      "fixture": "daily_lock_open_loss_pending_cancel_protection_and_utc_reset",
+      "status": "PASS",
+      "detail": "{\"locked\":{\"timestamp_utc\":\"2026-10-30T23:59:00.000Z\",\"reason\":\"MARK\",\"equity_quote\":90,\"daily_loss_quote\":10,\"peak_drawdown_fraction\":0.1,\"entry_locked\":true,\"entry_lock_reason\":\"DAILY_LOSS\",\"cancel_pending_entry_requested\":true,\"pending_entry_id_retained\":\"pending-demo-1\",\"protective_orders_preserved\":true,\"protective_quantity\":1,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"automatic_flatten_requested\":false},\"after_reset\":{\"timestamp_utc\":\"2026-10-31T00:00:00.000Z\",\"reason\":\"MARK\",\"equity_quote\":90,\"daily_loss_quote\":0,\"peak_drawdown_fraction\":0.1,\"entry_locked\":false,\"entry_lock_reason\":\"NONE\",\"cancel_pending_entry_requested\":false,\"pending_entry_id_retained\":\"pending-demo-1\",\"protective_orders_preserved\":true,\"protective_quantity\":1,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"automatic_flatten_requested\":false},\"snapshot\":{\"initial_equity_quote\":100,\"realized_gross_pnl_quote\":0,\"commissions_paid_quote\":0,\"signed_funding_cashflow_quote\":0,\"unrealized_mark_pnl_quote\":-10,\"marked_equity_quote\":90,\"position_size_signed\":1,\"average_entry\":100,\"mark_price\":90,\"daily_loss_limit_quote\":5,\"max_drawdown_fraction\":null,\"daily_lock_latched\":false,\"drawdown_lock_latched\":false,\"pending_entry_id\":\"pending-demo-1\",\"protective_orders_active\":true,\"protective_quantity\":1,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"can_enter\":false}}"
+    },
+    {
+      "fixture": "utc_rollover_baseline_includes_new_mark",
+      "status": "PASS",
+      "detail": "{\"timestamp_utc\":\"2026-10-31T00:00:00.000Z\",\"reason\":\"MARK\",\"equity_quote\":90,\"daily_loss_quote\":0,\"peak_drawdown_fraction\":0.1,\"entry_locked\":false,\"entry_lock_reason\":\"NONE\",\"cancel_pending_entry_requested\":false,\"pending_entry_id_retained\":null,\"protective_orders_preserved\":true,\"protective_quantity\":1,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"automatic_flatten_requested\":false}"
+    },
+    {
+      "fixture": "drawdown_lock_latches_until_explicit_flat_reset",
+      "status": "PASS",
+      "detail": "{\"lock\":{\"timestamp_utc\":\"2026-10-30T13:00:00.000Z\",\"reason\":\"MARK\",\"equity_quote\":94,\"daily_loss_quote\":6,\"peak_drawdown_fraction\":0.06,\"entry_locked\":true,\"entry_lock_reason\":\"PEAK_TO_TROUGH_DRAWDOWN\",\"cancel_pending_entry_requested\":false,\"pending_entry_id_retained\":null,\"protective_orders_preserved\":true,\"protective_quantity\":1,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"automatic_flatten_requested\":false},\"after_manual_reset\":{\"initial_equity_quote\":100,\"realized_gross_pnl_quote\":-6,\"commissions_paid_quote\":0,\"signed_funding_cashflow_quote\":0,\"unrealized_mark_pnl_quote\":0,\"marked_equity_quote\":94,\"position_size_signed\":0,\"average_entry\":null,\"mark_price\":94,\"daily_loss_limit_quote\":null,\"max_drawdown_fraction\":0.05,\"daily_lock_latched\":false,\"drawdown_lock_latched\":false,\"pending_entry_id\":null,\"protective_orders_active\":false,\"protective_quantity\":0,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"can_enter\":true}}"
+    },
+    {
+      "fixture": "partial_fill_after_cancel_request_is_tracked_and_protected",
+      "status": "PASS",
+      "detail": "{\"initial_equity_quote\":100,\"realized_gross_pnl_quote\":0,\"commissions_paid_quote\":0,\"signed_funding_cashflow_quote\":0,\"unrealized_mark_pnl_quote\":0.04999999999999716,\"marked_equity_quote\":100.05,\"position_size_signed\":0.6,\"average_entry\":100.01666666666667,\"mark_price\":100.1,\"daily_loss_limit_quote\":5,\"max_drawdown_fraction\":null,\"daily_lock_latched\":true,\"drawdown_lock_latched\":false,\"pending_entry_id\":\"partial-entry-1\",\"protective_orders_active\":true,\"protective_quantity\":0.6,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"can_enter\":false}"
+    },
+    {
+      "fixture": "latched_lock_rejects_new_pending_entry",
+      "status": "PASS",
+      "detail": "{\"timestamp_utc\":\"2026-10-30T16:01:00.000Z\",\"reason\":\"MARK\",\"equity_quote\":99,\"daily_loss_quote\":1,\"peak_drawdown_fraction\":0.01,\"entry_locked\":true,\"entry_lock_reason\":\"DAILY_LOSS\",\"cancel_pending_entry_requested\":false,\"pending_entry_id_retained\":null,\"protective_orders_preserved\":true,\"protective_quantity\":1,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"automatic_flatten_requested\":false}"
+    },
+    {
+      "fixture": "entry_increment_without_protection_is_reported",
+      "status": "PASS",
+      "detail": "{\"initial_equity_quote\":100,\"realized_gross_pnl_quote\":0,\"commissions_paid_quote\":0,\"signed_funding_cashflow_quote\":0,\"unrealized_mark_pnl_quote\":0,\"marked_equity_quote\":100,\"position_size_signed\":0.5499999999999999,\"average_entry\":100,\"mark_price\":100,\"daily_loss_limit_quote\":null,\"max_drawdown_fraction\":null,\"daily_lock_latched\":false,\"drawdown_lock_latched\":false,\"pending_entry_id\":null,\"protective_orders_active\":true,\"protective_quantity\":0.5,\"protection_gap_quantity\":0.04999999999999993,\"position_fully_protected\":false,\"can_enter\":false}"
+    },
+    {
+      "fixture": "overclose_rejected_without_mutating_ledger",
+      "status": "PASS",
+      "detail": "{\"initial_equity_quote\":100,\"realized_gross_pnl_quote\":0,\"commissions_paid_quote\":0,\"signed_funding_cashflow_quote\":0,\"unrealized_mark_pnl_quote\":0,\"marked_equity_quote\":100,\"position_size_signed\":0.2,\"average_entry\":100,\"mark_price\":100,\"daily_loss_limit_quote\":null,\"max_drawdown_fraction\":null,\"daily_lock_latched\":false,\"drawdown_lock_latched\":false,\"pending_entry_id\":null,\"protective_orders_active\":true,\"protective_quantity\":0.2,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"can_enter\":false}"
+    },
+    {
+      "fixture": "gap_through_stop_exposes_budget_limit_and_locks_entries",
+      "status": "PASS",
+      "detail": "{\"timestamp_utc\":\"2026-10-30T17:01:00.000Z\",\"reason\":\"MARK\",\"equity_quote\":98.45,\"daily_loss_quote\":1.5499999999999972,\"peak_drawdown_fraction\":0.015499999999999972,\"entry_locked\":true,\"entry_lock_reason\":\"DAILY_LOSS\",\"cancel_pending_entry_requested\":false,\"pending_entry_id_retained\":null,\"protective_orders_preserved\":true,\"protective_quantity\":1,\"protection_gap_quantity\":0,\"position_fully_protected\":true,\"automatic_flatten_requested\":false}"
+    },
+    {
+      "fixture": "missing_funding_reserve_blocks_risk_sizing",
+      "status": "PASS",
+      "detail": "{\"ok\":false,\"reason\":\"UNRESOLVED_FEES_SLIPPAGE_OR_FUNDING_RESERVE\"}"
+    },
+    {
+      "fixture": "missing_account_fees_or_slippage_blocks_risk_sizing",
+      "status": "PASS",
+      "detail": "{\"ok\":false,\"reason\":\"UNRESOLVED_FEES_SLIPPAGE_OR_FUNDING_RESERVE\"}"
+    },
+    {
+      "fixture": "wrong_side_protective_level_rejected",
+      "status": "PASS",
+      "detail": "{\"ok\":false,\"reason\":\"WRONG_SIDE_LEVEL_AFTER_ROUNDING\",\"rounded\":{\"entry\":100,\"stop\":101,\"target\":102}}"
+    }
+  ],
+  "acceptance_status": {
+    "rounding_and_formula_engine": "PASS_ON_SYNTHETIC_FIXTURES",
+    "live_binance_filter_snapshot": "OPEN_REQUIRED",
+    "realized_user_fill_reconciliation": "OPEN_NO_OBSERVED_USER_OR_EXCHANGE_FILL_DATA; reference ledger reconciles supplied fill events",
+    "user_daily_drawdown_limits": "OPEN_UNSET_BY_USER; parameterized controls are fixture-tested but remain disabled without user values",
+    "native_account_equity_locks": "NOT_AVAILABLE_IN_DOCUMENTED_STRATEGY_FIELDS",
+    "risk_lock_fixtures": "PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_AND_LOCK_ACTIONS",
+    "hold_policy_registration": "PASS_TP_SL_ONLY_VERSIONED_NO_TIME_EXIT_ADDED",
+    "issue_8_close": "BLOCKED_LIVE_FILTERS_OBSERVED_FILL_RECONCILIATION_AND_USER_LOCK_VALUES",
+    "profitability": "NOT_EVALUATED; no claim"
+  }
+}
