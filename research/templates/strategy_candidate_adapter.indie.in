@@ -1,0 +1,38 @@
+        # BEGIN GENERATED STRATEGY EXECUTION ADAPTER
+        if candidate_side != 0 and candidate_blocker == 'NONE':
+            execution_blocker = 'NONE'
+            if position_size != 0:
+                execution_blocker = 'POSITION OPEN'
+            elif self._pending is not None or pending_was_resolved:
+                execution_blocker = 'ORDER PENDING OR RESOLVED THIS BAR'
+            elif self.bar_index - self._last_exit_bar <= 3 or self.bar_index - self._last_signal_bar <= 3:
+                execution_blocker = 'COOLDOWN'
+
+            if execution_blocker == 'NONE' and self.trading.cash > 0.0:
+                planned_entry = candidate_planned_entry
+                order_limit_quote = planned_entry * (1.0 + {{limit_offset}}) if candidate_side == 1 else planned_entry * (1.0 - {{limit_offset}})
+                execution_cost_per_btc = order_limit_quote * self._cost_fraction
+                execution_stop_distance = abs(order_limit_quote - candidate_stop)
+                risk_size = self.trading.cash * self._risk_fraction / (execution_stop_distance + execution_cost_per_btc)
+                cash_size = self.trading.cash / (order_limit_quote * 1.001)
+                raw_size = min(risk_size, cash_size)
+                if raw_size > 0.0:
+                    size = int(raw_size / self._quantity_step) * self._quantity_step
+                    instrument_info = self.trading.instrument_info
+                    if size >= instrument_info.min_order_size and size * order_limit_quote >= instrument_info.min_order_value:
+                        if candidate_side == 1:
+                            self._pending = (self.trading.place_order(order_side.BUY, size=size)
+                                             .limit(price=order_limit_quote)
+                                             .stop_loss(stop=candidate_stop)
+                                             .take_profit(stop=candidate_target)
+                                             .submit())
+                        else:
+                            self._pending = (self.trading.place_order(order_side.SELL, size=size)
+                                             .limit(price=order_limit_quote)
+                                             .stop_loss(stop=candidate_stop)
+                                             .take_profit(stop=candidate_target)
+                                             .submit())
+                        self._pending_bar = self.bar_index
+                        self._cancel_requested = False
+                        self._last_signal_bar = self.bar_index
+        # END GENERATED STRATEGY EXECUTION ADAPTER

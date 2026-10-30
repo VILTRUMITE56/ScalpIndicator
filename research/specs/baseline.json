@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "baseline_id": "BTC-PERP-B0-2026-10-30-v16-v24",
+  "status": "frozen_reference_for_research",
+  "frozen_on": "2026-10-30",
+  "purpose": "Reproducible source and rule snapshot for evaluating later BTC perpetual pullback changes.",
+  "profitability_status": "unproven; this specification is not a recommendation to trade",
+  "canonical_sources": {
+    "indicator": {
+      "path": "indie/btc_pullback_indicator.indie",
+      "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+      "code_title": "BTC Perp Pullback Signals v6 - Research",
+      "takeprofit_working_copy_version": 24,
+      "platform_saved_version": 19,
+      "working_copy_base_platform_version": 16,
+      "saved": false
+    },
+    "strategy": {
+      "path": "indie/btc_pullback_strategy.indie",
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "code_title": "BTC Perp Pullback Research v4",
+      "takeprofit_working_copy_version": 16,
+      "linked_platform_version": null,
+      "saved": false
+    },
+    "source_hashes_and_validation": "research/BASELINE_MANIFEST.json"
+  },
+  "research_instrument": {
+    "symbol": "BTC/USDT.P",
+    "exchange": "Binance",
+    "exchange_code": "CXBNF8",
+    "contract_class": "Perpetual Futures",
+    "venue_status": "research proxy only; user's intended execution venue remains unspecified"
+  },
+  "profiles": [
+    {
+      "execution_timeframe_minutes": 5,
+      "higher_timeframe_minutes": 15
+    },
+    {
+      "execution_timeframe_minutes": 15,
+      "higher_timeframe_minutes": 60
+    }
+  ],
+  "decision_timing": {
+    "state_updates": "On a new execution bar, decisions use completed execution candles; the latest completed candle is series index [1].",
+    "higher_timeframe": "Only contiguous completed higher-timeframe buckets are incorporated. An incomplete boundary or execution-timeframe gap clears readiness/setup state.",
+    "warmup": "Require 250 completed higher-timeframe bars, plus execution indicator history, before setup evaluation.",
+    "signal_reference": "The next execution bar open is a reference price, not an observed fill. The indicator models that open; the strategy submits a bounded limit from it."
+  },
+  "signal_rules_as_implemented": {
+    "entry_features": {
+      "fast_ema_length": 20,
+      "slow_ema_length": 50,
+      "atr_length": 14,
+      "higher_timeframe_fast_ema_length": 20,
+      "higher_timeframe_slow_ema_length": 50,
+      "higher_timeframe_slow_ema_slope_lookback_bars": 3
+    },
+    "higher_timeframe_bias": {
+      "long": "Completed HTF close > HTF EMA50, HTF EMA20 > HTF EMA50, and current HTF EMA50 > its value three completed HTF bars earlier.",
+      "short": "Completed HTF close < HTF EMA50, HTF EMA20 < HTF EMA50, and current HTF EMA50 < its value three completed HTF bars earlier."
+    },
+    "pullback_discovery": "On each new execution bar, inspect completed bars at indices [2], [3], and [4] for candle ranges intersecting EMA20; select the most recent intersection. Then require that selected touch candle and its two older comparison closes to remain on the directional side of EMA50. If the newest intersection fails this close test, an older intersection is not substituted. This is the current rolling-lookback implementation, not the proposed strict first-touch event contract.",
+    "setup_anchor": "Use the touch candle low/high and up to two older candle extremes, clipped to the recovery episode. Freeze ATR(14) from the selected touch. Structural invalidation is 0.10 x frozen ATR beyond the anchor; stop reference is 0.15 x frozen ATR beyond it.",
+    "recovery_and_rearm": "After a consumed, invalidated, expired, or bias-reset setup, require a later completed close back above EMA20 for long or below EMA20 for short before a newer touch can arm. A recovery candle cannot itself supply an eligible older touch.",
+    "setup_expiry": "A trigger is eligible from 1 through 6 execution bars after the stored touch source bar; later bars expire the setup.",
+    "setup_invalidation": "Long: completed close <= EMA50 or low <= frozen structural invalidation. Short: completed close >= EMA50 or high >= frozen structural invalidation. Bias loss and data gaps also clear the setup.",
+    "trigger": {
+      "long": "Completed close > EMA20 and EMA50, > candle open, and > preceding completed candle high; the same candle must remain above frozen invalidation.",
+      "short": "Completed close < EMA20 and EMA50, < candle open, and < preceding completed candle low; the same candle must remain below frozen invalidation."
+    },
+    "one_shot": "Consume a triggered setup once, including when later risk/execution gates reject it.",
+    "optional_filters": "ADX, VWAP, relative volume, entry-extension, breakout/retest, RSI, MACD, Stochastic, Supertrend, Bollinger, and order-flow filters are disabled/not part of B0."
+  },
+  "risk_and_execution_assumptions": {
+    "research_risk_fraction": 0.0025,
+    "estimated_round_trip_cost_fraction": 0.0015,
+    "cost_to_initial_risk_cap": 0.2,
+    "stop_distance_atr_floor": 1.0,
+    "stop_distance_atr_cap": 2.5,
+    "target_multiple_r": 1.5,
+    "strategy_entry_limit_offset_fraction": 0.0002,
+    "strategy_pending_order_cancel_policy": "Request cancellation after the next execution bar if still pending; cancellation acknowledgment/fill race remains to be validated.",
+    "strategy_commission_fraction_per_execution": 0.0005,
+    "strategy_quantity_step_default_btc": 0.001,
+    "strategy_leverage_backtest_default": 1.0,
+    "sizing": "Strategy risk size uses cash x risk_fraction divided by stop distance plus estimated cost per BTC, then caps cash usage, rounds down to quantity_step, and checks instrument minimum size/value.",
+    "fills": "The 2 bp limit is marketable/bounded by design and is not automatically a maker fill. Indicator bars assume an open reference; observed spread, slippage, funding, and actual fills are not present in the retained runs.",
+    "cost_status": "The 15 bp cost_fraction is an eligibility/sizing assumption, not a fully deducted round-trip P&L charge. Native strategy reports charge the configured 5 bp commission per execution; spread, slippage, and funding remain unmodeled.",
+    "chart_outcome_model": "Closed-candle OHLC model; if a candle touches both stop and target, classify stop-first/ambiguous. It is not an observed exchange fill.",
+    "native_time_exit": "Disabled; safe reducing-close behavior has not been verified.",
+    "venue_constraints": "Tick size, lot step, minimum notional, multiplier, fee tier, funding, mark-price behavior, and account-specific fills are not yet verified for the user's venue."
+  },
+  "research_limits": {
+    "planned_unique_new_configurations_max": 22,
+    "budget_definition": "This is the future bounded comparison budget recorded in research/ENHANCEMENT_EXPERIMENTS.json. It is not the count of historical run records; historical attempts remain disclosed in the baseline manifest.",
+    "historical_windows_are_holdout": false,
+    "profitability_claim": "None. The retained latest B0 strategy runs have zero completed trades and insufficient history; no accuracy, expectancy, or profit factor estimate is available."
+  },
+  "change_control": "Any rule, parameter, entry, exit, cost-policy, or execution-assumption change creates a new baseline/experiment version and must not overwrite this frozen reference."
+}

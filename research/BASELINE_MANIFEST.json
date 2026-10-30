@@ -1,0 +1,1487 @@
+{
+  "schema_version": 1,
+  "baseline_id": "BTC-PERP-B0-2026-10-30-v16-v24",
+  "generated_on": "2026-10-30",
+  "generator": "research/build_baseline_manifest.mjs",
+  "scope": "Source and evidence inventory for the frozen local BTC baseline; generation does not run an Indie script or a backtest.",
+  "repository": {
+    "branch_at_freeze": "feature/btc-perp-pullback-diagnostics",
+    "canonical_source_snapshot_commit": "8b54db1c10b91bc4e067d3842e6c27a8ec9facdb",
+    "legacy_project_files": [
+      "ScalpFlow_Pro.indie",
+      "ScalpFlow_Pro_Strategy.indie",
+      "phase1-backup/",
+      "visual-redesign-backup/"
+    ],
+    "canonical_project_directory": "indie/"
+  },
+  "current_sources": [
+    {
+      "role": "indicator",
+      "path": "indie/btc_pullback_indicator.indie",
+      "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+      "working_copy_version": 24,
+      "platform_saved_version": 19,
+      "working_copy_base_version": 16,
+      "saved": false,
+      "sha256_raw_file": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+      "sha256_normalized_lf_utf8_no_bom": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+      "normalization": "Read UTF-8, strip one leading BOM if present, convert CRLF and CR to LF, encode UTF-8 without BOM, then SHA-256."
+    },
+    {
+      "role": "strategy",
+      "path": "indie/btc_pullback_strategy.indie",
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "working_copy_version": 16,
+      "linked_platform_version": null,
+      "saved": false,
+      "sha256_raw_file": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+      "sha256_normalized_lf_utf8_no_bom": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+      "normalization": "Read UTF-8, strip one leading BOM if present, convert CRLF and CR to LF, encode UTF-8 without BOM, then SHA-256."
+    }
+  ],
+  "current_validation": [
+    {
+      "role": "strategy",
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "working_copy_version": 16,
+      "mode": "runtime_quick",
+      "valid": true,
+      "bars": 5000,
+      "calculation_time_ms": 2677,
+      "request_id": "2951fe5d2fdc4b1eb657bc419b73efdc",
+      "validated_on": "2026-10-30",
+      "limitation": "Compatibility/runtime sample only; not a full-history, parity, execution, or profitability test."
+    },
+    {
+      "role": "indicator",
+      "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+      "working_copy_version": 24,
+      "mode": "runtime_quick",
+      "valid": true,
+      "bars": 5000,
+      "calculation_time_ms": 4114.5,
+      "request_id": "0ee48c34c64640e699bed8d9a35ac9eb",
+      "validated_on": "2026-10-30",
+      "limitation": "Compatibility/runtime sample only; indicator remains unsaved against platform base v16 while saved platform is v19."
+    }
+  ],
+  "platform_state": {
+    "indicator_saved_platform_uid": "b0WWgU3721kqgpvBweE24",
+    "indicator_saved_platform_version": 19,
+    "indicator_working_copy_version": 24,
+    "indicator_working_copy_base_version": 16,
+    "indicator_working_copy_saved": false,
+    "strategy_working_copy_version": 16,
+    "strategy_linked_platform_copy": false,
+    "note": "Local research artifacts are complete and restorable; platform copy reconciliation is tracked separately in GitHub issue #12."
+  },
+  "archived_source_versions": [
+    {
+      "script_version": 4,
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "strategy_sha256": "2ea6e2e91a971ff6d447759b28aaf4226b8bf5fbb44f95d695bb4e848632d97e",
+      "indicator_sha256": "5ab41af7484ab7f7661889d52c216f8d2af99b7926513aac69b51c1869a2ec90",
+      "evidence": "Recorded in results/v1/audit.json and research/audit_v1.mjs; source bodies are not retained in the canonical current source paths."
+    },
+    {
+      "script_version": 7,
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "source_sha256": null,
+      "evidence": "Version ID is retained in the v2 bundle top-level metadata; original source body/hash was not captured."
+    },
+    {
+      "script_version_range": "8-13",
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "source_sha256": null,
+      "evidence": "Per-run versions are retained in v2 for these iterations; original source bodies/hashes were not captured."
+    },
+    {
+      "script_version": 14,
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "strategy_sha256": "e8a41a4da6a8683ac1a6ff719ff3e43bb3ecf00b3e0822262638f6ab2c9866ae",
+      "evidence": "Archived reference entry in research/ENHANCEMENT_EXPERIMENTS.json."
+    },
+    {
+      "script_version": 16,
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "strategy_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+      "evidence": "Current canonical strategy source hash; raw requests in v3/v4 identify script ID and version 16."
+    },
+    {
+      "indicator_working_copy_version": 24,
+      "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+      "indicator_sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+      "evidence": "Current canonical indicator source hash and TakeProfit working-copy version."
+    }
+  ],
+  "retained_result_artifacts": [
+    {
+      "path": "results/v1/5m_base.json",
+      "sha256_raw_file": "6a1dafabe30d9b5420d39cdc4f1a00da77b61821edcde6788c4956571cf90728"
+    },
+    {
+      "path": "results/v1/15m_base.json",
+      "sha256_raw_file": "d6f5b0663f7dbade484bf8a6a739b11702e82e9b25f59b02e3ad1c5d9137c31f"
+    },
+    {
+      "path": "results/v1/5m_sensitivity.json",
+      "sha256_raw_file": "3461c22a9c9e42186776a0f7d436aa6a0bfab1f13394bc5155a88aed3f280e30"
+    },
+    {
+      "path": "results/v1/15m_sensitivity.json",
+      "sha256_raw_file": "f1679ce99b12295111dd0385d99c3e0a078c582cd35d75affc3e9f64c7a3299d"
+    },
+    {
+      "path": "results/v1/audit.json",
+      "sha256_raw_file": "e83c8ab1c38863f933a8ecd51be22333be1bd8eb33973a42c2d2a9c528471187"
+    },
+    {
+      "path": "results/v2/backtests.json",
+      "sha256_raw_file": "71f1d9150db2ffe92746d8e91e8e7cfdf3b88e36639aa0e225bf3e8f8e321e82"
+    },
+    {
+      "path": "results/v3/backtests.json",
+      "sha256_raw_file": "2c6ba09f341aed61654128f09acc0810d1177d7ccec0192a8ce41257f0a9d5f8"
+    },
+    {
+      "path": "results/v4/backtests.json",
+      "sha256_raw_file": "f7ce678ad9fc37063247acf8d8d2b620ee898183439033d192f9064999375c1f"
+    }
+  ],
+  "retained_run_count": 22,
+  "runs": [
+    {
+      "run_id": "d7bb8a67-146d-4d6b-94dc-a3a785fde814",
+      "label": "5m_base",
+      "artifact": "results/v1/5m_base.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 4,
+        "source_sha256": "2ea6e2e91a971ff6d447759b28aaf4226b8bf5fbb44f95d695bb4e848632d97e",
+        "indicator_historical_sha256": "5ab41af7484ab7f7661889d52c216f8d2af99b7926513aac69b51c1869a2ec90",
+        "mapping_status": "version_and_historical_hash_recorded"
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-10-01T00:00:00Z",
+            "to": "2026-10-15T23:55:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "bias_fast_len": 60,
+          "bias_slow_len": 150,
+          "cost_fraction": 0.0015,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 5,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-29T18:08:13.372175Z",
+      "last_bar_at": "2026-10-26T06:50:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 0,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null
+      },
+      "evidence_status": "superseded_pre_fix_history_insufficient",
+      "interpretation": "Historical diagnostic only; not admissible as current baseline performance evidence."
+    },
+    {
+      "run_id": "553f1ea5-7f53-43e2-9ca8-442eacff770f",
+      "label": "15m_base",
+      "artifact": "results/v1/15m_base.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 4,
+        "source_sha256": "2ea6e2e91a971ff6d447759b28aaf4226b8bf5fbb44f95d695bb4e848632d97e",
+        "indicator_historical_sha256": "5ab41af7484ab7f7661889d52c216f8d2af99b7926513aac69b51c1869a2ec90",
+        "mapping_status": "version_and_historical_hash_recorded"
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-09-01T00:00:00Z",
+            "to": "2026-10-15T23:45:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "bias_fast_len": 80,
+          "bias_slow_len": 200,
+          "cost_fraction": 0.0015,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 15,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-29T18:08:28.770041Z",
+      "last_bar_at": "2026-10-19T08:15:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 3,
+        "realized_pnl": -24.984705514576298,
+        "open_pnl": 0,
+        "total_pnl": -24.984705514576298,
+        "win_rate_percent": 33.33333333333333,
+        "expectancy": -8.328235171525433,
+        "profit_factor": 0.13891287327998728
+      },
+      "evidence_status": "superseded_pre_fix_history_insufficient",
+      "interpretation": "Historical diagnostic only; not admissible as current baseline performance evidence."
+    },
+    {
+      "run_id": "26ab213e-aab3-47ab-b6dd-b9cd61871100",
+      "label": "5m_sensitivity",
+      "artifact": "results/v1/5m_sensitivity.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 4,
+        "source_sha256": "2ea6e2e91a971ff6d447759b28aaf4226b8bf5fbb44f95d695bb4e848632d97e",
+        "indicator_historical_sha256": "5ab41af7484ab7f7661889d52c216f8d2af99b7926513aac69b51c1869a2ec90",
+        "mapping_status": "version_and_historical_hash_recorded"
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-10-01T00:00:00Z",
+            "to": "2026-10-15T23:55:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "bias_fast_len": 60,
+          "bias_slow_len": 150,
+          "cost_fraction": 0.0005,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 5,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-29T18:08:45.625439Z",
+      "last_bar_at": "2026-10-26T06:50:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 17,
+        "realized_pnl": -110.44426417412022,
+        "open_pnl": -162.62619999999967,
+        "total_pnl": -273.0704641741199,
+        "win_rate_percent": 29.411764705882355,
+        "expectancy": -6.496721422007072,
+        "profit_factor": 0.3233400934588428
+      },
+      "evidence_status": "defective_historical_sensitivity_overlapping_exit_opened_unintended_position",
+      "interpretation": "Historical diagnostic only; not admissible as current baseline performance evidence."
+    },
+    {
+      "run_id": "e089da5d-2f8b-45d6-af84-9bd27f31d138",
+      "label": "15m_sensitivity",
+      "artifact": "results/v1/15m_sensitivity.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 4,
+        "source_sha256": "2ea6e2e91a971ff6d447759b28aaf4226b8bf5fbb44f95d695bb4e848632d97e",
+        "indicator_historical_sha256": "5ab41af7484ab7f7661889d52c216f8d2af99b7926513aac69b51c1869a2ec90",
+        "mapping_status": "version_and_historical_hash_recorded"
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-09-01T00:00:00Z",
+            "to": "2026-10-15T23:45:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "bias_fast_len": 80,
+          "bias_slow_len": 200,
+          "cost_fraction": 0.0005,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 15,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-29T18:08:51.977943Z",
+      "last_bar_at": "2026-10-19T08:15:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 5,
+        "realized_pnl": -55.805210503087444,
+        "open_pnl": 345.5375,
+        "total_pnl": 289.7322894969126,
+        "win_rate_percent": 20,
+        "expectancy": -11.16104210061749,
+        "profit_factor": 0.36173076291042366
+      },
+      "evidence_status": "defective_historical_sensitivity_overlapping_exit_opened_unintended_position",
+      "interpretation": "Historical diagnostic only; not admissible as current baseline performance evidence."
+    },
+    {
+      "run_id": "0e687acc-bc37-478b-a64f-b03ad5a50c8f",
+      "label": "5m_base_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 7,
+        "version_mapping_status": "inferred_from_bundle_initial_version_per_run_field_omitted",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "5m",
+        "requested_from": "2026-10-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:55:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T18:48:56.542840Z",
+      "last_bar_at": "2026-10-26T07:30:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": null,
+        "losing_trades": null,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": null
+      },
+      "evidence_status": "superseded_strategy_v7_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "631510e2-ded7-40bf-a20c-7ea119c26ffd",
+      "label": "15m_base_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 7,
+        "version_mapping_status": "inferred_from_bundle_initial_version_per_run_field_omitted",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "15m",
+        "requested_from": "2026-09-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:45:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T18:48:59.046564Z",
+      "last_bar_at": "2026-10-19T09:00:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": null,
+        "losing_trades": null,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": null
+      },
+      "evidence_status": "superseded_strategy_v7_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "fe94d7b1-897c-47c6-a53b-c559b4f808e4",
+      "label": "5m_fee_only_10bp_diagnostic",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 7,
+        "version_mapping_status": "inferred_from_bundle_initial_version_per_run_field_omitted",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "5m",
+        "requested_from": "2026-10-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:55:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.001
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T18:49:57.509844Z",
+      "last_bar_at": "2026-10-26T07:30:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": null,
+        "losing_trades": null,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": null
+      },
+      "evidence_status": "superseded_cost_fraction_only_diagnostic",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "59b88f3f-9547-4cf6-be64-3479801decea",
+      "label": "15m_fee_only_10bp_diagnostic",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 7,
+        "version_mapping_status": "inferred_from_bundle_initial_version_per_run_field_omitted",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "15m",
+        "requested_from": "2026-09-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:45:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.001
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T18:50:02.162482Z",
+      "last_bar_at": "2026-10-19T09:00:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": null,
+        "losing_trades": null,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": null
+      },
+      "evidence_status": "superseded_cost_fraction_only_diagnostic",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "209f1baa-74a8-4980-8c4a-7b9a35e3a5d6",
+      "label": "5m_integer_bucket_check_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 8,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "5m",
+        "requested_from": "2026-10-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:55:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:17:11.345556Z",
+      "last_bar_at": "2026-10-26T08:00:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": null,
+        "losing_trades": null,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": null
+      },
+      "evidence_status": "superseded_strategy_v8_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "541311ad-60e1-440b-9245-197783b4a2ef",
+      "label": "15m_integer_bucket_check_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 8,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "15m",
+        "requested_from": "2026-09-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:45:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:17:14.108439Z",
+      "last_bar_at": "2026-10-19T09:30:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": null,
+        "losing_trades": null,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": null
+      },
+      "evidence_status": "superseded_strategy_v8_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "3881596c-c441-46c6-bf24-29a56bd2bfa2",
+      "label": "5m_persistent_counter_fix_v9_base_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 9,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "5m",
+        "requested_from": "2026-10-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:55:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:22:47.706357Z",
+      "last_bar_at": "2026-10-26T08:00:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": null,
+        "losing_trades": null,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": 0
+      },
+      "evidence_status": "superseded_strategy_v9_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "93beb79d-8d62-4516-9645-816f8051be3c",
+      "label": "15m_persistent_counter_fix_v9_base_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 9,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "15m",
+        "requested_from": "2026-09-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:45:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:22:47.324955Z",
+      "last_bar_at": "2026-10-19T09:30:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 4,
+        "winning_trades": 1,
+        "losing_trades": 3,
+        "realized_pnl": -31.296142199879135,
+        "open_pnl": 0,
+        "total_pnl": -31.296142199879135,
+        "win_rate_percent": 25,
+        "expectancy": -7.824035549969784,
+        "profit_factor": 0.470210328824815,
+        "max_equity_drawdown_percent": 0.9262731869921926
+      },
+      "evidence_status": "superseded_strategy_v9_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "697bfb3a-e99f-4ee7-8b11-43c2c04b3220",
+      "label": "5m_confirmed_setup_v12_base_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 12,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "5m",
+        "requested_from": "2026-10-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:55:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:35:20.471998Z",
+      "last_bar_at": "2026-10-26T08:15:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": null,
+        "losing_trades": null,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": 0
+      },
+      "evidence_status": "superseded_strategy_v12_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "7d208f52-7cfa-4c03-b3ab-ec815e7b2fa5",
+      "label": "15m_confirmed_setup_v12_base_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 12,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "15m",
+        "requested_from": "2026-09-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:45:00Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:35:20.753496Z",
+      "last_bar_at": "2026-10-19T09:45:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 8,
+        "winning_trades": 2,
+        "losing_trades": 6,
+        "realized_pnl": -45.28374275002299,
+        "open_pnl": 0,
+        "total_pnl": -45.28374275002299,
+        "win_rate_percent": 25,
+        "expectancy": -5.6604678437528735,
+        "profit_factor": 0.5754804496543326,
+        "max_equity_drawdown_percent": 1.0887467535894173
+      },
+      "evidence_status": "superseded_strategy_v12_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "910e7501-daf4-43fa-9b28-00160ebb39de",
+      "label": "5m_confirmed_setup_v13_base_15bp_trigger_guard",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 13,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "5m",
+        "requested_from": "2026-10-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:59:59Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:49:20.107313Z",
+      "last_bar_at": "2026-10-26T08:30:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 1,
+        "winning_trades": 1,
+        "losing_trades": 0,
+        "realized_pnl": 32.48740472185252,
+        "open_pnl": 0,
+        "total_pnl": 32.48740472185252,
+        "win_rate_percent": 100,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": 0.2963252864031111
+      },
+      "evidence_status": "superseded_strategy_v13_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "f04eab1f-ffe5-4ecc-b75c-cb463905cef4",
+      "label": "15m_confirmed_setup_v13_base_15bp_trigger_guard",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 13,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": null,
+        "source_hash_status": "historical_source_body_hash_not_retained",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "15m",
+        "requested_from": "2026-09-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:59:59Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:49:22.916032Z",
+      "last_bar_at": "2026-10-19T10:00:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 3,
+        "winning_trades": 1,
+        "losing_trades": 2,
+        "realized_pnl": -12.039608203759748,
+        "open_pnl": 0,
+        "total_pnl": -12.039608203759748,
+        "win_rate_percent": 33.33333333333333,
+        "expectancy": -4.013202734586585,
+        "profit_factor": 0.6976206167763291,
+        "max_equity_drawdown_percent": 0.5438052717976826
+      },
+      "evidence_status": "superseded_strategy_v13_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "f2fac8d4-1d24-47aa-96fc-9b3643facf1c",
+      "label": "5m_confirmed_setup_v14_fresh_touch_base_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 14,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": "e8a41a4da6a8683ac1a6ff719ff3e43bb3ecf00b3e0822262638f6ab2c9866ae",
+        "source_hash_status": "archived",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "5m",
+        "requested_from": "2026-10-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:59:59Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:53:46.917234Z",
+      "last_bar_at": "2026-10-26T08:35:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 1,
+        "winning_trades": 1,
+        "losing_trades": 0,
+        "realized_pnl": 32.48740472185252,
+        "open_pnl": 0,
+        "total_pnl": 32.48740472185252,
+        "win_rate_percent": 100,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": 0.2963252864031111
+      },
+      "evidence_status": "superseded_strategy_v14_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "b6ffb155-9ece-471a-956b-b4359b6661ad",
+      "label": "15m_confirmed_setup_v14_fresh_touch_base_15bp",
+      "artifact": "results/v2/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 14,
+        "version_mapping_status": "explicit_in_run_record",
+        "source_sha256": "e8a41a4da6a8683ac1a6ff719ff3e43bb3ecf00b3e0822262638f6ab2c9866ae",
+        "source_hash_status": "archived",
+        "platform_saved_indicator_version_context": 13
+      },
+      "request": {
+        "ticker": "BTC/USDT.P",
+        "exchange_code": "CXBNF8",
+        "timeframe": "15m",
+        "requested_from": "2026-09-01T00:00:00Z",
+        "requested_to": "2026-10-15T23:59:59Z",
+        "inputs_recorded_per_run": {
+          "cost_fraction": 0.0015
+        },
+        "common_inputs_recorded_in_bundle": {
+          "initial_capital": 10000,
+          "commission_fraction_per_execution": 0.0005,
+          "risk_fraction": 0.0025,
+          "quantity_step": 0.001
+        },
+        "inputs_not_retained_per_run": [
+          "leverage",
+          "intrabar_order_filter",
+          "entry/fill details",
+          "spread",
+          "slippage",
+          "funding",
+          "full order/fill ledger"
+        ]
+      },
+      "captured_at": "2026-10-29T19:53:49.606734Z",
+      "last_bar_at": "2026-10-19T10:00:00Z",
+      "history_sufficient": false,
+      "metrics": {
+        "total_trades": 2,
+        "winning_trades": 0,
+        "losing_trades": 2,
+        "realized_pnl": -39.81623375048032,
+        "open_pnl": 0,
+        "total_pnl": -39.81623375048032,
+        "win_rate_percent": 0,
+        "expectancy": null,
+        "profit_factor": 0,
+        "max_equity_drawdown_percent": 0.398162337504782
+      },
+      "evidence_status": "superseded_strategy_v14_history_limited",
+      "interpretation": "Historical iteration only. Requested/observed date bounds differ and every bundle run is marked history-insufficient."
+    },
+    {
+      "run_id": "383d5e61-1766-4fc1-b745-561f80fa00fd",
+      "label": "5m_max_available_window",
+      "artifact": "results/v3/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 16,
+        "source_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+        "mapping_status": "explicit_in_raw_native_snapshot"
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-10-10T00:00:00Z",
+            "to": "2026-10-26T23:55:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "cost_fraction": 0.0015,
+          "quantity_step": 0.001,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 5,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-30T10:41:55.108013Z",
+      "last_bar_at": "2026-10-26T23:55:00Z",
+      "history_sufficient": false,
+      "has_more_items_on_the_left": true,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": 0,
+        "total_commissions": 0
+      },
+      "orders_recorded": 0,
+      "trades_recorded": null,
+      "evidence_status": "superseded_b0_diagnostic_incomplete_history",
+      "interpretation": "No completed trades in the retained v16 windows; not a profitability estimate."
+    },
+    {
+      "run_id": "2c8cdba8-4adc-45ae-864b-7418b79b7481",
+      "label": "15m_max_available_window",
+      "artifact": "results/v3/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 16,
+        "source_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+        "mapping_status": "explicit_in_raw_native_snapshot"
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-09-05T00:00:00Z",
+            "to": "2026-10-26T23:45:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "cost_fraction": 0.0015,
+          "quantity_step": 0.001,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 15,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-30T10:41:55.734086Z",
+      "last_bar_at": "2026-10-26T23:45:00Z",
+      "history_sufficient": false,
+      "has_more_items_on_the_left": true,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": 0,
+        "total_commissions": 0
+      },
+      "orders_recorded": 1,
+      "trades_recorded": null,
+      "evidence_status": "superseded_b0_diagnostic_incomplete_history",
+      "interpretation": "No completed trades in the retained v16 windows; not a profitability estimate."
+    },
+    {
+      "run_id": "6290e434-5101-43c4-8fde-c7ba7fc9cee6",
+      "label": "instance-6290e434-5101-43c4-8fde-c7ba7fc9cee6",
+      "artifact": "results/v4/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 16,
+        "source_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+        "mapping_status": "explicit_in_raw_native_snapshot"
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-10-13T12:00:00Z",
+            "to": "2026-10-30T10:30:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "cost_fraction": 0.0015,
+          "quantity_step": 0.001,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 5,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-30T10:48:44.696806Z",
+      "last_bar_at": "2026-10-30T10:30:00Z",
+      "history_sufficient": false,
+      "has_more_items_on_the_left": true,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": 0,
+        "total_commissions": 0
+      },
+      "orders_recorded": 0,
+      "trades_recorded": 0,
+      "evidence_status": "superseded_b0_diagnostic_incomplete_history",
+      "interpretation": "No completed trades in the retained v16 windows; not a profitability estimate."
+    },
+    {
+      "run_id": "a654cdba-d539-47ec-a16e-9c76351f37c3",
+      "label": "instance-a654cdba-d539-47ec-a16e-9c76351f37c3",
+      "artifact": "results/v4/backtests.json",
+      "source": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "strategy_script_version": 16,
+        "source_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+        "mapping_status": "explicit_in_raw_native_snapshot"
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-09-09T12:00:00Z",
+            "to": "2026-10-30T10:30:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "cost_fraction": 0.0015,
+          "quantity_step": 0.001,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 15,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-30T10:48:44.592922Z",
+      "last_bar_at": "2026-10-30T10:30:00Z",
+      "history_sufficient": false,
+      "has_more_items_on_the_left": true,
+      "metrics": {
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl": 0,
+        "win_rate_percent": null,
+        "expectancy": null,
+        "profit_factor": null,
+        "max_equity_drawdown_percent": 0,
+        "total_commissions": 0
+      },
+      "orders_recorded": 1,
+      "trades_recorded": 0,
+      "evidence_status": "superseded_b0_diagnostic_incomplete_history",
+      "interpretation": "No completed trades in the retained v16 windows; not a profitability estimate."
+    }
+  ],
+  "derived_audits": [
+    {
+      "artifact": "results/v1/audit.json",
+      "source": "research/audit_v1.mjs",
+      "source_sha256": "98270d43ba8df1d4c060c793018183d7e57ed77e6519d7215bd3af797cb7164f",
+      "kind": "accounting_and_overlapping_exit_audit",
+      "associated_run_ids": [
+        "d7bb8a67-146d-4d6b-94dc-a3a785fde814",
+        "553f1ea5-7f53-43e2-9ca8-442eacff770f",
+        "26ab213e-aab3-47ab-b6dd-b9cd61871100",
+        "e089da5d-2f8b-45d6-af84-9bd27f31d138"
+      ],
+      "not_a_backtest": true
+    }
+  ],
+  "research_plan": {
+    "configuration_budget": {
+      "stage_a": 12,
+      "stage_b_conditional_combinations": 2,
+      "stage_c_conditional_target_alternatives": 4,
+      "stage_d_sensitivity_variants": 4,
+      "max_unique_new_configurations": 22,
+      "cost_scenarios_and_folds": "Log each run; do not select favorable costs as strategy parameters.",
+      "past_trials": "Retain every earlier version and result; this replaces unexecuted earlier grids."
+    },
+    "registered_stage_a": [
+      {
+        "id": "B0",
+        "family": "ema_pullback",
+        "addition": "none",
+        "rule_contract": "Implementation plan section 2"
+      },
+      {
+        "id": "B1",
+        "family": "ema_pullback",
+        "addition": "adx",
+        "adx_length": 14,
+        "di_length": 14,
+        "min_closed_adx": 20
+      },
+      {
+        "id": "B2",
+        "family": "ema_pullback",
+        "addition": "daily_vwap",
+        "source": "HLC3",
+        "anchor": "00:00 UTC",
+        "min_completed_anchor_bars": 6,
+        "condition": "Long closed price above VWAP; short below."
+      },
+      {
+        "id": "B3",
+        "family": "ema_pullback",
+        "addition": "relative_volume",
+        "lookback": 20,
+        "min_ratio": 1.2,
+        "denominator": "Mean of 20 completed candles before trigger candle; excludes trigger."
+      },
+      {
+        "id": "B4",
+        "family": "ema_pullback",
+        "addition": "entry_extension",
+        "max_signed_close_to_ema20_atr": 1
+      },
+      {
+        "id": "B5",
+        "family": "donchian_breakout_retest",
+        "addition": "alternative entry",
+        "channel_length": 20,
+        "retest_bars": 3,
+        "retest_tolerance_breakout_atr": 0.1,
+        "rule_contract": "Implementation plan section 5; freeze channel excluding breakout candle."
+      }
+    ],
+    "historical_runs_are_disclosed_separately": true,
+    "prior_run_record_count": 22,
+    "prior_run_count_is_not_unique_configuration_count": true,
+    "future_new_configuration_cap": 22
+  },
+  "evidence_limitations": [
+    "All retained native strategy histories are incomplete; the latest v16 runs have zero completed trades.",
+    "v1 sensitivity snapshots show audited same-direction overlapping exits that opened unintended positions and are marked defective.",
+    "The v2 bundle omits exact per-run versions for its first four records; the manifest maps them to the bundle initial version 7 and marks that mapping as inferred.",
+    "Historical source bodies/hashes are not retained for strategy versions 7-13; version IDs and the bundle/run records are retained.",
+    "The 15 bp cost fraction is a candidate gate/sizing assumption, not a fully realized round-trip P&L debit. Historical spread, slippage, and funding are unavailable.",
+    "The current platform indicator working copy v24 is unsaved against an older base than the latest saved private version v19.",
+    "No retained report establishes a profitable win rate, expectancy, or profit factor for the current baseline."
+  ],
+  "report_links": [
+    "docs/PROJECT_LEVEL_UP_ASSESSMENT.md",
+    "docs/CURRENT_ASSESSMENT.md",
+    "docs/SCALPING_IMPLEMENTATION_PLAN.md",
+    "docs/BACKTEST_DIAGNOSTIC_REPORT.md",
+    "RESULTS.md"
+  ]
+}

@@ -1,0 +1,86 @@
+{
+  "scope": "Arithmetic and order-ledger audit of retained snapshots; not a rerun or Indie runtime test.",
+  "source_sha256": {
+    "indie/btc_pullback_indicator.indie": "5ab41af7484ab7f7661889d52c216f8d2af99b7926513aac69b51c1869a2ec90",
+    "indie/btc_pullback_strategy.indie": "2ea6e2e91a971ff6d447759b28aaf4226b8bf5fbb44f95d695bb4e848632d97e"
+  },
+  "cost_gate": {
+    "cost_fraction": 0.0015,
+    "max_cost_to_risk": 0.2,
+    "minimum_stop_fraction": 0.0075,
+    "minimum_atr_fraction": 0.003,
+    "example_price": 81000,
+    "minimum_stop_distance": 607.5,
+    "minimum_target_distance_at_1_5R": 911.25
+  },
+  "runs": [
+    {
+      "run": "5m_base",
+      "instance_id": "d7bb8a67-146d-4d6b-94dc-a3a785fde814",
+      "captured_at": "2026-10-29T18:08:13.372175Z",
+      "history_sufficient": false,
+      "closed_trades": 0,
+      "realized_pnl": 0,
+      "open_pnl": 0,
+      "total_pnl": 0,
+      "final_capital": 10000,
+      "overlapping_exits_opening_new_positions": []
+    },
+    {
+      "run": "15m_base",
+      "instance_id": "553f1ea5-7f53-43e2-9ca8-442eacff770f",
+      "captured_at": "2026-10-29T18:08:28.770041Z",
+      "history_sufficient": false,
+      "closed_trades": 3,
+      "realized_pnl": -24.984705514576298,
+      "open_pnl": 0,
+      "total_pnl": -24.984705514576298,
+      "final_capital": 9975.015294485424,
+      "overlapping_exits_opening_new_positions": []
+    },
+    {
+      "run": "5m_sensitivity",
+      "instance_id": "26ab213e-aab3-47ab-b6dd-b9cd61871100",
+      "captured_at": "2026-10-29T18:08:45.625439Z",
+      "history_sufficient": false,
+      "closed_trades": 17,
+      "realized_pnl": -110.44426417412022,
+      "open_pnl": -162.62619999999967,
+      "total_pnl": -273.0704641741199,
+      "final_capital": 9726.92953582588,
+      "overlapping_exits_opening_new_positions": [
+        {
+          "timestamp_utc": "2026-10-08T05:20:00Z",
+          "protective_exit_order": 66,
+          "queued_market_order": 67,
+          "closed_trade": 17,
+          "unintended_open_trade": 18,
+          "direction": "ORDER_DIRECTION_BUY",
+          "opened_quantity": 0.058
+        }
+      ]
+    },
+    {
+      "run": "15m_sensitivity",
+      "instance_id": "e089da5d-2f8b-45d6-af84-9bd27f31d138",
+      "captured_at": "2026-10-29T18:08:51.977943Z",
+      "history_sufficient": false,
+      "closed_trades": 5,
+      "realized_pnl": -55.805210503087444,
+      "open_pnl": 345.5375,
+      "total_pnl": 289.7322894969126,
+      "final_capital": 10289.732289496913,
+      "overlapping_exits_opening_new_positions": [
+        {
+          "timestamp_utc": "2026-09-09T19:45:00Z",
+          "protective_exit_order": 15,
+          "queued_market_order": 17,
+          "closed_trade": 5,
+          "unintended_open_trade": 6,
+          "direction": "ORDER_DIRECTION_BUY",
+          "opened_quantity": 0.077
+        }
+      ]
+    }
+  ]
+}

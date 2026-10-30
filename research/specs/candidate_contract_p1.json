@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "contract_version": "BTC-PERP-PULLBACK-P1",
+  "status": "candidate_unification_research",
+  "created_at_utc": "2026-10-30",
+  "inherits_reference": "BTC-PERP-B0-2026-10-30-v16-v24",
+  "purpose": "Versioned candidate, planned-entry, and risk-level contract shared by the research indicator and native strategy.",
+  "instrument_scope": {
+    "venue": "Binance USD-M Futures",
+    "venue_code": "CXBNF8",
+    "symbol": "BTCUSDT",
+    "takeprofit_symbol": "BTC/USDT.P",
+    "status": "research proxy only"
+  },
+  "profiles": [
+    { "execution_minutes": 5, "higher_minutes": 15 },
+    { "execution_minutes": 15, "higher_minutes": 60 }
+  ],
+  "shared_signal_rules": {
+    "ema_fast": 20,
+    "ema_slow": 50,
+    "atr_length": 14,
+    "htf_fast_ema": 20,
+    "htf_slow_ema": 50,
+    "htf_slope_lookback": 3,
+    "htf_warmup_bars": 250,
+    "touch": "Process each completed execution candle once, at series index [1]. The first eligible candle after the side's recovery gate whose range intersects EMA20 arms the setup; never search retrospectively through indices [2]..[4]. The touch candle and up to two preceding candles since the last recovery must close on the directional side of EMA50. Directional HTF bias must be valid at the touch.",
+    "anchor": "Touch candle low/high plus up to two older candle extremes that are not earlier than the recovery candle. Freeze ATR(14) from the touch candle. Long invalidation = anchor - 0.10 ATR; short invalidation = anchor + 0.10 ATR. Stop reference = anchor +/- 0.15 ATR.",
+    "recovery_order": "A later completed close above EMA20 (long) or below EMA20 (short) releases the recovery gate. The recovery candle itself cannot arm a touch.",
+    "trigger": "On a later completed execution candle, long requires close above EMA20 and EMA50, above open and preceding high; short requires close below EMA20 and EMA50, below open and preceding low. The trigger candle's wick must not touch/cross the frozen structural invalidation.",
+    "expiry_bars_after_touch": { "first": 1, "last_inclusive": 6 },
+    "invalidation": "Completed close through EMA50 or any completed candle wick touching/crossing the frozen structural invalidation clears the setup. Bias loss, data gaps, and incomplete HTF boundaries clear/re-arm through recovery.",
+    "one_shot": "Consume every triggered candidate once before operational/execution gates, including candidates later blocked by risk or order-state gates."
+  },
+  "planned_entry_risk_contract": {
+    "immutable_fields": ["candidate_id", "touch_time_utc", "trigger_time_utc", "touch_anchor", "setup_atr", "structural_invalidation", "planned_entry_quote", "planned_stop", "planned_target", "round_trip_cost_fraction", "cost_to_risk", "risk_blocker"],
+    "planned_entry_quote": "Open of the execution bar immediately following the completed trigger candle. This is a reference quote, not a fill.",
+    "stop_distance": "max(abs(planned_entry_quote - stop_reference), 1.0 * setup_atr)",
+    "maximum_stop_distance": "2.5 * setup_atr inclusive",
+    "target_multiple_r": 1.5,
+    "minimum_stop_distance_atr": 1.0,
+    "maximum_stop_distance_atr": 2.5,
+    "maximum_cost_to_risk": 0.20,
+    "long_invalidation_offset_atr": 0.10,
+    "long_stop_reference_offset_atr": 0.15,
+    "short_invalidation_offset_atr": 0.10,
+    "short_stop_reference_offset_atr": 0.15,
+    "risk_gate": "round_trip_cost_fraction * planned_entry_quote / stop_distance <= 0.20",
+    "target_formula": "Long: planned_entry_quote + 1.5 * stop_distance. Short: planned_entry_quote - 1.5 * stop_distance.",
+    "round_trip_cost_fraction": 0.0015,
+    "cost_status": "Unverified research gate, not a fully deducted realized cost or venue fee quote."
+  },
+  "candidate_id": {
+    "format": "{venue_code}|{takeprofit_symbol}|{execution_minutes}m|{LONG_OR_SHORT}|{touch_unix_utc_seconds}|{trigger_unix_utc_seconds}|BTC-PERP-PULLBACK-P1",
+    "time_semantics": "Unix UTC seconds at the open of the touch and trigger candles.",
+    "stable_across_history_windows": true
+  },
+  "execution_separation": {
+    "strategy_limit_offset_fraction": 0.0002,
+    "long_limit_quote": "planned_entry_quote * (1 + strategy_limit_offset_fraction)",
+    "short_limit_quote": "planned_entry_quote * (1 - strategy_limit_offset_fraction)",
+    "protective_levels": "Attach the immutable planned_stop and planned_target. Do not recalculate them from the strategy limit quote.",
+    "fills": "Actual fill price, queue position, partial fills, cancel/fill races, commissions, spread, slippage, and funding are execution outcomes and remain distinct from the candidate contract."
+  },
+  "method_change_notes": [
+    "This P1 contract intentionally replaces B0's rolling retrospective indices [2]..[4] search with streaming first-eligible-touch capture.",
+    "The B0 baseline and its source manifest remain frozen and unchanged.",
+    "Unifying signal levels does not establish profitability; fills and net performance still require empirical validation."
+  ]
+}

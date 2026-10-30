@@ -1,0 +1,690 @@
+# indie:lang_version = 5
+from indie import indicator, MainContext, param, plot, color, MutSeries, MutSeriesF
+from indie.algorithms import Ema, Atr
+from indie.drawings import Table, TableCell, TableRow, RelativePosition, vertical_anchor as va, horizontal_anchor as ha
+from math import nan
+
+@indicator('BTC Perp Pullback Signals P1 - Research', overlay_main_pane=True)
+@param.float('cost_fraction', default=0.0015, min=0.0001, max=0.01)
+@plot.line('Entry EMA 20', color=color.AQUA)
+@plot.line('Entry EMA 50', color=color.ORANGE)
+@plot.line('HTF EMA 20', color=color.BLUE)
+@plot.line('HTF EMA 50', color=color.YELLOW)
+@plot.line('Planned Long Stop', color=color.RED)
+@plot.line('Planned Long Target', color=color.GREEN)
+@plot.line('Planned Short Stop', color=color.RED)
+@plot.line('Planned Short Target', color=color.GREEN)
+@plot.line('Planned Entry Quote', color=color.WHITE)
+@plot.marker('LONG candidate', style=plot.marker_style.LABEL, position=plot.marker_position.BELOW, color=color.GREEN)
+@plot.marker('SHORT candidate', style=plot.marker_style.LABEL, position=plot.marker_position.ABOVE, color=color.RED)
+@plot.marker('Modeled outcome', style=plot.marker_style.LABEL, position=plot.marker_position.CENTER, color=color.YELLOW)
+class Main(MainContext):
+    def __init__(self, cost_fraction):
+        self._cost_fraction = cost_fraction
+        self._last_signal_bar = -100
+        self._last_exit_bar = -100
+        self._signal_bar = -1
+        self._signal_direction = 0
+        self._signal_price = nan
+        self._active_side = 0
+        self._long_pullback_armed = False
+        self._short_pullback_armed = False
+        self._long_pullback_bar = -1
+        self._short_pullback_bar = -1
+        self._long_pullback_source_bar = -1
+        self._short_pullback_source_bar = -1
+        self._long_used_touch_bar = -1
+        self._short_used_touch_bar = -1
+        self._long_pullback_extreme = nan
+        self._short_pullback_extreme = nan
+        self._long_setup_atr = nan
+        self._short_setup_atr = nan
+        self._long_invalidation = nan
+        self._short_invalidation = nan
+        self._long_stop_reference = nan
+        self._short_stop_reference = nan
+        self._long_wait_recovery = False
+        self._short_wait_recovery = False
+        self._long_recovery_bar = -1
+        self._short_recovery_bar = -1
+        self._last_status = 'WARMUP'
+        self._last_status_bar = -1
+        self._trend_event = False
+        self._pullback_event = False
+        self._trigger_event = False
+        self._stop_reject_event = False
+        self._invalid_stop_event = False
+        self._wide_stop_event = False
+        self._cost_reject_event = False
+        self._model_signal_event = False
+        self._invalidated_event = False
+        self._expired_event = False
+        self._active_reject_event = False
+        self._cooldown_reject_event = False
+        self._long_stop = nan
+        self._long_target = nan
+        self._short_stop = nan
+        self._short_target = nan
+        self._outcome_bar = -1
+        self._outcome_text = ''
+        self._outcome_price = nan
+        self._last_htf_boundary_bar = -1
+        self._last_htf_boundary_complete = False
+        self._last_candidate_id = ''
+        self._table = Table(position=RelativePosition(va.TOP, ha.RIGHT, 0.05, 0.95))
+
+    def calc(self):
+        entry_fast = Ema.new(self.close, 20)
+        entry_slow = Ema.new(self.close, 50)
+        atr = Atr.new(14)
+        htf_fast = MutSeriesF.new(init=nan)
+        htf_slow = MutSeriesF.new(init=nan)
+        htf_close = MutSeriesF.new(init=nan)
+        htf_slow_lag3 = MutSeriesF.new(init=nan)
+        htf_slow_hist1 = MutSeriesF.new(init=nan)
+        htf_slow_hist2 = MutSeriesF.new(init=nan)
+        htf_slow_hist3 = MutSeriesF.new(init=nan)
+        htf_count = MutSeries[int].new(init=0)
+        trend_bars = MutSeries[int].new(init=0)
+        pullback_bars = MutSeries[int].new(init=0)
+        trigger_bars = MutSeries[int].new(init=0)
+        stop_reject_bars = MutSeries[int].new(init=0)
+        invalid_stop_bars = MutSeries[int].new(init=0)
+        wide_stop_bars = MutSeries[int].new(init=0)
+        cost_reject_bars = MutSeries[int].new(init=0)
+        model_signal_bars = MutSeries[int].new(init=0)
+        invalidated_bars = MutSeries[int].new(init=0)
+        expired_bars = MutSeries[int].new(init=0)
+        active_reject_bars = MutSeries[int].new(init=0)
+        cooldown_reject_bars = MutSeries[int].new(init=0)
+
+        time_delta = 0.0
+        if self.bar_index > 0:
+            time_delta = self.time[0] - self.time[1]
+        execution_seconds = self.time_frame.to_seconds()
+        higher_seconds = 0
+        bars_per_higher = 0
+        if execution_seconds == 300:
+            higher_seconds = 900
+            bars_per_higher = 3
+        elif execution_seconds == 900:
+            higher_seconds = 3600
+            bars_per_higher = 4
+
+        profile_valid = execution_seconds == 300 or execution_seconds == 900
+        data_gap = profile_valid and self.bar_index > 0 and time_delta != execution_seconds
+        at_higher_boundary = False
+        complete_higher_bar = False
+        current_bucket = 0
+        previous_bucket = 0
+        if profile_valid and self.time[0] > 0.0 and self.time[1] > 0.0:
+            current_bucket = int(self.time[0] / higher_seconds)
+            previous_bucket = int(self.time[1] / higher_seconds)
+        if profile_valid and self.bar_index >= bars_per_higher:
+            at_higher_boundary = current_bucket != previous_bucket
+            if at_higher_boundary and current_bucket == previous_bucket + 1:
+                if execution_seconds == 300:
+                    complete_higher_bar = self.time[1] > 0.0 and self.time[2] > 0.0 and self.time[3] > 0.0 and int(self.time[2]) == int(self.time[1]) - 300 and int(self.time[3]) == int(self.time[2]) - 300
+                elif execution_seconds == 900:
+                    complete_higher_bar = (self.time[1] > 0.0 and self.time[2] > 0.0 and self.time[3] > 0.0 and self.time[4] > 0.0 and
+                                            int(self.time[2]) == int(self.time[1]) - 900 and
+                                            int(self.time[3]) == int(self.time[2]) - 900 and
+                                            int(self.time[4]) == int(self.time[3]) - 900)
+
+        boundary_event = at_higher_boundary and self.is_new_bar
+        if profile_valid and boundary_event:
+            self._last_htf_boundary_bar = self.bar_index
+            self._last_htf_boundary_complete = complete_higher_bar
+
+        if not profile_valid or data_gap or (at_higher_boundary and not complete_higher_bar):
+            htf_fast[0] = nan
+            htf_slow[0] = nan
+            htf_close[0] = nan
+            htf_slow_lag3[0] = nan
+            htf_slow_hist1[0] = nan
+            htf_slow_hist2[0] = nan
+            htf_slow_hist3[0] = nan
+            htf_count[0] = 0
+        elif at_higher_boundary:
+            if htf_count[1] == 0:
+                htf_fast[0] = self.close[1]
+                htf_slow[0] = self.close[1]
+                htf_close[0] = self.close[1]
+                htf_slow_lag3[0] = nan
+                htf_slow_hist1[0] = nan
+                htf_slow_hist2[0] = nan
+                htf_slow_hist3[0] = nan
+                htf_count[0] = 1
+            else:
+                htf_fast[0] = htf_fast[1] + (2.0 / 21.0) * (self.close[1] - htf_fast[1])
+                htf_slow[0] = htf_slow[1] + (2.0 / 51.0) * (self.close[1] - htf_slow[1])
+                htf_close[0] = self.close[1]
+                htf_slow_lag3[0] = htf_slow_hist2[1]
+                htf_slow_hist3[0] = htf_slow_hist2[1]
+                htf_slow_hist2[0] = htf_slow_hist1[1]
+                htf_slow_hist1[0] = htf_slow[1]
+                htf_count[0] = htf_count[1] + 1
+        long_marker = nan
+        short_marker = nan
+        outcome_marker = nan
+        model_entry_line = nan
+        status_text = 'WARMUP'
+        bias_text = 'WARMUP'
+        htf_ready = profile_valid and htf_count[0] >= 250
+        profile_text = 'UNSUPPORTED'
+        if execution_seconds == 300:
+            profile_text = '5m to 15m'
+        elif execution_seconds == 900:
+            profile_text = '15m to 1h'
+        if not profile_valid:
+            status_text = 'USE 5M OR 15M CHART'
+            bias_text = 'UNAVAILABLE'
+            if data_gap:
+                status_text = 'DATA GAP | REWARMING'
+        elif at_higher_boundary and not complete_higher_bar:
+            status_text = 'HTF GAP | REWARMING'
+            bias_text = 'REWARMING'
+        elif data_gap:
+            status_text = 'DATA GAP | REWARMING'
+            bias_text = 'REWARMING'
+        elif not htf_ready:
+            status_text = 'HTF WARMUP | ' + str(htf_count[0]) + '/250'
+            bias_text = 'WARMUP'
+
+        if self._signal_bar == self.bar_index:
+            if self._signal_direction == 1:
+                long_marker = self._signal_price
+            elif self._signal_direction == -1:
+                short_marker = self._signal_price
+
+        if self.is_new_bar and self._active_side != 0:
+            if self._active_side == 1:
+                if self.low[1] <= self._long_stop and self.high[1] >= self._long_target:
+                    self._outcome_text = 'SIM SL | AMBIGUOUS BAR'
+                    self._outcome_price = self._long_stop
+                elif self.low[1] <= self._long_stop:
+                    self._outcome_text = 'SIM STOP'
+                    self._outcome_price = self._long_stop
+                elif self.high[1] >= self._long_target:
+                    self._outcome_text = 'SIM TARGET'
+                    self._outcome_price = self._long_target
+                else:
+                    self._outcome_text = ''
+                if self._outcome_text != '':
+                    self._outcome_bar = self.bar_index
+                    self._active_side = 0
+                    self._long_stop = nan
+                    self._long_target = nan
+                    self._last_exit_bar = self.bar_index
+            elif self._active_side == -1:
+                if self.high[1] >= self._short_stop and self.low[1] <= self._short_target:
+                    self._outcome_text = 'SIM SL | AMBIGUOUS BAR'
+                    self._outcome_price = self._short_stop
+                elif self.high[1] >= self._short_stop:
+                    self._outcome_text = 'SIM STOP'
+                    self._outcome_price = self._short_stop
+                elif self.low[1] <= self._short_target:
+                    self._outcome_text = 'SIM TARGET'
+                    self._outcome_price = self._short_target
+                else:
+                    self._outcome_text = ''
+                if self._outcome_text != '':
+                    self._outcome_bar = self.bar_index
+                    self._active_side = 0
+                    self._short_stop = nan
+                    self._short_target = nan
+                    self._last_exit_bar = self.bar_index
+
+        long_bias = False
+        short_bias = False
+        if htf_ready:
+            long_bias = htf_close[0] > htf_slow[0] and htf_fast[0] > htf_slow[0] and htf_slow[0] > htf_slow_lag3[0]
+            short_bias = htf_close[0] < htf_slow[0] and htf_fast[0] < htf_slow[0] and htf_slow[0] < htf_slow_lag3[0]
+            bias_text = 'LONG' if long_bias else 'SHORT' if short_bias else 'FLAT'
+            status_text = 'WAIT PULLBACK' if long_bias or short_bias else 'NO TREND BIAS'
+        # BEGIN GENERATED SHARED CANDIDATE CORE
+        candidate_side = 0
+        candidate_id = ''
+        candidate_touch_utc = -1
+        candidate_trigger_utc = -1
+        candidate_touch_anchor = nan
+        candidate_setup_atr = nan
+        candidate_invalidation = nan
+        candidate_planned_entry = nan
+        candidate_stop = nan
+        candidate_target = nan
+        candidate_stop_distance = nan
+        candidate_cost_r = nan
+        candidate_stop_reference = nan
+        candidate_blocker = 'NO CANDIDATE'
+
+        long_bias = False
+        short_bias = False
+        if htf_ready:
+            long_bias = htf_close[0] > htf_slow[0] and htf_fast[0] > htf_slow[0] and htf_slow[0] > htf_slow_lag3[0]
+            short_bias = htf_close[0] < htf_slow[0] and htf_fast[0] < htf_slow[0] and htf_slow[0] < htf_slow_lag3[0]
+
+        if self.is_new_bar:
+            self._trend_event = False
+            self._pullback_event = False
+            self._trigger_event = False
+            self._invalidated_event = False
+            self._expired_event = False
+
+        if self.is_new_bar and (not profile_valid or data_gap or (at_higher_boundary and not complete_higher_bar)):
+            self._long_pullback_armed = False
+            self._short_pullback_armed = False
+            self._long_pullback_bar = -1
+            self._short_pullback_bar = -1
+            self._long_pullback_source_bar = -1
+            self._short_pullback_source_bar = -1
+            self._long_used_touch_bar = self.bar_index - 1
+            self._short_used_touch_bar = self.bar_index - 1
+            self._long_pullback_extreme = nan
+            self._short_pullback_extreme = nan
+            self._long_setup_atr = nan
+            self._short_setup_atr = nan
+            self._long_invalidation = nan
+            self._short_invalidation = nan
+            self._long_stop_reference = nan
+            self._short_stop_reference = nan
+            self._long_wait_recovery = True
+            self._short_wait_recovery = True
+            self._long_recovery_bar = -1
+            self._short_recovery_bar = -1
+
+        if self.is_new_bar and htf_ready and self.bar_index > 55:
+            if long_bias or short_bias:
+                self._trend_event = True
+
+            if not long_bias:
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if not short_bias:
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+
+            if self._long_pullback_armed and self.bar_index - 1 - self._long_pullback_source_bar > 6:
+                self._expired_event = True
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if self._short_pullback_armed and self.bar_index - 1 - self._short_pullback_source_bar > 6:
+                self._expired_event = True
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+
+            long_invalidated = self._long_pullback_armed and (self.close[1] <= entry_slow[1] or self.low[1] <= self._long_invalidation)
+            short_invalidated = self._short_pullback_armed and (self.close[1] >= entry_slow[1] or self.high[1] >= self._short_invalidation)
+            if long_invalidated:
+                self._invalidated_event = True
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if short_invalidated:
+                self._invalidated_event = True
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+
+            if self._long_wait_recovery and self.bar_index - 1 > self._long_used_touch_bar and self.close[1] > entry_fast[1]:
+                self._long_wait_recovery = False
+                self._long_recovery_bar = self.bar_index - 1
+            if self._short_wait_recovery and self.bar_index - 1 > self._short_used_touch_bar and self.close[1] < entry_fast[1]:
+                self._short_wait_recovery = False
+                self._short_recovery_bar = self.bar_index - 1
+
+            long_touch_eligible = long_bias and self.low[1] <= entry_fast[1] and self.high[1] >= entry_fast[1] and self.close[1] > entry_slow[1]
+            short_touch_eligible = short_bias and self.low[1] <= entry_fast[1] and self.high[1] >= entry_fast[1] and self.close[1] < entry_slow[1]
+            long_touch_source_bar = self.bar_index - 1
+            short_touch_source_bar = self.bar_index - 1
+            long_touch_index = 1
+            short_touch_index = 1
+            long_touch_atr = atr[1]
+            short_touch_atr = atr[1]
+            if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - 2:
+                if self.close[2] <= entry_slow[2]:
+                    long_touch_eligible = False
+            if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - 3:
+                if self.close[3] <= entry_slow[3]:
+                    long_touch_eligible = False
+            if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - 2:
+                if self.close[2] >= entry_slow[2]:
+                    short_touch_eligible = False
+            if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - 3:
+                if self.close[3] >= entry_slow[3]:
+                    short_touch_eligible = False
+
+            if long_touch_eligible and not self._long_wait_recovery and not self._long_pullback_armed and long_touch_source_bar > self._long_used_touch_bar and long_touch_source_bar > self._long_recovery_bar:
+                self._long_pullback_armed = True
+                self._long_pullback_bar = self.bar_index
+                self._long_pullback_source_bar = long_touch_source_bar
+                anchor = self.low[long_touch_index]
+                previous_index = long_touch_index + 1
+                if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - previous_index:
+                    anchor = min(anchor, self.low[previous_index])
+                previous_index = long_touch_index + 2
+                if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - previous_index:
+                    anchor = min(anchor, self.low[previous_index])
+                self._long_pullback_extreme = anchor
+                self._long_setup_atr = long_touch_atr
+                self._long_invalidation = anchor - 0.1 * self._long_setup_atr
+                self._long_stop_reference = anchor - 0.15 * self._long_setup_atr
+                self._pullback_event = True
+            if short_touch_eligible and not self._short_wait_recovery and not self._short_pullback_armed and short_touch_source_bar > self._short_used_touch_bar and short_touch_source_bar > self._short_recovery_bar:
+                self._short_pullback_armed = True
+                self._short_pullback_bar = self.bar_index
+                self._short_pullback_source_bar = short_touch_source_bar
+                anchor = self.high[short_touch_index]
+                previous_index = short_touch_index + 1
+                if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - previous_index:
+                    anchor = max(anchor, self.high[previous_index])
+                previous_index = short_touch_index + 2
+                if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - previous_index:
+                    anchor = max(anchor, self.high[previous_index])
+                self._short_pullback_extreme = anchor
+                self._short_setup_atr = short_touch_atr
+                self._short_invalidation = anchor + 0.1 * self._short_setup_atr
+                self._short_stop_reference = anchor + 0.15 * self._short_setup_atr
+                self._pullback_event = True
+
+            long_trigger = self.close[1] > entry_fast[1] and self.close[1] > entry_slow[1] and self.close[1] > self.open[1] and self.close[1] > self.high[2]
+            short_trigger = self.close[1] < entry_fast[1] and self.close[1] < entry_slow[1] and self.close[1] < self.open[1] and self.close[1] < self.low[2]
+            long_age = self.bar_index - 1 - self._long_pullback_source_bar
+            short_age = self.bar_index - 1 - self._short_pullback_source_bar
+            long_candidate = self._long_pullback_armed and long_bias and long_trigger and self.low[1] > self._long_invalidation and long_age >= 1 and long_age <= 6
+            short_candidate = self._short_pullback_armed and short_bias and short_trigger and self.high[1] < self._short_invalidation and short_age >= 1 and short_age <= 6
+
+            if long_candidate:
+                candidate_side = 1
+                candidate_touch_anchor = self._long_pullback_extreme
+                candidate_setup_atr = self._long_setup_atr
+                candidate_invalidation = self._long_invalidation
+                candidate_stop_reference = self._long_stop_reference
+                touch_offset = self.bar_index - self._long_pullback_source_bar
+                candidate_touch_utc = int(self.time[touch_offset])
+                candidate_trigger_utc = int(self.time[1])
+            elif short_candidate:
+                candidate_side = -1
+                candidate_touch_anchor = self._short_pullback_extreme
+                candidate_setup_atr = self._short_setup_atr
+                candidate_invalidation = self._short_invalidation
+                candidate_stop_reference = self._short_stop_reference
+                touch_offset = self.bar_index - self._short_pullback_source_bar
+                candidate_touch_utc = int(self.time[touch_offset])
+                candidate_trigger_utc = int(self.time[1])
+
+            if candidate_side != 0:
+                self._trigger_event = True
+                execution_minutes = int(execution_seconds / 60)
+                candidate_side_text = 'LONG' if candidate_side == 1 else 'SHORT'
+                candidate_id = (self.info.exchange_code + '|' + self.info.ticker + '|' + str(execution_minutes) + 'm|' +
+                                candidate_side_text + '|' + str(candidate_touch_utc) + '|' + str(candidate_trigger_utc) +
+                                '|BTC-PERP-PULLBACK-P1')
+                self._last_candidate_id = candidate_id
+
+                candidate_planned_entry = self.open[0]
+                candidate_blocker = 'NONE'
+                if candidate_planned_entry <= 0.0 or candidate_setup_atr <= 0.0:
+                    candidate_blocker = 'INVALID ENTRY OR ATR'
+                elif candidate_side == 1 and candidate_stop_reference >= candidate_planned_entry:
+                    candidate_blocker = 'INVALID STOP'
+                elif candidate_side == -1 and candidate_stop_reference <= candidate_planned_entry:
+                    candidate_blocker = 'INVALID STOP'
+                else:
+                    candidate_stop_distance = max(abs(candidate_planned_entry - candidate_stop_reference), 1 * candidate_setup_atr)
+                    candidate_cost_r = candidate_planned_entry * self._cost_fraction / candidate_stop_distance
+                    if candidate_side == 1:
+                        candidate_stop = candidate_planned_entry - candidate_stop_distance
+                        candidate_target = candidate_planned_entry + 1.5 * candidate_stop_distance
+                    else:
+                        candidate_stop = candidate_planned_entry + candidate_stop_distance
+                        candidate_target = candidate_planned_entry - 1.5 * candidate_stop_distance
+                    if candidate_stop_distance > 2.5 * candidate_setup_atr:
+                        candidate_blocker = 'STOP > 2.5 ATR'
+                    elif candidate_cost_r > 0.2:
+                        candidate_blocker = 'COST > 0.2R'
+
+                self._long_used_touch_bar = self.bar_index - 1 if candidate_side == 1 else self._long_used_touch_bar
+                self._short_used_touch_bar = self.bar_index - 1 if candidate_side == -1 else self._short_used_touch_bar
+                if candidate_side == 1:
+                    self._long_pullback_armed = False
+                    self._long_pullback_bar = -1
+                    self._long_pullback_source_bar = -1
+                    self._long_pullback_extreme = nan
+                    self._long_setup_atr = nan
+                    self._long_invalidation = nan
+                    self._long_stop_reference = nan
+                    self._long_wait_recovery = True
+                    self._long_recovery_bar = -1
+                else:
+                    self._short_pullback_armed = False
+                    self._short_pullback_bar = -1
+                    self._short_pullback_source_bar = -1
+                    self._short_pullback_extreme = nan
+                    self._short_setup_atr = nan
+                    self._short_invalidation = nan
+                    self._short_stop_reference = nan
+                    self._short_wait_recovery = True
+                    self._short_recovery_bar = -1
+        # END GENERATED SHARED CANDIDATE CORE
+        # BEGIN GENERATED INDICATOR CANDIDATE ADAPTER
+        if self.is_new_bar:
+            self._stop_reject_event = False
+            self._invalid_stop_event = False
+            self._wide_stop_event = False
+            self._cost_reject_event = False
+            self._model_signal_event = False
+            self._active_reject_event = False
+            self._cooldown_reject_event = False
+        if candidate_side != 0:
+            if self._active_side != 0:
+                self._active_reject_event = True
+                status_text = 'BLOCKED | ACTIVE MODEL'
+            elif self.bar_index - self._last_signal_bar <= 3 or self.bar_index - self._last_exit_bar <= 3:
+                self._cooldown_reject_event = True
+                status_text = 'BLOCKED | COOLDOWN'
+            elif candidate_blocker != 'NONE':
+                if candidate_blocker == 'INVALID STOP' or candidate_blocker == 'INVALID ENTRY OR ATR':
+                    self._invalid_stop_event = True
+                elif candidate_blocker == 'STOP > 2.5 ATR':
+                    self._wide_stop_event = True
+                elif candidate_blocker == 'COST > 0.2R':
+                    self._cost_reject_event = True
+                if candidate_blocker == 'INVALID STOP' or candidate_blocker == 'INVALID ENTRY OR ATR' or candidate_blocker == 'STOP > 2.5 ATR':
+                    self._stop_reject_event = True
+                status_text = 'BLOCKED | ' + candidate_blocker
+            else:
+                self._model_signal_event = True
+                self._last_signal_bar = self.bar_index
+                self._signal_bar = self.bar_index
+                self._signal_direction = candidate_side
+                self._signal_price = candidate_planned_entry
+                self._outcome_text = ''
+                self._active_side = candidate_side
+                if candidate_side == 1:
+                    self._long_stop = candidate_stop
+                    self._long_target = candidate_target
+                    self._short_stop = nan
+                    self._short_target = nan
+                    long_marker = candidate_planned_entry
+                    status_text = 'MODEL | LONG | PLANNED OPEN'
+                else:
+                    self._short_stop = candidate_stop
+                    self._short_target = candidate_target
+                    self._long_stop = nan
+                    self._long_target = nan
+                    short_marker = candidate_planned_entry
+                    status_text = 'MODEL | SHORT | PLANNED OPEN'
+        if candidate_side == 0:
+            if long_bias and self._long_wait_recovery:
+                status_text = 'WAIT EMA20 RECOVERY'
+            elif short_bias and self._short_wait_recovery:
+                status_text = 'WAIT EMA20 RECOVERY'
+            elif self._long_pullback_armed or self._short_pullback_armed:
+                status_text = 'WAIT TRIGGER'
+        # END GENERATED INDICATOR CANDIDATE ADAPTER
+
+
+        pullback_bars[0] = pullback_bars[1]
+        trigger_bars[0] = trigger_bars[1]
+        stop_reject_bars[0] = stop_reject_bars[1]
+        invalid_stop_bars[0] = invalid_stop_bars[1]
+        wide_stop_bars[0] = wide_stop_bars[1]
+        cost_reject_bars[0] = cost_reject_bars[1]
+        model_signal_bars[0] = model_signal_bars[1]
+        invalidated_bars[0] = invalidated_bars[1]
+        expired_bars[0] = expired_bars[1]
+        active_reject_bars[0] = active_reject_bars[1]
+        cooldown_reject_bars[0] = cooldown_reject_bars[1]
+        if self._trend_event:
+            trend_bars[0] = trend_bars[1] + 1
+        if self._pullback_event:
+            pullback_bars[0] = pullback_bars[1] + 1
+        if self._trigger_event:
+            trigger_bars[0] = trigger_bars[1] + 1
+        if self._stop_reject_event:
+            stop_reject_bars[0] = stop_reject_bars[1] + 1
+        if self._invalid_stop_event:
+            invalid_stop_bars[0] = invalid_stop_bars[1] + 1
+        if self._wide_stop_event:
+            wide_stop_bars[0] = wide_stop_bars[1] + 1
+        if self._cost_reject_event:
+            cost_reject_bars[0] = cost_reject_bars[1] + 1
+        if self._model_signal_event:
+            model_signal_bars[0] = model_signal_bars[1] + 1
+        if self._invalidated_event:
+            invalidated_bars[0] = invalidated_bars[1] + 1
+        if self._expired_event:
+            expired_bars[0] = expired_bars[1] + 1
+        if self._active_reject_event:
+            active_reject_bars[0] = active_reject_bars[1] + 1
+        if self._cooldown_reject_event:
+            cooldown_reject_bars[0] = cooldown_reject_bars[1] + 1
+
+        if self._outcome_bar == self.bar_index:
+            outcome_marker = self._outcome_price
+            status_text = self._outcome_text
+        elif self._active_side == 1:
+            status_text = 'MODEL | LONG | ASSUMED FILL'
+        elif self._active_side == -1:
+            status_text = 'MODEL | SHORT | ASSUMED FILL'
+
+        if self._active_side != 0:
+            model_entry_line = self._signal_price
+
+        if self._last_status_bar == self.bar_index and not self.is_new_bar:
+            status_text = self._last_status
+        else:
+            self._last_status = status_text
+            self._last_status_bar = self.bar_index
+
+        if self.is_last_bar:
+            setup_text = 'NONE'
+            if self._long_pullback_armed:
+                setup_text = ('L#' + str(self._long_pullback_source_bar) + ' | age ' +
+                              str(self.bar_index - 1 - self._long_pullback_source_bar) + '/6 | inv<' +
+                              str(round(self._long_invalidation, 1)))
+            elif self._short_pullback_armed:
+                setup_text = ('S#' + str(self._short_pullback_source_bar) + ' | age ' +
+                              str(self.bar_index - 1 - self._short_pullback_source_bar) + '/6 | inv>' +
+                              str(round(self._short_invalidation, 1)))
+            elif (long_bias and self._long_wait_recovery) or (short_bias and self._short_wait_recovery):
+                setup_text = 'WAIT FOR EMA20 RECOVERY'
+            model_entry = '--'
+            model_stop = '--'
+            model_target = '--'
+            model_cost_r = '--'
+            model_target_net_r = '--'
+            model_break_even = '--'
+            if self._active_side == 1:
+                model_entry = str(round(self._signal_price, 2))
+                model_stop = str(round(self._long_stop, 2))
+                model_target = str(round(self._long_target, 2))
+                cost_r = self._signal_price * self._cost_fraction / (self._signal_price - self._long_stop)
+                model_cost_r = str(round(cost_r, 3)) + 'R'
+                model_target_net_r = str(round(1.5 - cost_r, 2)) + 'R net'
+                model_break_even = str(round((1.0 + cost_r) / 2.5 * 100.0, 1)) + '%'
+            elif self._active_side == -1:
+                model_entry = str(round(self._signal_price, 2))
+                model_stop = str(round(self._short_stop, 2))
+                model_target = str(round(self._short_target, 2))
+                cost_r = self._signal_price * self._cost_fraction / (self._short_stop - self._signal_price)
+                model_cost_r = str(round(cost_r, 3)) + 'R'
+                model_target_net_r = str(round(1.5 - cost_r, 2)) + 'R net'
+                model_break_even = str(round((1.0 + cost_r) / 2.5 * 100.0, 1)) + '%'
+            self._table.clear()
+            self._table.append(TableRow([TableCell('BTC SCALP | RESEARCH P1')]))
+            self._table.add_row(['Instrument', self.info.ticker + ' | ' + self.info.exchange_code])
+            self._table.add_row(['State', status_text])
+            self._table.add_row(['Latest candidate ID', self._last_candidate_id if self._last_candidate_id != '' else '--'])
+            self._table.add_row(['Armed setup', setup_text])
+            self._table.add_row(['Outcome model', 'Closed candle | ambiguous = stop first'])
+            self._table.add_row(['Mode', 'RESEARCH | planned next-open quote; fill unknown'])
+            self._table.add_row(['Bias | profile', bias_text + ' | ' + profile_text])
+            self._table.add_row(['Bar interval | HTF bars', str(round(time_delta, 1)) + 's | ' + str(htf_count[0])])
+            last_boundary_text = 'none'
+            if self._last_htf_boundary_bar >= 0:
+                last_boundary_text = str(self.bar_index - self._last_htf_boundary_bar) + ' bars ago | ' + ('complete' if self._last_htf_boundary_complete else 'gap')
+            self._table.add_row(['Last HTF rollover', last_boundary_text])
+            self._table.add_row(['Events: trend / touch / trigger', str(trend_bars[0]) + ' / ' + str(pullback_bars[0]) + ' / ' + str(trigger_bars[0])])
+            self._table.add_row(['Setup invalidated / expired', str(invalidated_bars[0]) + ' / ' + str(expired_bars[0])])
+            self._table.add_row(['Candidates: accepted / active / cooldown', str(model_signal_bars[0]) + ' / ' + str(active_reject_bars[0]) + ' / ' + str(cooldown_reject_bars[0])])
+            self._table.add_row(['Candidate rejects: stop / cost', str(stop_reject_bars[0]) + ' / ' + str(cost_reject_bars[0])])
+            self._table.add_row(['Stop reject detail: invalid / >2.5 ATR', str(invalid_stop_bars[0]) + ' / ' + str(wide_stop_bars[0])])
+            self._table.add_row(['Planned entry / stop / target', model_entry + ' / ' + model_stop + ' / ' + model_target])
+            self._table.add_row(['Target gross / net after cost', '1.50R / ' + model_target_net_r])
+            self._table.add_row(['Cost / estimated break-even win rate', model_cost_r + ' / ' + model_break_even])
+            self._table.add_row(['Cost gate / fill model', str(round(self._cost_fraction * 10000.0, 1)) + ' bps RT gate | actual fill unknown'])
+            self.chart.draw(self._table)
+
+        return (entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0], self._long_stop, self._long_target,
+                self._short_stop, self._short_target, model_entry_line,
+                plot.Marker(long_marker, text='LONG'),
+                plot.Marker(short_marker, text='SHORT'),
+                plot.Marker(outcome_marker, text=self._outcome_text))

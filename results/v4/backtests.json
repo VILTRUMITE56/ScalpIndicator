@@ -1,0 +1,397 @@
+{
+  "report_version": 1,
+  "captured_date_manila": "2026-10-30",
+  "purpose": "Updated-window diagnostic rerun of strategy working copy v16; no signal parameters changed.",
+  "strategy": {
+    "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+    "working_copy_version": 16,
+    "title": "BTC Perp Pullback Research v4"
+  },
+  "indicator": {
+    "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+    "diagnostic_source_before_update_working_copy_version": 22,
+    "diagnostic_edit_working_copy_version": 24,
+    "diagnostic_edit_sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+    "diagnostic_edit_compile_validated": true,
+    "diagnostic_edit_runtime_quick": {
+      "valid": true,
+      "series_items_count": 5000,
+      "time_to_snapshot_ms": 4394.8,
+      "draw_elements": {
+        "line": 9,
+        "marker": 3
+      }
+    },
+    "diagnostic_edit_saved": false,
+    "latest_saved_private_platform_version": 19,
+    "working_copy_base_platform_version": 16,
+    "save_result": "Rejected as stale; working copy is based on version 16 while latest saved platform version is 19. Loading version 19 is blocked while this working copy has unsaved edits."
+  },
+  "instrument": {
+    "ticker": "BTC/USDT.P",
+    "exchange_code": "CXBNF8",
+    "exchange": "BINANCE",
+    "class": "Perpetual Futures"
+  },
+  "inputs": {
+    "initial_capital": 10000,
+    "risk_fraction": 0.0025,
+    "cost_fraction": 0.0015,
+    "quantity_step": 0.001,
+    "commission_fraction_per_execution": 0.0005,
+    "commission_type": "Percent",
+    "leverage": 1,
+    "intrabar_order_filter": "No Filter",
+    "market_order_price": "Market Price"
+  },
+  "chart_diagnostic_snapshot": {
+    "source": "User-provided TakeProfit chart screenshot",
+    "indicator_label": "BTC SCALP | RESEARCH v6",
+    "timeframe": "5m",
+    "instrument": "BTC/USDT.P | CXBNF8",
+    "completed_higher_timeframe_bars": 1666,
+    "trend_pullback_trigger_counts": [
+      3502,
+      254,
+      101
+    ],
+    "accepted_stop_rejected_cost_rejected_counts": [
+      0,
+      10,
+      91
+    ],
+    "calculated_trigger_rejection_percentages": {
+      "stop": 9.900990099,
+      "cost": 90.099009901
+    },
+    "interpretation": "In this displayed history, all 101 trigger candidates were rejected: 10 by the aggregated stop gate and 91 by the cost gate. This is a chart-model diagnostic, not a strategy fill ledger."
+  },
+  "limitations": [
+    "Both updated-window strategy reports set is_history_depth_sufficient=false and has_more_items_on_the_left=true.",
+    "The 0.15% round-trip cost input is an eligibility and sizing estimate; reported strategy P&L charges 0.05% commission per execution but lacks historical spread, slippage, and funding.",
+    "The chart screenshot's aggregate stop rejection counter does not separate invalid stop geometry from stops wider than 2.5 ATR.",
+    "No completed trades means win rate, expectancy, and profit factor are undefined."
+  ],
+  "runs": [
+    {
+      "indicator_instance_id": "6290e434-5101-43c4-8fde-c7ba7fc9cee6",
+      "source": {
+        "kind": "script",
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "script_version": 16
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-10-13T12:00:00Z",
+            "to": "2026-10-30T10:30:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "cost_fraction": 0.0015,
+          "quantity_step": 0.001,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 5,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-30T10:48:44.696806Z",
+      "last_bar_at": "2026-10-30T10:30:00Z",
+      "expires_at": "2026-10-30T11:03:07Z",
+      "is_history_depth_sufficient": false,
+      "has_more_items_on_the_left": true,
+      "has_more_items_on_the_right": false,
+      "metrics": {
+        "initial_capital": 10000,
+        "final_capital": 10000,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl_currency": 0,
+        "total_pnl_percent": 0,
+        "pnl_today_currency": 0,
+        "pnl_today_percent": 0,
+        "avg_monthly_return": null,
+        "max_equity": 10000,
+        "min_equity": 10000,
+        "buy_hold_return_percent": -6.930676434019961,
+        "buy_hold_return_currency": -693.0676434019961,
+        "max_equity_drawdown_percent": 0,
+        "max_equity_drawdown_currency": 0,
+        "margin_calls": 0,
+        "avg_drawdown_percent": 0,
+        "number_of_drawdowns": 0,
+        "max_drawdown_duration": 0,
+        "sharpe_ratio": null,
+        "sortino_ratio": null,
+        "calmar_ratio": null,
+        "annualized_return": 0,
+        "daily_std_dev": 0,
+        "annualized_volatility": 0,
+        "daily_var_95": 0,
+        "daily_var_99": 0,
+        "max_recovery_time": 0,
+        "avg_recovery_time": null,
+        "max_long_contracts_held": 0,
+        "max_short_contracts_held": 0,
+        "max_total_contracts_held": 0,
+        "avg_exposure_percent": 0,
+        "max_exposure_percent": 0,
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate_percent": null,
+        "avg_win": null,
+        "avg_loss": null,
+        "best_trade_net_pnl": null,
+        "worst_trade_net_pnl": null,
+        "expectancy": null,
+        "risk_reward_ratio": null,
+        "profit_factor": null,
+        "avg_trade_duration": null,
+        "max_trade_duration": null,
+        "min_trade_duration": null,
+        "total_trading_period": 0,
+        "time_in_market_percent": 0,
+        "idle_time_percent": 100,
+        "avg_win_duration": null,
+        "avg_loss_duration": null,
+        "long_trades": 0,
+        "short_trades": 0,
+        "long_trades_percent": null,
+        "short_trades_percent": null,
+        "long_win_rate": null,
+        "short_win_rate": null,
+        "long_realized_pnl": 0,
+        "short_realized_pnl": 0,
+        "avg_long_trade_return": null,
+        "avg_short_trade_return": null,
+        "long_return_per_day": null,
+        "short_return_per_day": null,
+        "long_trade_duration_avg": null,
+        "short_trade_duration_avg": null,
+        "open_long_trades": 0,
+        "open_short_trades": 0,
+        "max_win_streak": 0,
+        "max_loss_streak": 0,
+        "total_commissions": 0,
+        "long_commissions": 0,
+        "short_commissions": 0,
+        "commission_to_profit_ratio": null
+      },
+      "recent_orders": [],
+      "recent_trades": [],
+      "orders_page": {
+        "offset": 0,
+        "limit": 500,
+        "total_count": 0,
+        "returned_count": 0,
+        "next_offset": null,
+        "items": []
+      },
+      "trades_page": {
+        "offset": 0,
+        "limit": 500,
+        "total_count": 0,
+        "returned_count": 0,
+        "next_offset": null,
+        "items": []
+      },
+      "req_metadata": {
+        "request_id": "fd5ae725cfb748e185ef91b96b712f82"
+      }
+    },
+    {
+      "indicator_instance_id": "a654cdba-d539-47ec-a16e-9c76351f37c3",
+      "source": {
+        "kind": "script",
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "script_version": 16
+      },
+      "request": {
+        "exchange_code": "CXBNF8",
+        "history_selector": {
+          "date_range": {
+            "from": "2026-09-09T12:00:00Z",
+            "to": "2026-10-30T10:30:00Z"
+          }
+        },
+        "inputs": {
+          "$commission_type": "Percent",
+          "$commission_value": 0.0005,
+          "$initial_capital": 10000,
+          "$intrabar_order_filter": "No Filter",
+          "$leverage": 1,
+          "$market_order_price": "Market Price",
+          "$risk_free_rate": 0.02,
+          "cost_fraction": 0.0015,
+          "quantity_step": 0.001,
+          "risk_fraction": 0.0025
+        },
+        "plot_ids": [],
+        "runtime": "auto",
+        "session_types": [],
+        "ticker": "BTC/USDT.P",
+        "timeframe": {
+          "count": 15,
+          "unit": "MINUTE"
+        }
+      },
+      "captured_at": "2026-10-30T10:48:44.592922Z",
+      "last_bar_at": "2026-10-30T10:30:00Z",
+      "expires_at": "2026-10-30T11:03:10Z",
+      "is_history_depth_sufficient": false,
+      "has_more_items_on_the_left": true,
+      "has_more_items_on_the_right": false,
+      "metrics": {
+        "initial_capital": 10000,
+        "final_capital": 10000,
+        "realized_pnl": 0,
+        "open_pnl": 0,
+        "total_pnl_currency": 0,
+        "total_pnl_percent": 0,
+        "pnl_today_currency": 0,
+        "pnl_today_percent": 0,
+        "avg_monthly_return": 0,
+        "max_equity": 10000,
+        "min_equity": 10000,
+        "buy_hold_return_percent": -2.042716036613746,
+        "buy_hold_return_currency": -204.27160366137457,
+        "max_equity_drawdown_percent": 0,
+        "max_equity_drawdown_currency": 0,
+        "margin_calls": 0,
+        "avg_drawdown_percent": 0,
+        "number_of_drawdowns": 0,
+        "max_drawdown_duration": 0,
+        "sharpe_ratio": null,
+        "sortino_ratio": null,
+        "calmar_ratio": null,
+        "annualized_return": 0,
+        "daily_std_dev": 0,
+        "annualized_volatility": 0,
+        "daily_var_95": 0,
+        "daily_var_99": 0,
+        "max_recovery_time": 0,
+        "avg_recovery_time": null,
+        "max_long_contracts_held": 0,
+        "max_short_contracts_held": 0,
+        "max_total_contracts_held": 0,
+        "avg_exposure_percent": 0,
+        "max_exposure_percent": 0,
+        "total_trades": 0,
+        "winning_trades": 0,
+        "losing_trades": 0,
+        "win_rate_percent": null,
+        "avg_win": null,
+        "avg_loss": null,
+        "best_trade_net_pnl": null,
+        "worst_trade_net_pnl": null,
+        "expectancy": null,
+        "risk_reward_ratio": null,
+        "profit_factor": null,
+        "avg_trade_duration": null,
+        "max_trade_duration": null,
+        "min_trade_duration": null,
+        "total_trading_period": 0,
+        "time_in_market_percent": 0,
+        "idle_time_percent": 100,
+        "avg_win_duration": null,
+        "avg_loss_duration": null,
+        "long_trades": 0,
+        "short_trades": 0,
+        "long_trades_percent": null,
+        "short_trades_percent": null,
+        "long_win_rate": null,
+        "short_win_rate": null,
+        "long_realized_pnl": 0,
+        "short_realized_pnl": 0,
+        "avg_long_trade_return": null,
+        "avg_short_trade_return": null,
+        "long_return_per_day": null,
+        "short_return_per_day": null,
+        "long_trade_duration_avg": null,
+        "short_trade_duration_avg": null,
+        "open_long_trades": 0,
+        "open_short_trades": 0,
+        "max_win_streak": 0,
+        "max_loss_streak": 0,
+        "total_commissions": 0,
+        "long_commissions": 0,
+        "short_commissions": 0,
+        "commission_to_profit_ratio": null
+      },
+      "recent_orders": [
+        {
+          "index": 1,
+          "execution_type": "ORDER_EXECUTION_TYPE_LIMIT",
+          "size": 0.029,
+          "limit_price": 80988.69902,
+          "creation_time": "2026-10-15T03:30:00Z",
+          "modification_time": "2026-10-15T04:00:00Z",
+          "direction": "ORDER_DIRECTION_SELL",
+          "avg_fill_price": "NaN",
+          "slippage": "NaN",
+          "status_v2": "ORDER_STATUS_V2_CANCELED",
+          "status": "ORDER_STATUS_UNSPECIFIED",
+          "exbits": [],
+          "filled_size": 0,
+          "trade_indexes": [],
+          "exposure": 0,
+          "commission": 0
+        }
+      ],
+      "recent_trades": [],
+      "orders_page": {
+        "offset": 0,
+        "limit": 500,
+        "total_count": 1,
+        "returned_count": 1,
+        "next_offset": null,
+        "items": [
+          {
+            "index": 1,
+            "execution_type": "ORDER_EXECUTION_TYPE_LIMIT",
+            "size": 0.029,
+            "limit_price": 80988.69902,
+            "creation_time": "2026-10-15T03:30:00Z",
+            "modification_time": "2026-10-15T04:00:00Z",
+            "direction": "ORDER_DIRECTION_SELL",
+            "avg_fill_price": "NaN",
+            "slippage": "NaN",
+            "status_v2": "ORDER_STATUS_V2_CANCELED",
+            "status": "ORDER_STATUS_UNSPECIFIED",
+            "exbits": [],
+            "filled_size": 0,
+            "trade_indexes": [],
+            "exposure": 0,
+            "commission": 0
+          }
+        ]
+      },
+      "trades_page": {
+        "offset": 0,
+        "limit": 500,
+        "total_count": 0,
+        "returned_count": 0,
+        "next_offset": null,
+        "items": []
+      },
+      "req_metadata": {
+        "request_id": "edfb5f109570480f847b3afd2e004f90"
+      }
+    }
+  ]
+}

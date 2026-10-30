@@ -1,0 +1,225 @@
+{
+  "schema_version": 1,
+  "spec_version": "1.0.5",
+  "recorded_at_utc": "2026-10-30T13:01:30Z",
+  "status": "research_checkpoint_complete_deployment_requirements_pending",
+  "purpose": "Record the current BTC perpetual research proxy, cost model, risk defaults, source trail, and decisions that remain open. This is not a live trading configuration.",
+  "checkpoint_resolution": "GitHub issue #3 is complete as a research-only input/specification checkpoint. The user explicitly kept Binance as a proxy, personal daily-loss/drawdown limits unset, and account fee rates unknown; isolated margin and an all-in $1 loss cap for fees/slippage are confirmed. No execution venue is selected and closure does not authorize live trading.",
+  "venue_and_contract": {
+    "user_selected_execution_venue": null,
+    "user_selected_contract": null,
+    "user_confirmed_research_proxy": true,
+    "actual_execution_venue_confirmation": "not provided; Binance confirmation applies only to the research proxy",
+    "research_proxy": {
+      "exchange": "Binance",
+      "product": "USDⓈ-M Futures",
+      "symbol": "BTCUSDT",
+      "contract_type": "PERPETUAL",
+      "intended_form": "linear, USDT-quoted and USDT-margined",
+      "takeprofit_alias": "BTC/USDT.P",
+      "takeprofit_exchange_code": "CXBNF8",
+      "status": "provisional research proxy only; user confirmed Binance for research, not for execution"
+    },
+    "live_symbol_filters": {
+      "status": "not captured",
+      "must_capture_from_exchange_info_before_venue_specific_backtest_or_deployment": [
+        "contract status and type",
+        "base, quote and margin assets",
+        "price tick and PRICE_FILTER",
+        "quantity step, minimum quantity and LOT_SIZE",
+        "minimum notional and applicable order filters"
+      ]
+    }
+  },
+  "order_and_fee_policy": {
+    "strategy_entry_policy": "A limit order is placed at the next-bar open plus 2 bp for a long or minus 2 bp for a short; it is canceled if it remains unresolved after the next execution bar, subject to unverified cancel/fill race behavior.",
+    "classification_rule": "A fill that immediately matches resting book liquidity is taker. A fill is maker only to the extent its order rested and added liquidity before matching. Classify actual executions per fill, not from the order's LIMIT label.",
+    "research_fee_classification": "Assume taker fees on the marketable entry and protective exits until fill-level evidence shows otherwise. Do not credit maker rates to a marketable limit.",
+    "backtest_commission_fraction_per_execution": 0.0005,
+    "backtest_commission_bps_per_execution": 5,
+    "backtest_commission_status": "Unverified placeholder inherited from strategy runs; not the user's Binance fee rate.",
+    "user_account_maker_rate": null,
+    "user_account_taker_rate": null,
+    "user_account_fee_status": "user directed: unknown; leave unconfirmed. Actual account rate depends on user-specific fee tier/discount. It remains a deployment blocker. Do not share API keys or secrets.",
+    "official_fee_page_note": "Binance's documentation gives example rates for fee calculations and directs users to the account fee table; those examples are not treated as the user's current rates."
+  },
+  "cost_components": {
+    "round_trip_scenarios": [
+      {
+        "bps": 10,
+        "fraction": 0.001,
+        "classification": "hypothetical low/fee-only sensitivity",
+        "measured": false,
+        "note": "The retained 10 bp diagnostic equals the backtest's assumed 5 bp commission on entry and exit; it leaves spread, adverse slippage and funding unmeasured."
+      },
+      {
+        "bps": 15,
+        "fraction": 0.0015,
+        "classification": "current research cost gate/sizing placeholder",
+        "measured": false,
+        "note": "Existing B0 setting; not a verified realized round-trip cost and not fully debited from native strategy P&L."
+      },
+      {
+        "bps": 20,
+        "fraction": 0.002,
+        "classification": "hypothetical adverse sensitivity",
+        "measured": false,
+        "note": "Stress case only; no evidence says this equals the venue's actual cost."
+      }
+    ],
+    "scenario_convention": "10/15/20 bp are non-funding round-trip execution-cost sensitivities, not venue quotes. The 15 bp value remains frozen; do not lower any case to create more trades. Funding is a separate signed position cash flow.",
+    "commission": {
+      "measured": false,
+      "value_used_by_native_backtest": "5 bp per execution",
+      "actual_account_rate": "unknown"
+    },
+    "spread": {
+      "measured": false,
+      "assumption": null,
+      "measurement_plan": "Capture synchronized best bid/ask at decision and order/fill times; record relative spread in basis points. A current snapshot alone is not historical spread evidence."
+    },
+    "adverse_slippage": {
+      "measured": false,
+      "assumption": null,
+      "measurement_plan": "Compare each actual fill with the executable-side quote/midpoint frozen at order submission, weighted by fill notional; retain latency and partial fills. The 2 bp limit price offset is a bound, not observed slippage."
+    },
+    "funding": {
+      "measured_in_retained_runs": false,
+      "assumption": null,
+      "accounting_policy": "Apply the actual signed funding cash flow only when a position is held at a recorded funding settlement. Keep funding separate from trade execution bps and do not assume a fixed interval or zero charge.",
+      "historical_source": "Binance USDⓈ-M BTCUSDT funding-rate history and current funding-info endpoints; not yet ingested into this project."
+    },
+    "net_pnl_reconciliation": "Native TakeProfit backtests already charge their configured commission. When applying a total execution-cost scenario to a native P&L ledger, add only missing spread/slippage components; when using a gross-price external ledger, deduct the scenario's full fee+spread+slippage once. Add funding once in either case."
+  },
+  "risk_and_account": {
+    "actual_user_account_size": null,
+    "research_notional_usdt": 10000,
+    "research_risk_per_trade_fraction": 0.0025,
+    "initial_research_risk_usdt_at_10000": 25,
+    "proposed_daily_loss_limit_r": 4,
+    "proposed_peak_to_trough_drawdown_limit_fraction": 0.08,
+    "status": "Provisional project research policy, not confirmed as the user's acceptable personal risk. Native daily/equity locks are not implemented or verified.",
+    "user_confirmation_status": "User reports variable leverage of 20x-50x, isolated margin, a maximum intended total loss of $1 per trade including fees and slippage, and a take-profit goal above $5. Funding inclusion in the loss cap and net/gross target basis remain unspecified. Personal daily-loss/drawdown limits are intentionally left unset by the user.",
+    "user_reported_trade_profile": {
+      "margin_usd_range": [5, 10],
+      "margin_confirmation": "user confirmed $5-$10 is margin posted per trade, not full position notional",
+      "leverage_range_x": [20, 50],
+      "leverage_usage": "variable by trade; user reports 20x-50x and selects the actual leverage per trade",
+      "margin_mode": "ISOLATED",
+      "position_notional_estimate_usd_range": [100, 500],
+      "position_notional_formula": "margin_usd * leverage, subject to venue and margin mode",
+      "stop_pnl_usd_range": [0.5, 1],
+      "target_pnl_usd_range": [5, 10],
+      "maximum_intended_total_loss_usd_per_trade": 1,
+      "target_pnl_minimum_usd_exclusive": 5,
+      "pnl_fee_basis": "user confirmed the $1 maximum loss cap includes fees and slippage; funding inclusion and whether the target is gross or net remain unspecified",
+      "gross_reward_to_risk_ratio_bounds": [5, 20],
+      "gross_break_even_win_rate_bounds_before_costs": [0.0476190476, 0.1666666667],
+      "reward_to_risk_lower_bound_under_latest_rule": "greater than 5:1 if loss is at most $1 and target is greater than $5 on the same P&L basis",
+      "break_even_win_rate_upper_bound_under_latest_rule_before_costs": 0.1666666667,
+      "approx_price_move_fraction_for_1_usd_gross_loss_at_estimated_notional": [0.002, 0.01],
+      "approx_price_move_fraction_for_5_usd_gross_gain_at_estimated_notional": [0.01, 0.05],
+      "notional_estimate_assumption": "Simple linear USDT-margined position using the independent endpoints of $5-$10 margin and 20x-50x leverage; actual order notional, maintenance-margin tier and liquidation price must be checked at the chosen venue.",
+      "break_even_examples_before_costs": [
+        { "stop_usd": 0.5, "target_usd": 10, "win_rate": 0.0476190476 },
+        { "stop_usd": 1, "target_usd": 5, "win_rate": 0.1666666667 }
+      ],
+      "calculation_assumption": "Break-even bounds treat stop and target as fixed gross P&L outcomes, omit all costs and assume a target-or-stop outcome only. They are not a measured strategy win rate or profitability estimate.",
+      "margin_return_context": "A $1 loss is 10%-20% of $10-$5 posted margin. The usual $0.50-$1 stop and $5-$10 target are retained as prior typical amounts; the latest stated rule is total loss at most $1 including fees and slippage, with target greater than $5. These are P&L-to-margin comparisons, not underlying BTC price moves."
+    },
+    "user_account_equity": null,
+    "user_daily_loss_limit": null,
+    "user_maximum_drawdown_limit": null,
+    "account_level_limits_status": "User explicitly directed that personal daily-loss and drawdown limits remain unset; account equity was not provided. Do not substitute the provisional research gates as personal settings.",
+    "risk_lock_note": "The 4R daily and 8% drawdown values are proposed research gates inherited from the implementation plan. Preserve protective exits if an entry lock is triggered; do not claim a cash proxy is equity."
+  },
+  "holding_time_and_profiles": {
+    "user_intended_minimum_holding_time_minutes": null,
+    "user_intended_maximum_holding_time_minutes": null,
+    "user_confirmation_status": "User prefers to hold until take-profit or stop-loss is reached, with no time-based exit; a finite maximum duration was not specified.",
+    "current_strategy_time_exit": "disabled; no verified reducing-close timer",
+    "profile_a": "5m execution with completed 15m bias",
+    "profile_b": "15m execution with completed 1h bias",
+    "interpretation": "Execution timeframe is not a holding-time promise. User prefers TP/SL-only exits with no finite time cap; report actual durations and funding exposure separately by profile. A position may remain open longer than a scalp horizon."
+  },
+  "deployment_gates": [
+    "User confirms an execution venue and exact contract, or explicitly continues with Binance only as a research proxy.",
+    "Actual maker/taker account rates are recorded; unresolved fills are costed as taker for research.",
+    "Live contract filters are captured and entry/stop/target prices and quantity are rounded then risk is recalculated.",
+    "Historical spread/slippage evidence and funding cash flows are added without double-counting native commission.",
+    "For any future order sizing, use isolated margin and the actual chosen leverage within the reported 20x-50x range; derive quantity from the $1 all-in fee/slippage loss cap and verify the stop/liquidation buffer.",
+    "Funding inclusion in the $1 cap and whether the greater-than-$5 target is gross or net remain deployment/modeling unknowns; daily-loss/drawdown limits are intentionally unset by the user.",
+    "No live order automation until the remaining data, parity, execution and costed-performance checkpoints pass."
+  ],
+  "research_can_continue_before_user_confirmation": true,
+  "user_decisions_received": {
+    "research_proxy": "Keep Binance USDⓈ-M BTCUSDT as the research proxy.",
+    "account_fee_rates": "Unknown; leave unconfirmed.",
+    "reported_trade_profile": "User reports $5-$10 margin, variable 20x-50x leverage, isolated margin, maximum intended total loss of $1 per trade including fees/slippage and a TP goal above $5. Simple estimated notional is $100-$500. Exact leverage varies by trade; funding treatment and target net/gross basis remain unspecified. Prior usual stop/target amounts were $0.50-$1 and $5-$10.",
+    "research_scope": "User explicitly chose to keep Binance as a research proxy only; no actual execution venue is selected.",
+    "account_level_limits": "User explicitly chose to leave personal daily-loss and drawdown limits unset; account equity was not provided.",
+    "holding_time": "User prefers to hold until TP or SL, with no time-based exit; no finite maximum duration specified."
+  },
+  "user_decisions_remaining": [
+    "No actual execution venue or account maker/taker fee rates were selected; Binance is research-only and account fees remain unknown by user request.",
+    "Funding inclusion in the $1 loss cap and the target's gross/net basis remain unspecified; include and report funding separately in future validation.",
+    "The user intentionally left personal daily-loss/drawdown limits unset and did not provide account equity; do not infer those from posted margin or research placeholders.",
+    "The user selected TP/SL-only exits with no time cap; assess longer-than-scalp holding and funding exposure in validation."
+  ],
+  "sources": [
+    {
+      "name": "Binance USDⓈ-M Futures fee table",
+      "url": "https://www.binance.com/en/fee/futureFee",
+      "checked_at_utc": "2026-10-30T12:27:28Z",
+      "use": "Account-facing fee schedule; requires login for user-specific rates."
+    },
+    {
+      "name": "Binance Futures fee structure and calculations",
+      "url": "https://www.binance.com/en/support/faq/detail/360033544231",
+      "checked_at_utc": "2026-10-30T12:27:28Z",
+      "use": "Maker/taker meaning, notional fee calculation and explicitly hypothetical example fee rates."
+    },
+    {
+      "name": "Binance USDⓈ-M user commission rate endpoint",
+      "url": "https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usd-s-m-futures/api/rest-api/account#user-commission-rate",
+      "checked_at_utc": "2026-10-30T12:27:28Z",
+      "use": "Signed account-specific endpoint returning makerCommissionRate/takerCommissionRate; credentials are not requested or stored."
+    },
+    {
+      "name": "Binance USDⓈ-M exchange information endpoint",
+      "url": "https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usd-s-m-futures/api/rest-api/market-data#exchange-information",
+      "checked_at_utc": "2026-10-30T12:27:28Z",
+      "use": "Current symbol type/assets/status and filters including tick, quantity step and notional. Live BTCUSDT response was not captured in this checkpoint."
+    },
+    {
+      "name": "Binance USDⓈ-M order book and book ticker endpoints",
+      "url": "https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usd-s-m-futures/api/rest-api/market-data#symbol-order-book-ticker",
+      "checked_at_utc": "2026-10-30T12:27:28Z",
+      "use": "Public quote/order-book fields to support future spread and executable-depth observations; no historical spread has been measured here."
+    },
+    {
+      "name": "Binance USDⓈ-M funding history endpoint",
+      "url": "https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usd-s-m-futures/api/rest-api/market-data#get-funding-rate-history",
+      "checked_at_utc": "2026-10-30T12:27:28Z",
+      "use": "Public fundingTime, fundingRate and associated markPrice history; project data ingestion is outstanding."
+    },
+    {
+      "name": "Binance funding interval guidance",
+      "url": "https://www.binance.com/en/support/faq/detail/360033525031",
+      "checked_at_utc": "2026-10-30T12:27:28Z",
+      "use": "Funding settlement frequency can vary/change; actual event history/info should be used instead of an assumed fixed schedule."
+    },
+    {
+      "name": "Binance USDⓈ-M leverage and margin guidance",
+      "url": "https://www.binance.com/en-AU/support/faq/detail/360033162192",
+      "checked_at_utc": "2026-10-30T12:46:12Z",
+      "use": "Maintenance margin depends on notional tiers; account leverage availability can be restricted and must be checked for the actual account."
+    },
+    {
+      "name": "Binance liquidation despite stop-loss guidance",
+      "url": "https://www.binance.com/en/support/faq/detail/d82ce5274e974806a5842d1a109787b8",
+      "checked_at_utc": "2026-10-30T12:46:12Z",
+      "use": "Stop orders can fill worse or fail to protect before liquidation because of gaps, slippage, trigger-price choice and liquidation-price proximity."
+    }
+  ]
+}
