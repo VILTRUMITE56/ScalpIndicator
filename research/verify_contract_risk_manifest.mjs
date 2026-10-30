@@ -38,6 +38,6 @@ const fixtureLines = fs.readFileSync(path.join(root, 'research/reports/contract_
 assert.equal(fixtureLines.length - 1, report.fixture_count, 'CSV fixture rows match report fixture count');
 assert.ok(manifest.artifacts.some(item => item.path === 'research/reports/contract_risk_fixtures.csv'), 'fixture CSV is included');
 assert.ok(manifest.artifacts.some(item => item.path === 'research/reports/contract_risk_report.md'), 'human-readable report is included');
-assert.equal(manifest.acceptance.issue_8_close, 'BLOCKED_LIVE_FILTERS_AND_OBSERVED_FILL_COST_RECONCILIATION', 'manifest does not imply issue completion');
+assert.equal(manifest.acceptance.issue_8_close, 'BLOCKED_LIVE_FILTERS_NATIVE_STRATEGY_GRID_INTEGRATION_AND_OBSERVED_FILL_COST_RECONCILIATION', 'manifest does not imply issue completion');
 
 console.log(JSON.stringify({ manifest: 'research/CONTRACT_RISK_MANIFEST.json', verified_artifacts: seen.size, fixtures: report.fixture_count, all_hashes_match: true, issue_8_close: manifest.acceptance.issue_8_close }, null, 2));

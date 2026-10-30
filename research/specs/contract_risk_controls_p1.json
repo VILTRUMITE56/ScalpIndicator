@@ -59,6 +59,7 @@
   "per_trade_risk": {
     "user_loss_budget_quote": 1.0,
     "basis": "user-confirmed maximum total trade loss including fees and slippage; not a guaranteed maximum during gaps, liquidation or venue failure",
+    "actual_fill_reconciliation": "recompute projected all-in PnL at a stressed stop from supplied average fills, realized partial exits, recorded fees and funding, current mark/equity, planned quantity and protective coverage; entry locking is explicit",
     "account_fee_rate": null,
     "historical_spread_slippage": null,
     "funding_reserve_quote": null,
@@ -77,10 +78,12 @@
   "paper_ledger": {
     "equity_quote": "initial equity + realized gross PnL - commissions + signed funding cashflows + unrealized marked PnL",
     "fill_accounting": "process each partial fill at its own price, quantity and fee; update average entry and protected quantity from the remaining position; reject over-close/reversal without mutating the ledger; expose any position protection-coverage gap",
+    "open_risk_reconciliation": "compare supplied actual fills, partial exits, fees and funding with planned quantity and stressed-stop all-in loss using current mark and protection coverage; fixtures are synthetic until real exchange fills are supplied",
+    "per_trade_loss_lock": "optional; latch on marked or realized trade loss at or beyond the configured cap; preserve protection and require an explicit flat/no-pending reset; does not set a daily or drawdown limit",
     "funding_accounting": "record signed quote-denominated funding events supplied by a source ledger; do not assume a fixed interval or synthesize a zero rate",
-    "gaps": "stop slippage/gap loss can exceed the $1 intended budget; report the breach, block entries and preserve protection; no hard cap is guaranteed",
+    "gaps": "stop slippage/gap loss can exceed the $1 intended budget; report the breach, latch the optional per-trade loss lock, block entries and preserve protection; no hard cap is guaranteed",
     "utc_reset": "apply the first observed mark at the UTC boundary before establishing the new daily-equity baseline, avoiding double-counting an overnight gap",
-    "pending_entry": "block new pending orders while either configured lock is latched; retain identity of existing entry through cancel request and terminal resolution",
+    "pending_entry": "block new pending orders while any configured lock is latched; retain identity of existing entry through cancel request and terminal resolution",
     "portfolio_scope": "deterministic paper/reference ledger only; no live account, liquidation tier, margin availability or exchange fills"
   },
   "holding_time": {
@@ -90,13 +93,15 @@
     "future_exit_changes": "register as a separately versioned exit-policy experiment; do not change entry logic silently"
   },
   "takeprofit_native_limits": {
-    "documented_strategy_fields": ["trading.cash", "trading.position.size", "trading.position.price", "trading.instrument_info.min_order_size", "trading.instrument_info.min_order_value"],
-    "not_documented_as_available_to_strategy": ["account_equity", "daily_net_pnl", "peak_equity", "account_margin_tier", "Binance_PRICE_FILTER_tickSize", "Binance_LOT_SIZE_stepSize"],
-    "policy": "Do not treat available simulator cash as marked account equity. Native strategy changes cannot implement personalized daily/drawdown locks from undocumented fields."
+    "documented_strategy_fields": ["trading.cash", "trading.position.size", "trading.position.price", "context.info.tick_size", "context.info.price_precision", "trading.instrument_info.min_order_size", "trading.instrument_info.min_order_value"],
+    "tick_size_note": "Context.info.tick_size is documented and inherited by MainStrategyContext; the selected Binance BTCUSDT value has not been captured and is not a substitute for a verified exchange filter snapshot.",
+    "not_documented_as_available_to_strategy": ["account_equity", "daily_net_pnl", "peak_equity", "account_margin_tier", "Binance_LOT_SIZE_stepSize", "Binance_MARKET_LOT_SIZE_stepSize", "Binance_quantity_maxima"],
+    "policy": "Do not treat available simulator cash as marked account equity. Exact quantity-grid integration and personalized daily/drawdown locks require verified metadata and documented account fields."
   },
   "deployment_blockers": [
     "Live Binance BTCUSDT exchangeInfo snapshot and verified current filters are missing.",
     "The user selected Binance only as a research proxy; no execution venue is confirmed.",
+    "Native P1 strategy execution still uses a manually entered quantity step and raw unrounded price levels; filter-grid parity is not implemented.",
     "Account fee rates and measured spread/slippage are unavailable.",
     "Funding inclusion in the per-trade $1 cap is unspecified.",
     "Personal daily-loss and drawdown locks are intentionally disabled by user choice; do not present them as active account protection.",

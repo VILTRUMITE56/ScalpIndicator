@@ -240,19 +240,27 @@ function averageEntryPrice(market, oldQty, oldPrice, newQty, newPrice) {
 }
 
 class PaperRiskLedger {
-  constructor({ initialEquityQuote, market, dailyLossLimitQuote = null, maxDrawdownFraction = null }) {
+  constructor({ initialEquityQuote, market, dailyLossLimitQuote = null, maxDrawdownFraction = null, maxTradeLossQuote = null }) {
     validateMarket(market);
     assertPositive(initialEquityQuote, 'initial equity');
-    for (const [name, value] of [['daily loss limit', dailyLossLimitQuote], ['drawdown fraction', maxDrawdownFraction]]) {
+    for (const [name, value] of [['daily loss limit', dailyLossLimitQuote], ['drawdown fraction', maxDrawdownFraction], ['per-trade loss limit', maxTradeLossQuote]]) {
       if (value !== null && (!Number.isFinite(Number(value)) || Number(value) <= 0)) throw new TypeError(`${name} must be null or positive`);
     }
     this.initialEquityQuote = Number(initialEquityQuote);
     this.market = market;
     this.dailyLossLimitQuote = dailyLossLimitQuote === null ? null : Number(dailyLossLimitQuote);
     this.maxDrawdownFraction = maxDrawdownFraction === null ? null : Number(maxDrawdownFraction);
+    this.maxTradeLossQuote = maxTradeLossQuote === null ? null : Number(maxTradeLossQuote);
     this.realizedGrossPnlQuote = 0;
     this.feesPaidQuote = 0;
     this.fundingCashflowQuote = 0;
+    this.tradeActive = false;
+    this.tradeRealizedGrossPnlQuote = 0;
+    this.tradeFeesPaidQuote = 0;
+    this.tradeFundingCashflowQuote = 0;
+    this.openEntryFeesQuote = 0;
+    this.lastClosedTrade = null;
+    this.tradeLossLockLatched = false;
     this.positionSize = 0;
     this.averageEntry = null;
     this.lastMarkPrice = null;
@@ -278,6 +286,11 @@ class PaperRiskLedger {
     return this.initialEquityQuote + this.realizedGrossPnlQuote - this.feesPaidQuote + this.fundingCashflowQuote + this.unrealizedPnlQuote();
   }
 
+  tradeNetPnlQuote() {
+    if (!this.tradeActive) return this.lastClosedTrade?.net_pnl_quote ?? 0;
+    return this.tradeRealizedGrossPnlQuote + this.unrealizedPnlQuote() - this.tradeFeesPaidQuote + this.tradeFundingCashflowQuote;
+  }
+
   _advanceUtcDay(timestamp, boundaryMarkPrice = null) {
     if (boundaryMarkPrice !== null) this.lastMarkPrice = Number(boundaryMarkPrice);
     const date = new Date(timestamp).toISOString().slice(0, 10);
@@ -300,11 +313,14 @@ class PaperRiskLedger {
       this.drawdownLockLatched = true;
       this.drawdownLockReason = 'PEAK_TO_TROUGH_DRAWDOWN';
     }
-    const locked = this.dailyLockLatched || this.drawdownLockLatched;
-    const lockReason = [this.dailyLockLatched ? 'DAILY_LOSS' : null, this.drawdownLockLatched ? this.drawdownLockReason : null].filter(Boolean).join('+') || 'NONE';
+    const tradeNetPnl = this.tradeNetPnlQuote();
+    if (this.tradeActive && this.maxTradeLossQuote !== null && tradeNetPnl <= -this.maxTradeLossQuote) this.tradeLossLockLatched = true;
+    const locked = this.dailyLockLatched || this.drawdownLockLatched || this.tradeLossLockLatched;
+    const lockReason = [this.dailyLockLatched ? 'DAILY_LOSS' : null, this.drawdownLockLatched ? this.drawdownLockReason : null, this.tradeLossLockLatched ? 'TRADE_LOSS_BUDGET' : null].filter(Boolean).join('+') || 'NONE';
     this.events.push({
       timestamp_utc: new Date(timestamp).toISOString(), reason, equity_quote: equity,
       daily_loss_quote: dailyLoss, peak_drawdown_fraction: drawdown,
+      trade_net_pnl_quote: tradeNetPnl, max_trade_loss_quote: this.maxTradeLossQuote,
       entry_locked: locked, entry_lock_reason: lockReason,
       cancel_pending_entry_requested: locked && this.pendingEntryId !== null,
       pending_entry_id_retained: this.pendingEntryId,
@@ -319,7 +335,7 @@ class PaperRiskLedger {
 
   setPendingEntry(orderId) {
     if (typeof orderId !== 'string' || orderId.length === 0) throw new TypeError('pending entry order id must be a non-empty string');
-    if (this.dailyLockLatched || this.drawdownLockLatched) throw new Error('entry lock prevents submitting a pending entry');
+    if (this.dailyLockLatched || this.drawdownLockLatched || this.tradeLossLockLatched) throw new Error('entry lock prevents submitting a pending entry');
     if (this.positionSize !== 0) throw new Error('new entry cannot be submitted while a position is open');
     if (this.pendingEntryId !== null) throw new Error('an entry order is already pending');
     this.pendingEntryId = orderId;
@@ -343,6 +359,15 @@ class PaperRiskLedger {
     this.feesPaidQuote += fee;
     if (this.positionSize === 0 || Math.sign(this.positionSize) === fillSign) {
       const oldQty = Math.abs(this.positionSize);
+      if (oldQty === 0) {
+        this.tradeActive = true;
+        this.tradeRealizedGrossPnlQuote = 0;
+        this.tradeFeesPaidQuote = 0;
+        this.tradeFundingCashflowQuote = 0;
+        this.openEntryFeesQuote = 0;
+      }
+      this.tradeFeesPaidQuote += fee;
+      this.openEntryFeesQuote += fee;
       this.averageEntry = averageEntryPrice(this.market, oldQty, this.averageEntry ?? fillPrice, qty, fillPrice);
       this.positionSize += fillSign * qty;
       this.lastMarkPrice ??= fillPrice;
@@ -355,13 +380,26 @@ class PaperRiskLedger {
       }
     } else {
       const oldAbs = Math.abs(this.positionSize);
-      this.realizedGrossPnlQuote += pnlQuote(this.market, Math.sign(this.positionSize), qty, this.averageEntry, fillPrice);
+      const realizedPnl = pnlQuote(this.market, Math.sign(this.positionSize), qty, this.averageEntry, fillPrice);
+      this.realizedGrossPnlQuote += realizedPnl;
+      this.tradeRealizedGrossPnlQuote += realizedPnl;
+      this.tradeFeesPaidQuote += fee;
+      this.openEntryFeesQuote = Math.max(0, this.openEntryFeesQuote * (1 - qty / oldAbs));
       this.positionSize += fillSign * qty;
       if (Math.abs(this.positionSize) <= 1e-12) {
         this.positionSize = 0;
         this.averageEntry = null;
         this.protectiveOrdersActive = false;
         this.protectiveQuantity = 0;
+        this.openEntryFeesQuote = 0;
+        this.tradeActive = false;
+        this.lastClosedTrade = {
+          realized_gross_pnl_quote: this.tradeRealizedGrossPnlQuote,
+          fees_paid_quote: this.tradeFeesPaidQuote,
+          signed_funding_cashflow_quote: this.tradeFundingCashflowQuote,
+          net_pnl_quote: this.tradeRealizedGrossPnlQuote - this.tradeFeesPaidQuote + this.tradeFundingCashflowQuote,
+        };
+        if (this.maxTradeLossQuote !== null && this.lastClosedTrade.net_pnl_quote <= -this.maxTradeLossQuote) this.tradeLossLockLatched = true;
       } else {
         this.protectiveQuantity = this.protectiveOrdersActive ? Math.min(this.protectiveQuantity, Math.abs(this.positionSize)) : 0;
       }
@@ -374,6 +412,7 @@ class PaperRiskLedger {
     if (!isFiniteProvidedNumber(signedCashflowQuote)) throw new TypeError('signed funding cash flow must be finite');
     this._advanceUtcDay(timestamp);
     this.fundingCashflowQuote += Number(signedCashflowQuote);
+    if (this.tradeActive && this.positionSize !== 0) this.tradeFundingCashflowQuote += Number(signedCashflowQuote);
     return this._evaluateLocks(timestamp, 'FUNDING');
   }
 
@@ -384,7 +423,13 @@ class PaperRiskLedger {
   }
 
   canEnter() {
-    return !this.dailyLockLatched && !this.drawdownLockLatched && this.positionSize === 0 && this.pendingEntryId === null;
+    return !this.dailyLockLatched && !this.drawdownLockLatched && !this.tradeLossLockLatched && this.positionSize === 0 && this.pendingEntryId === null;
+  }
+
+  resetTradeLossLock({ timestamp }) {
+    if (this.positionSize !== 0 || this.pendingEntryId !== null) throw new Error('trade-loss lock reset requires a flat position and no pending entry');
+    this.tradeLossLockLatched = false;
+    return this._evaluateLocks(timestamp, 'MANUAL_TRADE_LOSS_RESET');
   }
 
   resetDrawdownLock({ timestamp }) {
@@ -410,8 +455,16 @@ class PaperRiskLedger {
       mark_price: this.lastMarkPrice,
       daily_loss_limit_quote: this.dailyLossLimitQuote,
       max_drawdown_fraction: this.maxDrawdownFraction,
+      max_trade_loss_quote: this.maxTradeLossQuote,
       daily_lock_latched: this.dailyLockLatched,
       drawdown_lock_latched: this.drawdownLockLatched,
+      trade_loss_lock_latched: this.tradeLossLockLatched,
+      trade_net_pnl_quote: this.tradeNetPnlQuote(),
+      trade_realized_gross_pnl_quote: this.tradeRealizedGrossPnlQuote,
+      trade_fees_paid_quote: this.tradeFeesPaidQuote,
+      trade_funding_cashflow_quote: this.tradeFundingCashflowQuote,
+      open_entry_fees_quote: this.openEntryFeesQuote,
+      last_closed_trade: this.lastClosedTrade,
       pending_entry_id: this.pendingEntryId,
       protective_orders_active: this.protectiveOrdersActive,
       protective_quantity: this.protectiveQuantity,
@@ -420,6 +473,63 @@ class PaperRiskLedger {
       can_enter: this.canEnter(),
     };
   }
+}
+
+function reconcileOpenRisk({ ledger, side, plannedQuantity, stop, maxLossQuote, exitFeeRate, stopSlippageBps, futureFundingReserveQuote }) {
+  if (!(ledger instanceof PaperRiskLedger)) throw new TypeError('a PaperRiskLedger instance is required');
+  if (!['LONG', 'SHORT'].includes(side)) return { status: 'INVALID_SIDE', new_entries_allowed: false };
+  const costInputs = [maxLossQuote, exitFeeRate, stopSlippageBps, futureFundingReserveQuote];
+  if (!costInputs.every(value => isFiniteProvidedNumber(value) && Number(value) >= 0) || Number(maxLossQuote) <= 0 || !isFiniteProvidedNumber(plannedQuantity) || Number(plannedQuantity) <= 0 || !isFiniteProvidedNumber(stop) || Number(stop) <= 0) {
+    return { status: 'INCOMPLETE_RISK_INPUTS', new_entries_allowed: false };
+  }
+  if (ledger.positionSize === 0 || !ledger.tradeActive || ledger.averageEntry === null) return { status: 'NO_OPEN_POSITION', new_entries_allowed: false };
+  const actualSide = ledger.positionSize > 0 ? 'LONG' : 'SHORT';
+  if (actualSide !== side) return { status: 'SIDE_MISMATCH', actual_side: actualSide, new_entries_allowed: false };
+  if (ledger.lastMarkPrice === null) return { status: 'MARK_UNAVAILABLE', new_entries_allowed: false };
+  if (side === 'LONG' ? Number(stop) >= ledger.averageEntry : Number(stop) <= ledger.averageEntry) return { status: 'INVALID_STOP_FOR_ACTUAL_AVERAGE_FILL', new_entries_allowed: false };
+
+  const quantity = Math.abs(ledger.positionSize);
+  const stopRate = Number(stopSlippageBps) / 10_000;
+  const stressedStopFill = side === 'LONG' ? Number(stop) * (1 - stopRate) : Number(stop) * (1 + stopRate);
+  const stopGrossPnl = pnlQuote(ledger.market, side === 'LONG' ? 1 : -1, quantity, ledger.averageEntry, stressedStopFill);
+  const exitFee = notionalQuote(ledger.market, quantity, stressedStopFill) * Number(exitFeeRate);
+  const projectedNetPnlAtStop = ledger.tradeRealizedGrossPnlQuote + stopGrossPnl - ledger.tradeFeesPaidQuote + ledger.tradeFundingCashflowQuote - exitFee - Number(futureFundingReserveQuote);
+  const allInLossQuote = Math.max(0, -projectedNetPnlAtStop);
+  const sizeExceedsPlan = quantity > Number(plannedQuantity) + 1e-10;
+  const protectionGap = Math.max(0, quantity - (ledger.protectiveOrdersActive ? ledger.protectiveQuantity : 0));
+  const fullyProtected = protectionGap <= 1e-10;
+  const withinBudget = allInLossQuote <= Number(maxLossQuote) + 1e-10;
+  const status = !fullyProtected ? 'POSITION_NOT_FULLY_PROTECTED'
+    : sizeExceedsPlan ? 'FILLED_SIZE_EXCEEDS_PLAN'
+      : withinBudget ? 'WITHIN_BUDGET' : 'OVER_BUDGET';
+  return {
+    status,
+    actual_side: actualSide,
+    planned_quantity: Number(plannedQuantity),
+    actual_position_quantity: quantity,
+    actual_average_fill_price: ledger.averageEntry,
+    current_mark_price: ledger.lastMarkPrice,
+    marked_equity_quote: ledger.equityQuote(),
+    stop_price: Number(stop),
+    stressed_stop_fill_price: stressedStopFill,
+    realized_gross_pnl_quote: ledger.tradeRealizedGrossPnlQuote,
+    open_gross_pnl_at_stressed_stop_quote: stopGrossPnl,
+    fees_paid_on_trade_quote: ledger.tradeFeesPaidQuote,
+    entry_fees_on_open_quantity_quote: ledger.openEntryFeesQuote,
+    estimated_exit_fee_quote: exitFee,
+    realized_funding_cashflow_quote: ledger.tradeFundingCashflowQuote,
+    future_funding_reserve_quote: Number(futureFundingReserveQuote),
+    projected_net_pnl_at_stressed_stop_quote: projectedNetPnlAtStop,
+    all_in_loss_quote: allInLossQuote,
+    max_loss_quote: Number(maxLossQuote),
+    protective_quantity: ledger.protectiveOrdersActive ? ledger.protectiveQuantity : 0,
+    protection_gap_quantity: protectionGap,
+    position_fully_protected: fullyProtected,
+    size_exceeds_plan: sizeExceedsPlan,
+    per_trade_loss_lock_latched: ledger.tradeLossLockLatched,
+    new_entries_allowed: false,
+    note: 'An open position cannot admit another entry. This stop stress is a model; a gap or venue failure can exceed the budget.',
+  };
 }
 
 function runFixtures() {
@@ -503,6 +613,30 @@ function runFixtures() {
   assert.ok(ledger.feesPaidQuote > 0); assert.equal(ledger.fundingCashflowQuote, -0.1); assert.equal(afterExitPartial.protective_orders_preserved, true);
   record('partial_fills_fees_funding_marked_equity_and_protection', ledger.snapshot());
 
+  const reconciled = new PaperRiskLedger({ initialEquityQuote: 1000, market: linear, maxTradeLossQuote: 1 });
+  reconciled.setPendingEntry('reconcile-partial-1');
+  reconciled.applyFill({ side: 'BUY', quantity: 0.04, price: 100, feeRate: 0.0005, timestamp: '2026-10-30T11:00:00Z', protectionAttached: true });
+  reconciled.applyFill({ side: 'BUY', quantity: 0.06, price: 100.1, feeRate: 0.0005, timestamp: '2026-10-30T11:01:00Z', protectionAttached: true });
+  reconciled.resolvePendingEntry('reconcile-partial-1');
+  reconciled.recordFunding({ timestamp: '2026-10-30T12:00:00Z', signedCashflowQuote: -0.005 });
+  reconciled.mark({ timestamp: '2026-10-30T12:01:00Z', price: 100.0 });
+  const partialReconciliation = reconcileOpenRisk({ ledger: reconciled, side: 'LONG', plannedQuantity: 0.1, stop: 99.5, maxLossQuote: 1, exitFeeRate: 0.0005, stopSlippageBps: 5, futureFundingReserveQuote: 0.01 });
+  assert.equal(partialReconciliation.status, 'WITHIN_BUDGET');
+  assert.ok(Math.abs(partialReconciliation.actual_average_fill_price - 100.06) < 1e-10);
+  assert.ok(partialReconciliation.all_in_loss_quote < 1);
+  assert.equal(partialReconciliation.marked_equity_quote, reconciled.equityQuote());
+  assert.equal(partialReconciliation.position_fully_protected, true);
+  record('reconcile_partial_fills_fees_funding_mark_and_protection', partialReconciliation);
+
+  const overBudgetReconcileLedger = new PaperRiskLedger({ initialEquityQuote: 1000, market: linear, maxTradeLossQuote: 1 });
+  overBudgetReconcileLedger.applyFill({ side: 'BUY', quantity: 0.5, price: 100, feeRate: 0.0005, timestamp: '2026-10-30T12:30:00Z', protectionAttached: true });
+  const overBudgetReconciliation = reconcileOpenRisk({ ledger: overBudgetReconcileLedger, side: 'LONG', plannedQuantity: 0.5, stop: 98, maxLossQuote: 1, exitFeeRate: 0.0005, stopSlippageBps: 200, futureFundingReserveQuote: 0.1 });
+  assert.equal(overBudgetReconciliation.status, 'OVER_BUDGET');
+  assert.ok(overBudgetReconciliation.all_in_loss_quote > 1);
+  assert.equal(overBudgetReconciliation.position_fully_protected, true);
+  assert.equal(overBudgetReconciliation.new_entries_allowed, false);
+  record('actual_partial_fill_stop_stress_detects_over_budget_exposure', overBudgetReconciliation);
+
   const daily = new PaperRiskLedger({ initialEquityQuote: 100, market: linear, dailyLossLimitQuote: 5 });
   daily.setPendingEntry('pending-demo-1');
   daily.applyFill({ side: 'BUY', quantity: 1, price: 100, feeRate: 0, timestamp: '2026-10-30T23:50:00Z', protectionAttached: true });
@@ -564,14 +698,22 @@ function runFixtures() {
   assert.deepEqual(safeReject.snapshot(), beforeOverClose, 'rejected fill must not mutate fees, position or protection');
   record('overclose_rejected_without_mutating_ledger', safeReject.snapshot());
 
-  const gapLoss = new PaperRiskLedger({ initialEquityQuote: 100, market: linear, dailyLossLimitQuote: 1 });
+  const gapLoss = new PaperRiskLedger({ initialEquityQuote: 100, market: linear, maxTradeLossQuote: 1 });
   gapLoss.applyFill({ side: 'BUY', quantity: sized.plan.quantity, price: 100, feeRate: 0.0005, timestamp: '2026-10-30T17:00:00Z', protectionAttached: true });
   const beyondStop = gapLoss.mark({ timestamp: '2026-10-30T17:01:00Z', price: 98.5 });
   assert.ok(100 - beyondStop.equity_quote > 1, 'a gap through the modeled stop may exceed the $1 intended budget');
   assert.equal(beyondStop.entry_locked, true);
+  assert.equal(beyondStop.entry_lock_reason, 'TRADE_LOSS_BUDGET');
   assert.equal(beyondStop.protective_orders_preserved, true);
   assert.equal(beyondStop.automatic_flatten_requested, false);
-  record('gap_through_stop_exposes_budget_limit_and_locks_entries', beyondStop);
+  assert.equal(gapLoss.tradeLossLockLatched, true);
+  gapLoss.applyFill({ side: 'SELL', quantity: sized.plan.quantity, price: 98.5, feeRate: 0.0005, timestamp: '2026-10-30T17:02:00Z', reduceOnly: true });
+  assert.equal(gapLoss.positionSize, 0);
+  assert.equal(gapLoss.canEnter(), false, 'the per-trade loss lock stays latched after the gap-loss position is closed');
+  assert.throws(() => gapLoss.setPendingEntry('blocked-after-gap'), /entry lock prevents/);
+  gapLoss.resetTradeLossLock({ timestamp: '2026-10-30T17:03:00Z' });
+  assert.equal(gapLoss.canEnter(), true, 'only the explicit flat-state reset clears the per-trade loss lock');
+  record('gap_through_stop_exposes_budget_locks_entries_and_preserves_protection', { breach: beyondStop, after_close_and_reset: gapLoss.snapshot() });
 
   const fundingUnknown = sizeForRisk({ side: 'LONG', entry: 100, stop: 99, target: 102, marginUsd: 5, leverage: 20, maxLossQuote: 1, entryFeeRate: 0.0005, exitFeeRate: 0.0005, entrySlippageBps: 2, stopSlippageBps: 10, fundingReserveQuote: null, market: linear });
   assert.equal(fundingUnknown.ok, false); assert.equal(fundingUnknown.reason, 'UNRESOLVED_FEES_SLIPPAGE_OR_FUNDING_RESERVE');
@@ -608,19 +750,20 @@ function buildReport(fixtures) {
     user_account_fees: null,
     user_funding_reserve: null,
     hold_policy: 'TP/SL only; no maximum holding time or timed exit added',
-    native_platform_limit: 'TakeProfit documents strategy cash, position and instrument min size/value; no strategy-facing marked account equity, daily PnL, high-water equity, tick size or lot step field was found.',
+    native_platform_limit: 'TakeProfit documents context.info.tick_size and price_precision plus strategy min order size/value; it does not document exact Binance quantity steps, account fees, or account-level marked equity/day PnL/high-water equity.',
     fixture_count: fixtures.length,
     all_fixtures_pass: true,
     fixtures,
     acceptance_status: {
       rounding_and_formula_engine: 'PASS_ON_SYNTHETIC_FIXTURES',
       live_binance_filter_snapshot: 'OPEN_REQUIRED',
-      realized_user_fill_reconciliation: 'OPEN_NO_OBSERVED_USER_OR_EXCHANGE_FILL_DATA; reference ledger reconciles supplied fill events',
+      supplied_fill_reconciliation_engine: 'PASS_PARTIAL_FILLS_FEES_FUNDING_MARKED_EQUITY_STOP_STRESS_AND_PROTECTION_FIXTURES',
+      realized_user_fill_reconciliation: 'OPEN_NO_OBSERVED_USER_OR_EXCHANGE_FILL_DATA; synthetic fixtures only',
       user_daily_drawdown_limits: 'APPROVED_DISABLED_BY_USER; parameterized controls are fixture-tested but personal locks are not active',
       native_account_equity_locks: 'NOT_AVAILABLE_IN_DOCUMENTED_STRATEGY_FIELDS',
-      risk_lock_fixtures: 'PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_AND_LOCK_ACTIONS',
+      risk_lock_fixtures: 'PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_PER_TRADE_GAP_BREACH_AND_EXPLICIT_RESET',
       hold_policy_registration: 'PASS_TP_SL_ONLY_VERSIONED_NO_TIME_EXIT_ADDED',
-      issue_8_close: 'BLOCKED_LIVE_FILTERS_AND_OBSERVED_FILL_COST_RECONCILIATION',
+      issue_8_close: 'BLOCKED_LIVE_FILTERS_NATIVE_STRATEGY_GRID_INTEGRATION_AND_OBSERVED_FILL_COST_RECONCILIATION',
       profitability: 'NOT_EVALUATED; no claim',
     },
   };
@@ -640,18 +783,21 @@ const md = [
   '- Decimal-grid rounding for entry, stop, target and quantity using venue filter origins; post-rounding direction, limit/market lot, minimum entry/protective-exit notional and risk checks.',
   '- All-in stop-loss sizing includes explicit per-side fee rates, adverse entry/stop slippage and a required funding reserve. It rejects missing assumptions, over-budget minimum orders, invalid levels and risk above the user-reported $1 cap.',
   '- Paper ledger tracks partial fills, weighted entry, per-fill fees, realized and open marked PnL, signed funding, marked equity and protection coverage; rejects over-close without ledger mutation.',
+  '- Open-risk reconciliation uses supplied fills and fees, partial exits, funding, current marked equity, planned size, a stressed stop fill and current protection coverage. It reports over-budget, unprotected and over-plan positions.',
+  '- Optional per-trade loss locks latch on a marked or realized all-in loss breach, retain protection and require an explicit flat/no-pending reset. Daily/drawdown locks remain separately configurable.',
   '- Parameterized daily and drawdown entry locks preserve protective orders, reject new entries when latched, and record pending-entry cancel requests without dropping identity. UTC reset uses the boundary mark; drawdown requires an explicit flat/no-pending reset.',
   '- No time exit or signal change was added. Personal daily/drawdown values remain null and therefore disabled.', '',
   '## Results and unresolved inputs', '',
   `- Synthetic deterministic fixtures: ${report.fixture_count}/${report.fixture_count} pass. Fixture filter values are test data only.`,
   '- Live Binance BTCUSDT filter snapshot: not captured. The official public exchangeInfo endpoint returned HTTP 451 from this environment. The capture script is included and writes a snapshot only after validating a successful live response.',
-  '- Account maker/taker fees, user fills, historical slippage/spread and funding reserve remain unavailable. Sizing is blocked unless fees, slippage and funding reserve are explicitly supplied.',
+  '- Account maker/taker fees, user fills, historical slippage/spread and funding reserve remain unavailable. Sizing is blocked unless fees, slippage and funding reserve are explicitly supplied. Reconciliation fixtures use synthetic fills and costs only.',
   '- Personal daily-loss/drawdown limits remain intentionally disabled by the user. Generic fixture thresholds test control behavior only; they are not personal limits, and no personal lock is active.',
   '- The $1 stop budget is an intended model cap. A gap, liquidation, exchange failure or fill race can exceed it; existing protection is kept and no unverified flatten order is invented.',
-  '- TakeProfit strategy API exposes strategy cash, position information and instrument min order size/value. It does not document account equity, daily realized PnL, peak equity, exact BTCUSDT tick/lot filters or user margin tier as script fields.', '',
+  '- TakeProfit documents `self.info.tick_size` and `self.info.price_precision` through `Context.info` (inherited by `MainStrategyContext`) and exposes strategy min order size/value. This permits platform-context price tick handling but is not a captured Binance filter snapshot. Exact quantity steps/maxima, account fees, marked account equity, daily PnL, peak equity and user margin tier remain unavailable as documented script fields.', '',
   '## Issue #8 acceptance state', '',
   '- Reference rounding and post-rounding risk eligibility: fixture-verified with synthetic venue filters; current venue rules are still unverified.',
-  '- Fill reconciliation: paper ledger behavior is fixture-verified; no user/exchange fill records were supplied.',
+  '- Supplied-fill reconciliation: fixture-verified for partial fills, fees, funding, marked equity, stressed stop loss, planned size and protective coverage; user/exchange fill records remain absent.',
+  '- Native execution integration: not complete. The strategy still relies on a user-entered quantity step and has not been switched to verified venue filters; keep it research-only.',
   '- Daily/drawdown policy: the user-approved choice to leave personal thresholds unset is recorded; generic lock and reset behavior is fixture-verified, while personal account locks remain disabled.',
   '- Holding policy: TP/SL-only with no maximum hold is recorded as BTC-PERP-EXIT-TP-SL-ONLY-1; changes require a separate experiment.',
   '- Profitability: not evaluated by these engineering fixtures.', '',
@@ -665,10 +811,10 @@ const md = [
   '```', '',
   'The capture command requires access to the public Binance USD-M exchangeInfo endpoint. It never uses account credentials and refuses to write a partial or synthetic snapshot.', '',
   '## Decision', '',
-  'The reference rounding, fill, equity and lock behavior is testable and the synthetic fixtures pass. Issue #8 cannot be fully closed yet: current Binance filters and observed account fill/cost data are absent. The user-approved choice to keep personal daily/drawdown locks disabled is recorded; do not present those controls as active protection. Do not enable live sizing from these fixtures.',
+  'The reference rounding, supplied-fill reconciliation, equity and lock behavior is fixture-verified. Issue #8 cannot be fully closed yet: current Binance filters, native strategy use of a verified quantity grid, and observed account fill/cost data are absent. The user-approved choice to keep personal daily/drawdown locks disabled is recorded; do not present those controls as active protection. Do not enable live sizing from these fixtures.',
 ].join('\n');
 fs.writeFileSync(path.join(reportDir, 'contract_risk_report.md'), md + '\n', 'utf8');
 
 console.log(JSON.stringify({ report: 'research/reports/contract_risk_report.md', fixture_count: fixtures.length, all_fixtures_pass: true, live_filter_snapshot: report.acceptance_status.live_binance_filter_snapshot, daily_drawdown_policy: report.acceptance_status.user_daily_drawdown_limits }, null, 2));
 
-export { quantize, aligned, validateMarket, roundPrices, roundAndValidatePlan, notionalQuote, pnlQuote, allInStopRisk, sizeForRisk, PaperRiskLedger };
+export { quantize, aligned, validateMarket, roundPrices, roundAndValidatePlan, notionalQuote, pnlQuote, allInStopRisk, sizeForRisk, PaperRiskLedger, reconcileOpenRisk };

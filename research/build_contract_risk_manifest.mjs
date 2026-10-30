@@ -60,6 +60,7 @@ const manifest = {
   docs_basis: [
     'https://developers.binance.com/en/docs/products/derivatives-trading-usds-futures/common-definition',
     'https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usds-margined-futures/api/rest-api/market-data#exchange-information',
+    'https://takeprofit.com/docs/indie/Library-reference/package-indie',
     'https://takeprofit.com/docs/indie/Library-reference/package-indie-strategies',
   ],
   artifacts: files.map(file => ({ path: file, sha256: hashFile(file) })),

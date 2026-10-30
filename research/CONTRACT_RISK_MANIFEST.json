@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
   "manifest_id": "btc-perp-contract-risk-p1-2026-10-30",
-  "generated_at_utc": "2026-10-30T16:44:32.520Z",
+  "generated_at_utc": "2026-10-30T17:05:44.674Z",
   "policy_id": "BTC-PERP-RISK-OPS-P1",
   "parent_commit": "ca2e55001d9c50a80878a8903ca9a79c1f7f184d",
   "status": "paper_reference_fixtures_verified_live_filters_and_fills_unconfirmed_user_locks_disabled",
   "hash_normalization": "UTF-8 text; CRLF normalized to LF before SHA-256",
   "verification": {
     "command": "node research/risk_controls_reference.mjs",
-    "fixture_count": 22,
+    "fixture_count": 24,
     "all_fixtures_pass": true,
     "outcomes": [
       {
@@ -56,6 +56,14 @@
         "status": "PASS"
       },
       {
+        "fixture": "reconcile_partial_fills_fees_funding_mark_and_protection",
+        "status": "PASS"
+      },
+      {
+        "fixture": "actual_partial_fill_stop_stress_detects_over_budget_exposure",
+        "status": "PASS"
+      },
+      {
         "fixture": "daily_lock_open_loss_pending_cancel_protection_and_utc_reset",
         "status": "PASS"
       },
@@ -84,7 +92,7 @@
         "status": "PASS"
       },
       {
-        "fixture": "gap_through_stop_exposes_budget_limit_and_locks_entries",
+        "fixture": "gap_through_stop_exposes_budget_locks_entries_and_preserves_protection",
         "status": "PASS"
       },
       {
@@ -116,12 +124,13 @@
   "acceptance": {
     "rounding_and_formula_engine": "PASS_ON_SYNTHETIC_FIXTURES",
     "live_binance_filter_snapshot": "OPEN_REQUIRED",
-    "realized_user_fill_reconciliation": "OPEN_NO_OBSERVED_USER_OR_EXCHANGE_FILL_DATA; reference ledger reconciles supplied fill events",
+    "supplied_fill_reconciliation_engine": "PASS_PARTIAL_FILLS_FEES_FUNDING_MARKED_EQUITY_STOP_STRESS_AND_PROTECTION_FIXTURES",
+    "realized_user_fill_reconciliation": "OPEN_NO_OBSERVED_USER_OR_EXCHANGE_FILL_DATA; synthetic fixtures only",
     "user_daily_drawdown_limits": "APPROVED_DISABLED_BY_USER; parameterized controls are fixture-tested but personal locks are not active",
     "native_account_equity_locks": "NOT_AVAILABLE_IN_DOCUMENTED_STRATEGY_FIELDS",
-    "risk_lock_fixtures": "PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_AND_LOCK_ACTIONS",
+    "risk_lock_fixtures": "PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_PER_TRADE_GAP_BREACH_AND_EXPLICIT_RESET",
     "hold_policy_registration": "PASS_TP_SL_ONLY_VERSIONED_NO_TIME_EXIT_ADDED",
-    "issue_8_close": "BLOCKED_LIVE_FILTERS_AND_OBSERVED_FILL_COST_RECONCILIATION",
+    "issue_8_close": "BLOCKED_LIVE_FILTERS_NATIVE_STRATEGY_GRID_INTEGRATION_AND_OBSERVED_FILL_COST_RECONCILIATION",
     "profitability": "NOT_EVALUATED; no claim"
   },
   "limitations": [
@@ -132,16 +141,17 @@
   "docs_basis": [
     "https://developers.binance.com/en/docs/products/derivatives-trading-usds-futures/common-definition",
     "https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usds-margined-futures/api/rest-api/market-data#exchange-information",
+    "https://takeprofit.com/docs/indie/Library-reference/package-indie",
     "https://takeprofit.com/docs/indie/Library-reference/package-indie-strategies"
   ],
   "artifacts": [
     {
       "path": "research/specs/contract_risk_controls_p1.json",
-      "sha256": "75f327bfe888e50f99c3e0cff3ec2be7142bf4a5f30bd3c291d177ab1daad826"
+      "sha256": "f2a602bb62fd60ef78dde40136e87abe0c13ca08559351fc842773667c8b05e7"
     },
     {
       "path": "research/risk_controls_reference.mjs",
-      "sha256": "f1570037516cccd831f8adc80362bccb91b6474aded0025bb076e24d7d1d3e4b"
+      "sha256": "574567cd747ba087ea5555497cdcd600982063cf67c16ce8ffc8ae4866d2348a"
     },
     {
       "path": "research/capture_binance_contract_snapshot.mjs",
@@ -149,27 +159,27 @@
     },
     {
       "path": "research/build_contract_risk_manifest.mjs",
-      "sha256": "9d31a4c8bee3670ca67c7c121587177a8eaa81ea6aaa0bc6f64dc2f56682a004"
+      "sha256": "179096a7fffa4ca669979e80f2186833ea08973b6255be9f1a69b314ff547607"
     },
     {
       "path": "research/verify_contract_risk_manifest.mjs",
-      "sha256": "b2b32d2ae33f08e26faac9a5711db833232231548316e5582a8152ef9479dfab"
+      "sha256": "ba8e021663629ff3f043f17a1533cade016bfb22e8c1612e5a4af5e71e81e646"
     },
     {
       "path": "research/README_CANDIDATE_P1.md",
-      "sha256": "ba02f8bc0e4bc9f924a6de6a0e4ea7616c6fbb2f5920f010b7717fac787e82d9"
+      "sha256": "17f7a0caac98e7c0fd695feb6bdfe5fc59a22a5e67a5a2a85e8e6893e6f2bf55"
     },
     {
       "path": "research/reports/contract_risk_report.json",
-      "sha256": "4515ebaa1633e5de0bc0cc81644563ac71906853b5ae79eaa8c8bf4752de0364"
+      "sha256": "053d8e9ffd91e950c7436e76422c0f78e0c007b45e45637db581f8fd3fb3fa11"
     },
     {
       "path": "research/reports/contract_risk_report.md",
-      "sha256": "9ddf45e9adf5a42b73d5cbda5ca6daa2b07aca921957b12e30e8703a54f34697"
+      "sha256": "fe0b161a15f99d2a6ab5a0e0ccd2ffe1286b03000d5235df48c02984f7cb97bc"
     },
     {
       "path": "research/reports/contract_risk_fixtures.csv",
-      "sha256": "a2b348beb7fa56bd9fff61406363d08fde993d5ccca23c4cc2f353e2e183c462"
+      "sha256": "e9c9a2b991bd02c68263087824bae7dbf12140c1557cf850eb7e4ff20344fdeb"
     }
   ]
 }
