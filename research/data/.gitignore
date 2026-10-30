@@ -1,0 +1,4 @@
+/.probe/
+/btcusdt_*/raw/
+/btcusdt_*/daily_forensics/
+/btcusdt_*/derived/
