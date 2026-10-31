@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "report_id": "btc-perp-p1-candidate-parity-2026-10-30",
-  "generated_at_utc": "2026-10-30T14:23:41.148Z",
+  "generated_at_utc": "2026-10-31T03:10:27.017Z",
   "scope": "Independent reference calculation of P1 candidates and planned levels on the #4 audited resampled BTC perpetual history. No TakeProfit strategy fills or realized profitability are inferred.",
   "contract_version": "BTC-PERP-PULLBACK-P1",
   "reference_method": {
@@ -10,6 +10,7 @@
     "atr": "True range followed by Wilder RMA(14), initialized by the first 14-value SMA, matching the documented Indie Atr -> RMA algorithm.",
     "higher_timeframe": "Execution bars grouped by UTC bucket; complete contiguous groups only; EMA20/EMA50 recursively updated from the first completed HTF close; slope uses three completed HTF bars.",
     "touch_model": "Completed bars processed once in timestamp order; first eligible range intersection arms; eligibility checks touch bias and directional EMA50 closes only within the current recovery episode.",
+    "conflict_policy": "Mask the exact disputed execution candles and omit disputed higher-timeframe buckets from the independently audited #4 stream; stale last-valid HTF bias is retained until the next clean HTF close reseeds and re-warms the series.",
     "time_model": "Unix UTC seconds at bar opens; entry quote uses next execution candle open.",
     "known_fill_limit": "No exchange order book, actual fills, fee tier, spread/slippage tape, or funding cash flows are included in this candidate parity report."
   },
@@ -26,18 +27,30 @@
     {
       "execution_minutes": 5,
       "higher_minutes": 15,
-      "bars": 210240,
+      "input_bars": 210240,
+      "bars": 210237,
+      "execution_conflict_bars_masked": 3,
+      "higher_timeframe_conflict_bars_masked": 3,
+      "model_eligible_bars": 207967,
+      "setups": 13007,
+      "setup_outcomes": {
+        "TRIGGERED": 5262,
+        "STRUCTURAL_INVALIDATION": 5079,
+        "CLOSE_THROUGH_EMA50": 2401,
+        "EXPIRED": 182,
+        "BIAS_LOSS": 83
+      },
       "first_bar_utc": "2024-10-01T00:00:00.000Z",
       "last_bar_utc": "2026-09-30T23:55:00.000Z",
-      "full_history_candidates": 5302,
+      "full_history_candidates": 5262,
       "side_counts": {
-        "LONG": 2772,
-        "SHORT": 2530
+        "LONG": 2741,
+        "SHORT": 2521
       },
       "risk_blockers": {
         "NONE": 117,
-        "COST > 0.2R": 4518,
-        "STOP > 2.5 ATR": 667
+        "COST > 0.2R": 4483,
+        "STOP > 2.5 ATR": 662
       },
       "full_vs_truncated_overlap": {
         "compared_candidates": 139,
@@ -54,18 +67,30 @@
     {
       "execution_minutes": 15,
       "higher_minutes": 60,
-      "bars": 70080,
+      "input_bars": 70080,
+      "bars": 70077,
+      "execution_conflict_bars_masked": 3,
+      "higher_timeframe_conflict_bars_masked": 4,
+      "model_eligible_bars": 67064,
+      "setups": 3984,
+      "setup_outcomes": {
+        "STRUCTURAL_INVALIDATION": 1581,
+        "TRIGGERED": 1553,
+        "CLOSE_THROUGH_EMA50": 757,
+        "EXPIRED": 83,
+        "BIAS_LOSS": 10
+      },
       "first_bar_utc": "2024-10-01T00:00:00.000Z",
       "last_bar_utc": "2026-09-30T23:45:00.000Z",
-      "full_history_candidates": 1610,
+      "full_history_candidates": 1553,
       "side_counts": {
-        "LONG": 853,
-        "SHORT": 757
+        "LONG": 820,
+        "SHORT": 733
       },
       "risk_blockers": {
-        "COST > 0.2R": 1197,
-        "NONE": 187,
-        "STOP > 2.5 ATR": 226
+        "COST > 0.2R": 1159,
+        "NONE": 174,
+        "STOP > 2.5 ATR": 220
       },
       "full_vs_truncated_overlap": {
         "compared_candidates": 109,
@@ -81,8 +106,10 @@
     }
   ],
   "overall": {
-    "candidates": 6912,
-    "unique_candidate_ids": 6912,
+    "candidates": 6815,
+    "unique_candidate_ids": 6815,
+    "model_eligible_bars": 275031,
+    "setups": 16991,
     "event_ledger": "candidate_event_ledger.csv",
     "full_history_vs_truncated_history": "PASS; see each profile row",
     "id_and_timestamp_checks": "PASS",

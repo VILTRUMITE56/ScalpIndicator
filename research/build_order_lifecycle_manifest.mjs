@@ -5,7 +5,9 @@ import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const hashFile = relative => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, relative))).digest('hex');
+const hashFile = relative => crypto.createHash('sha256')
+  .update(fs.readFileSync(path.join(root, relative), 'utf8').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n'), 'utf8')
+  .digest('hex');
 const report = JSON.parse(fs.readFileSync(path.join(root, 'research/reports/order_lifecycle_report.json'), 'utf8'));
 const contract = JSON.parse(fs.readFileSync(path.join(root, 'research/specs/order_lifecycle_p1.json'), 'utf8'));
 const files = [
@@ -28,6 +30,7 @@ const manifest = {
   generated_at_utc: new Date().toISOString(),
   contract_version: contract.contract_version,
   status: 'local_fixtures_and_emulator_contract_verified_live_exchange_execution_unconfirmed',
+  hash_normalization: 'Text artifacts use SHA-256 after UTF-8 BOM stripping and CRLF/CR to LF normalization.',
   parent_main_commit: 'e7803e082535a23f75fb4d27982a9af19fcacd6e',
   strategy_changes: [
     'Track observed signed position size and request cancellation of a partial parent remainder after any observed protective position reduction or close.',
