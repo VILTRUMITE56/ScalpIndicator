@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "BTC-PERP-B0-COSTED-2026-10-31",
+  "frozen_at_utc": "2026-10-31T00:35:58Z",
+  "status": "frozen_before_execution",
+  "purpose": "Predeclare the B0 historical scoring window, source inputs, warmup/reset behavior, risk and cost conventions, and model limitations before running the evaluation.",
+  "baseline": {
+    "baseline_id": "BTC-PERP-B0-2026-10-30-v16-v24",
+    "rule_source": "indie/btc_pullback_strategy.indie",
+    "rule_source_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+    "rule_spec": "research/specs/baseline.json",
+    "rule_spec_sha256": "aafe01c9116d5648a6dce9d6c72a6236d0878d428a928f503bdda870795f25dd",
+    "rule_definition": "Execute the committed local B0 strategy rules as written, including rolling [2..4] EMA20 touch selection; do not substitute P1 first-touch rules or tune parameters.",
+    "source_hash_reconciliation": {
+      "recorded_strategy_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+      "current_strategy_normalized_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+      "current_strategy_raw_windows_sha256": "66117464b2c8bba70b20180c3d70e3a101b6c029c8c92d83a1c36e178de1ea01",
+      "recorded_indicator_sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+      "current_indicator_normalized_sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+      "current_indicator_raw_windows_sha256": "a800e5c46cbef3b7ec4d4422d10e6be5b93b3b9916be3a48db832f2bcb72e523",
+      "resolution": "Current local strategy and indicator match the prior frozen manifest after its stated UTF-8 LF normalization. Their raw Windows CRLF hashes differ only due to line endings; no rule-source drift is indicated by these hashes."
+    },
+    "platform_script_context": "The connected TakeProfit working copy currently reports version 21 and P1 source, not the local B0 v16 source. Native comparison, if run, must use a temporary ephemeral copy of the frozen local B0 source; never run the current P1 copy as B0."
+  },
+  "instrument": {
+    "venue": "Binance USDⓈ-M Futures",
+    "symbol": "BTCUSDT perpetual",
+    "takeprofit_alias": "BTC/USDT.P",
+    "exchange_code": "CXBNF8",
+    "status": "research proxy only; user execution venue remains unspecified"
+  },
+  "scoring_window": {
+    "start_inclusive_utc": "2024-10-01T00:00:00Z",
+    "end_exclusive_utc": "2026-10-01T00:00:00Z",
+    "calendar_months": 24,
+    "is_untouched_holdout": false,
+    "reason_not_holdout": "These history windows and nearby chart periods have already been inspected in earlier project work. Results are exploratory and cannot be called out-of-sample validation."
+  },
+  "profiles": [
+    { "execution_minutes": 5, "higher_minutes": 15, "bars_per_higher": 3 },
+    { "execution_minutes": 15, "higher_minutes": 60, "bars_per_higher": 4 }
+  ],
+  "inputs": {
+    "history_audit": {
+      "path": "research/reports/btc_history_coverage.json",
+      "sha256": "3fe690f677d544c7c42850e5e0c364d17c8681a48f987fbd9a0f8a8d55d39c94"
+    },
+    "archive_manifest": {
+      "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418"
+    },
+    "execution_5m": {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_5m_resampled.csv",
+      "sha256": "771c06242a587de639b880f7f32591ad132669e0e050a81df597129559589314"
+    },
+    "execution_15m": {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_15m_resampled.csv",
+      "sha256": "8dd5cf61a54ae0d9be1450ddec6f2ef5cb9346af00c4d2d3108038f882c8352c"
+    },
+    "trade_path_1m": {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+      "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1"
+    },
+    "mark_path_1m": {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv",
+      "sha256": "2f9c12c66b7b12aaeb99ad0c381661e87e723f86a8a46697db4d3c4097939457"
+    },
+    "funding_events": {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/funding_events.csv",
+      "sha256": "74d971baac1411a7b46d39ffe80a0020a30982ae1e26fdd82886ea310cc0e1b6"
+    }
+  },
+  "history_and_warmup": {
+    "coverage": "Use complete independently resampled UTC buckets from #4. Reject timestamp gaps, duplicate bars, incomplete boundaries, and bars outside the frozen window.",
+    "native_reference_conflicts": "Reset setup/HTF state at every execution or higher-timeframe source-conflict bucket listed in btc_history_coverage.json; exclude all events until at least 250 complete contiguous HTF bars and 56 execution bars have accumulated after reset.",
+    "initial_warmup": "Require 250 complete HTF bars and 56 execution bars before scoring; use completed execution candles only; entry reference is the following execution bar open.",
+    "eligible_day_definition": "UTC calendar day containing at least one scored execution decision after warmup/reset; retain zero-trade eligible days in daily R and equity summaries.",
+    "data_end": "Do not force-close a position at the end boundary. Preserve it as open, report mark-to-market equity, and keep realized expectancy/PF on closed trades only."
+  },
+  "risk_policy": {
+    "starting_cash_usdt": 10000,
+    "research_risk_fraction": 0.0025,
+    "leverage": "1x cash-constrained research sizing inherited from B0; not user account sizing",
+    "quantity_step_btc": 0.001,
+    "cost_fraction_for_sizing": 0.0015,
+    "cost_to_initial_risk_max": 0.2,
+    "stop_distance_atr_floor": 1.0,
+    "stop_distance_atr_cap": 2.5,
+    "target_multiple_r": 1.5,
+    "daily_loss_or_drawdown_locks": "unset; do not invent personal limits",
+    "platform_min_order_filters": "Unavailable for this research proxy; cannot assert platform-executable quantity or minimum notional. Report candidate quantities and flag this limitation.",
+    "user_profile_overlay": "Separately disclose the user's confirmed $5-$10 margin, variable 20x-50x leverage, isolated mode, all-in loss cap <=$1, and target >$5. These personal limits are not substituted into the B0 10,000-USDT research sizing model."
+  },
+  "fill_and_outcome_model": {
+    "entry_reference": "Following execution bar open.",
+    "assumed_entry_fill": "Full fill at B0 strategy's bounded quote: open*(1+0.0002) long or open*(1-0.0002) short; modeled only, not an observed fill. No queue, rejection, partial fill, or cancel/fill race is inferred.",
+    "planned_stops_and_targets": "Use the exact B0 stop distance, stop and 1.5R target derived from the bounded entry quote.",
+    "protective_exit_source": "Trade 1m OHLC. Stop gaps fill at the adverse minute open; same-minute stop/target collision is stop-first; otherwise fill at stop or target. No time exit.",
+    "open_equity_source": "Mark 1m close to value open positions; no mark-price protective execution is inferred.",
+    "quantity_rounding": "Floor size to 0.001 BTC as in the B0 input; min size/notional filters are unknown and therefore not verified.",
+    "funding": "Apply each actual funding_events.csv rate once when entry time is strictly before its event timestamp and the position is still open at the event; positive rate is paid by longs and received by shorts. Use mark 1m open at event minute as the funding notional proxy."
+  },
+  "cost_scenarios": {
+    "commission_placeholder_bps_per_side": 5,
+    "commission_status": "Unverified TakeProfit backtest placeholder; user's account rates remain unknown.",
+    "base_round_trip_total_bps": 15,
+    "base_composition": "10 bp modeled taker commission (5 bp per side) plus 5 bp unmeasured round-trip spread/slippage proxy. The 2 bp entry quote offset is already included in modeled fill price and is not deducted again.",
+    "fee_only_comparison_bps": 10,
+    "stress_scenarios": [
+      { "execution_proxy_multiplier": 1.5, "total_round_trip_bps": 17.5 },
+      { "execution_proxy_multiplier": 2.0, "total_round_trip_bps": 20.0 }
+    ],
+    "stress_status": "Only a hypothetical proxy stress is possible: measured spread/slippage is unavailable. It must not be described as measured or realistic for the user's venue.",
+    "fee_calculation": "Charge 5 bp on entry notional and 5 bp on exit notional; apply the extra execution proxy half at each leg using each leg's notional. Funding is a separate signed cash flow."
+  },
+  "uncertainty_and_decision_policy": {
+    "uncertainty": "Report event counts, 7-day circular block-bootstrap 95% interval for mean net R per eligible day when sample permits, plus assumption and history limitations.",
+    "sparse_sample": "If fewer than 30 closed modeled fills, classify profitability inference as inconclusive; no win-rate or PF claim for open-only/no-trade samples.",
+    "concentration": "Report share of positive net PnL contributed by the top five UTC winning days and net PnL excluding them.",
+    "decision_choices": ["continue", "revise", "pivot"],
+    "no_profitability_promise": true
+  }
+}

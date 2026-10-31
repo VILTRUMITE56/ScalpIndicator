@@ -1,0 +1,222 @@
+{
+  "manifest_id": "BTC-PERP-B0-COSTED-2026-10-31",
+  "generated_at_utc": "2026-10-31T00:38:46.340Z",
+  "evaluation_policy_path": "research/specs/baseline_evaluation_p0.json",
+  "evaluation_policy_sha256": "536cbf1f21faf91d31dafaa949ab5ef6e14b0e8718e5b71452321100b3b9c76d",
+  "evaluator_path": "research/b0_costed_baseline.mjs",
+  "evaluator_sha256": "5c0248010e8dfa66f4323152c7c5e793088689a87ce02d7659ee7bf50736abbc",
+  "text_hash_method": "SHA-256 after UTF-8 BOM stripping and CRLF/CR to LF normalization; input market CSVs hash raw bytes.",
+  "command": "node research/b0_costed_baseline.mjs",
+  "frozen_input_hashes": [
+    {
+      "name": "rule_source",
+      "path": "indie/btc_pullback_strategy.indie",
+      "sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "name": "indicator_source",
+      "path": "indie/btc_pullback_indicator.indie",
+      "sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "name": "rule_spec",
+      "path": "research/specs/baseline.json",
+      "sha256": "aafe01c9116d5648a6dce9d6c72a6236d0878d428a928f503bdda870795f25dd",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "name": "history_audit",
+      "path": "research/reports/btc_history_coverage.json",
+      "sha256": "3fe690f677d544c7c42850e5e0c364d17c8681a48f987fbd9a0f8a8d55d39c94",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "name": "archive_manifest",
+      "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "name": "execution_5m",
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_5m_resampled.csv",
+      "sha256": "771c06242a587de639b880f7f32591ad132669e0e050a81df597129559589314",
+      "hash_method": "raw bytes"
+    },
+    {
+      "name": "execution_15m",
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_15m_resampled.csv",
+      "sha256": "8dd5cf61a54ae0d9be1450ddec6f2ef5cb9346af00c4d2d3108038f882c8352c",
+      "hash_method": "raw bytes"
+    },
+    {
+      "name": "trade_path_1m",
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+      "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1",
+      "hash_method": "raw bytes"
+    },
+    {
+      "name": "mark_path_1m",
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv",
+      "sha256": "2f9c12c66b7b12aaeb99ad0c381661e87e723f86a8a46697db4d3c4097939457",
+      "hash_method": "raw bytes"
+    },
+    {
+      "name": "funding_events",
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/funding_events.csv",
+      "sha256": "74d971baac1411a7b46d39ffe80a0020a30982ae1e26fdd82886ea310cc0e1b6",
+      "hash_method": "raw bytes"
+    }
+  ],
+  "native_reconciliation_status": "BLOCKED_FULL_HISTORY_PLATFORM_QUOTA_AND_WINDOW_MISMATCH",
+  "artifact_hashes": [
+    {
+      "path": "research/reports/b0_candidate_ledger.csv",
+      "sha256": "5d97c5def62d7bc7ca7e98087664fb83a2448ab0e4818dae9b99fb1a80809147",
+      "bytes": 2599617
+    },
+    {
+      "path": "research/reports/b0_order_ledger.csv",
+      "sha256": "f2ef9dfed0dfb016656acea0a518c252bc1b32837ef47d00dc3a2a532f8231b1",
+      "bytes": 2959223
+    },
+    {
+      "path": "research/reports/b0_fill_ledger.csv",
+      "sha256": "966a0ca8fd58da519575e3d364a21c5d1a4d35d4f59bf1af08feb030c392377c",
+      "bytes": 380711
+    },
+    {
+      "path": "research/reports/b0_cost_ledger.csv",
+      "sha256": "2e313dcce416c5c418fc7d0c07333aa842ddc33daa1ebb0a2e3e70cd54944d48",
+      "bytes": 272042
+    },
+    {
+      "path": "research/reports/b0_funding_ledger.csv",
+      "sha256": "01848a42cd951708316b3c22615b2e537a3327b8913d540565d5d3ab5ac63f32",
+      "bytes": 70032
+    },
+    {
+      "path": "research/reports/b0_daily_equity_ledger.csv",
+      "sha256": "9e961134ec05d243f1978f1f60e1ab542c6d5f134d05c1624a65d0d077bd7018",
+      "bytes": 1162885
+    },
+    {
+      "path": "research/reports/b0_costed_baseline_report.json",
+      "sha256": "3641c2f4c24ac2b1ea35c75a2d4657ccb54fb99cb1613d254439225fc6b1a80a",
+      "bytes": 119690
+    },
+    {
+      "path": "research/reports/b0_costed_baseline_report.md",
+      "sha256": "c4ae19fef85a75826b8544909f680f3d0bc0c1bbeaeb750ff90d3db08404b457",
+      "bytes": 8774
+    },
+    {
+      "path": "research/reports/b0_native_takeprofit_reconciliation.json",
+      "sha256": "39d133af8fb778758e38df8ff1ec15e907d2215aae1f63a252d2b37d4219bcf8",
+      "bytes": 2793
+    }
+  ],
+  "ledger_rows": {
+    "candidates": 6551,
+    "orders": 6551,
+    "fills": 956,
+    "costs": 1912,
+    "daily_equity": 5840
+  },
+  "decision": {
+    "choice": "REVISE_RESEARCH_HYPOTHESIS; KEEP_FEATURE_EXPERIMENTS_BLOCKED",
+    "rationale": "The B0 1.5R payoff geometry cannot meet the user-confirmed >$5 target under a <=$1 all-in loss cap. Historical performance remains conditional on unobserved fills, unmeasured execution costs, unknown account fees, unavailable platform minimum filters, and non-holdout data. Do not infer live profitability; complete native parity and collect venue-specific quotes/fills before deciding whether to continue or pivot the signal.",
+    "profitability_claim": "NONE"
+  },
+  "performance_summaries": [
+    {
+      "profile": "5m/15m",
+      "scenario": "fee_only_10bp",
+      "modeled_fills": 103,
+      "closed": 103,
+      "expectancy_usdt": -1.98516635,
+      "expectancy_R": -0.09137598,
+      "net_R_per_eligible_day": -0.01298169,
+      "net_profit_factor": 0.85574187,
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "5m/15m",
+      "scenario": "base_15bp",
+      "modeled_fills": 103,
+      "closed": 103,
+      "expectancy_usdt": -3.14137235,
+      "expectancy_R": -0.1469077,
+      "net_R_per_eligible_day": -0.02087103,
+      "net_profit_factor": 0.78246172,
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "5m/15m",
+      "scenario": "stress_1_5x_17_5bp",
+      "modeled_fills": 103,
+      "closed": 103,
+      "expectancy_usdt": -3.71947536,
+      "expectancy_R": -0.17467356,
+      "net_R_per_eligible_day": -0.02481569,
+      "net_profit_factor": 0.74834776,
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "5m/15m",
+      "scenario": "stress_2x_20bp",
+      "modeled_fills": 103,
+      "closed": 103,
+      "expectancy_usdt": -4.29757836,
+      "expectancy_R": -0.20243942,
+      "net_R_per_eligible_day": -0.02876036,
+      "net_profit_factor": 0.71576656,
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "15m/60m",
+      "scenario": "fee_only_10bp",
+      "modeled_fills": 136,
+      "closed": 136,
+      "expectancy_usdt": -2.6154401,
+      "expectancy_R": -0.1281818,
+      "net_R_per_eligible_day": -0.02486837,
+      "net_profit_factor": 0.81463849,
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "15m/60m",
+      "scenario": "base_15bp",
+      "modeled_fills": 136,
+      "closed": 136,
+      "expectancy_usdt": -3.67193899,
+      "expectancy_R": -0.17883739,
+      "net_R_per_eligible_day": -0.03469599,
+      "net_profit_factor": 0.75138777,
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "15m/60m",
+      "scenario": "stress_1_5x_17_5bp",
+      "modeled_fills": 136,
+      "closed": 136,
+      "expectancy_usdt": -4.20018843,
+      "expectancy_R": -0.20416519,
+      "net_R_per_eligible_day": -0.03960979,
+      "net_profit_factor": 0.72183529,
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "15m/60m",
+      "scenario": "stress_2x_20bp",
+      "modeled_fills": 136,
+      "closed": 136,
+      "expectancy_usdt": -4.72843788,
+      "expectancy_R": -0.22949299,
+      "net_R_per_eligible_day": -0.0445236,
+      "net_profit_factor": 0.69354653,
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    }
+  ]
+}
