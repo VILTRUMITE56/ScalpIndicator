@@ -1,0 +1,63 @@
+{
+  "status": "BLOCKED_FULL_HISTORY_PLATFORM_QUOTA_AND_WINDOW_MISMATCH",
+  "evaluated_local_source_normalized_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+  "temporary_ephemeral_script": {
+    "script_id": "99688857-9e31-4a38-8a41-a6f8fa5a2a97",
+    "version": 1,
+    "line_count": 436,
+    "compile_valid": true,
+    "runtime_quick_valid": true,
+    "runtime_quick_bars": 5000
+  },
+  "full_history_requests": [
+    {
+      "profile": "5m/15m",
+      "requested_from_utc": "2024-10-01T00:00:00Z",
+      "requested_to_utc": "2026-10-01T00:00:00Z",
+      "requested_bars": 210241,
+      "plan_maximum_bars": 5060,
+      "status": "DENIED_BY_TAKEPROFIT_PLAN_LIMIT",
+      "request_id": "942ae8cd18f6498e85d8e1d336e39f47"
+    },
+    {
+      "profile": "15m/60m",
+      "requested_from_utc": "2024-10-01T00:00:00Z",
+      "requested_to_utc": "2026-10-01T00:00:00Z",
+      "requested_bars": 70081,
+      "plan_maximum_bars": 5060,
+      "status": "DENIED_BY_TAKEPROFIT_PLAN_LIMIT",
+      "request_id": "a5618b760a9e49fe8395b991c4730dc1"
+    }
+  ],
+  "bounded_requests": [
+    {
+      "profile": "5m/15m",
+      "requested_from_utc": "2026-09-14T00:00:00Z",
+      "requested_to_utc": "2026-10-01T00:00:00Z",
+      "indicator_instance_id": "36d43f4e-9cc1-4776-9f17-23ae3e323466",
+      "last_bar_returned_utc": "2026-10-27T13:10:00Z",
+      "is_history_depth_sufficient": false,
+      "has_more_items_on_left": true,
+      "trades": 0,
+      "realized_pnl_usdt": 0,
+      "total_commissions_usdt": 0,
+      "request_id": "99b187f9bf204b53805e9f4a67c33d2e",
+      "interpretation": "Not a valid common-window reconciliation: returned last bar is after requested end and the history snapshot is incomplete."
+    },
+    {
+      "profile": "15m/60m",
+      "requested_from_utc": "2026-09-14T00:00:00Z",
+      "requested_to_utc": "2026-10-01T00:00:00Z",
+      "indicator_instance_id": "ae94c8e0-b261-45b0-af0a-660fd77208c1",
+      "last_bar_returned_utc": "2026-10-20T14:30:00Z",
+      "is_history_depth_sufficient": false,
+      "has_more_items_on_left": true,
+      "trades": 0,
+      "realized_pnl_usdt": 0,
+      "total_commissions_usdt": 0,
+      "request_id": "f9e855c6f46047418e364b14be6294d7",
+      "interpretation": "Not a valid common-window reconciliation: returned last bar is after requested end and the history snapshot is incomplete."
+    }
+  ],
+  "conclusion": "The local independent engine completed the full 24-month reference replay. TakeProfit's 5,060-bar cap prevents the required native 24-month runs, and the bounded snapshots did not honor the requested scoring end. Native/reference parity and native order/fill reconciliation remain unverified; do not use the zero-trade bounded snapshots as evidence of zero B0 activity or flat profitability."
+}

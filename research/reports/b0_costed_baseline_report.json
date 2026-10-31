@@ -1,0 +1,3823 @@
+{
+  "report_id": "BTC-PERP-B0-COSTED-2026-10-31",
+  "generated_at_utc": "2026-10-31T03:13:58.302Z",
+  "scope": "Frozen local B0 full-history reference replay with conditional assumed fills and explicit hypothetical cost/funding accounting.",
+  "decision": {
+    "choice": "REVISE_RESEARCH_HYPOTHESIS; KEEP_FEATURE_EXPERIMENTS_BLOCKED",
+    "rationale": "The B0 1.5R payoff geometry cannot meet the user-confirmed >$5 target under a <=$1 all-in loss cap. Historical performance remains conditional on unobserved fills, unmeasured execution costs, unknown account fees, unavailable platform minimum filters, and non-holdout data. Do not infer live profitability; complete native parity and collect venue-specific quotes/fills before deciding whether to continue or pivot the signal.",
+    "profitability_claim": "NONE"
+  },
+  "evaluation_policy": {
+    "schema_version": 1,
+    "evaluation_id": "BTC-PERP-B0-COSTED-2026-10-31",
+    "frozen_at_utc": "2026-10-31T00:35:58Z",
+    "status": "frozen_before_execution",
+    "purpose": "Predeclare the B0 historical scoring window, source inputs, warmup/reset behavior, risk and cost conventions, and model limitations before running the evaluation.",
+    "baseline": {
+      "baseline_id": "BTC-PERP-B0-2026-10-30-v16-v24",
+      "rule_source": "indie/btc_pullback_strategy.indie",
+      "rule_source_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+      "rule_spec": "research/specs/baseline.json",
+      "rule_spec_sha256": "aafe01c9116d5648a6dce9d6c72a6236d0878d428a928f503bdda870795f25dd",
+      "rule_definition": "Execute the committed local B0 strategy rules as written, including rolling [2..4] EMA20 touch selection; do not substitute P1 first-touch rules or tune parameters.",
+      "source_hash_reconciliation": {
+        "recorded_strategy_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+        "current_strategy_normalized_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+        "current_strategy_raw_windows_sha256": "66117464b2c8bba70b20180c3d70e3a101b6c029c8c92d83a1c36e178de1ea01",
+        "recorded_indicator_sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+        "current_indicator_normalized_sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+        "current_indicator_raw_windows_sha256": "a800e5c46cbef3b7ec4d4422d10e6be5b93b3b9916be3a48db832f2bcb72e523",
+        "resolution": "Current local strategy and indicator match the prior frozen manifest after its stated UTF-8 LF normalization. Their raw Windows CRLF hashes differ only due to line endings; no rule-source drift is indicated by these hashes."
+      },
+      "platform_script_context": "The connected TakeProfit working copy currently reports version 21 and P1 source, not the local B0 v16 source. Native comparison, if run, must use a temporary ephemeral copy of the frozen local B0 source; never run the current P1 copy as B0."
+    },
+    "instrument": {
+      "venue": "Binance USDⓈ-M Futures",
+      "symbol": "BTCUSDT perpetual",
+      "takeprofit_alias": "BTC/USDT.P",
+      "exchange_code": "CXBNF8",
+      "status": "research proxy only; user execution venue remains unspecified"
+    },
+    "scoring_window": {
+      "start_inclusive_utc": "2024-10-01T00:00:00Z",
+      "end_exclusive_utc": "2026-10-01T00:00:00Z",
+      "calendar_months": 24,
+      "is_untouched_holdout": false,
+      "reason_not_holdout": "These history windows and nearby chart periods have already been inspected in earlier project work. Results are exploratory and cannot be called out-of-sample validation."
+    },
+    "profiles": [
+      {
+        "execution_minutes": 5,
+        "higher_minutes": 15,
+        "bars_per_higher": 3
+      },
+      {
+        "execution_minutes": 15,
+        "higher_minutes": 60,
+        "bars_per_higher": 4
+      }
+    ],
+    "inputs": {
+      "history_audit": {
+        "path": "research/reports/btc_history_coverage.json",
+        "sha256": "3fe690f677d544c7c42850e5e0c364d17c8681a48f987fbd9a0f8a8d55d39c94"
+      },
+      "archive_manifest": {
+        "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+        "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418"
+      },
+      "execution_5m": {
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_5m_resampled.csv",
+        "sha256": "771c06242a587de639b880f7f32591ad132669e0e050a81df597129559589314"
+      },
+      "execution_15m": {
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_15m_resampled.csv",
+        "sha256": "8dd5cf61a54ae0d9be1450ddec6f2ef5cb9346af00c4d2d3108038f882c8352c"
+      },
+      "trade_path_1m": {
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+        "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1"
+      },
+      "mark_path_1m": {
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv",
+        "sha256": "2f9c12c66b7b12aaeb99ad0c381661e87e723f86a8a46697db4d3c4097939457"
+      },
+      "funding_events": {
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/funding_events.csv",
+        "sha256": "74d971baac1411a7b46d39ffe80a0020a30982ae1e26fdd82886ea310cc0e1b6"
+      }
+    },
+    "history_and_warmup": {
+      "coverage": "Use complete independently resampled UTC buckets from #4. Reject timestamp gaps, duplicate bars, incomplete boundaries, and bars outside the frozen window.",
+      "native_reference_conflicts": "Reset setup/HTF state at every execution or higher-timeframe source-conflict bucket listed in btc_history_coverage.json; exclude all events until at least 250 complete contiguous HTF bars and 56 execution bars have accumulated after reset.",
+      "initial_warmup": "Require 250 complete HTF bars and 56 execution bars before scoring; use completed execution candles only; entry reference is the following execution bar open.",
+      "eligible_day_definition": "UTC calendar day containing at least one scored execution decision after warmup/reset; retain zero-trade eligible days in daily R and equity summaries.",
+      "data_end": "Do not force-close a position at the end boundary. Preserve it as open, report mark-to-market equity, and keep realized expectancy/PF on closed trades only."
+    },
+    "risk_policy": {
+      "starting_cash_usdt": 10000,
+      "research_risk_fraction": 0.0025,
+      "leverage": "1x cash-constrained research sizing inherited from B0; not user account sizing",
+      "quantity_step_btc": 0.001,
+      "cost_fraction_for_sizing": 0.0015,
+      "cost_to_initial_risk_max": 0.2,
+      "stop_distance_atr_floor": 1,
+      "stop_distance_atr_cap": 2.5,
+      "target_multiple_r": 1.5,
+      "daily_loss_or_drawdown_locks": "unset; do not invent personal limits",
+      "platform_min_order_filters": "Unavailable for this research proxy; cannot assert platform-executable quantity or minimum notional. Report candidate quantities and flag this limitation.",
+      "user_profile_overlay": "Separately disclose the user's confirmed $5-$10 margin, variable 20x-50x leverage, isolated mode, all-in loss cap <=$1, and target >$5. These personal limits are not substituted into the B0 10,000-USDT research sizing model."
+    },
+    "fill_and_outcome_model": {
+      "entry_reference": "Following execution bar open.",
+      "assumed_entry_fill": "Full fill at B0 strategy's bounded quote: open*(1+0.0002) long or open*(1-0.0002) short; modeled only, not an observed fill. No queue, rejection, partial fill, or cancel/fill race is inferred.",
+      "planned_stops_and_targets": "Use the exact B0 stop distance, stop and 1.5R target derived from the bounded entry quote.",
+      "protective_exit_source": "Trade 1m OHLC. Stop gaps fill at the adverse minute open; same-minute stop/target collision is stop-first; otherwise fill at stop or target. No time exit.",
+      "open_equity_source": "Mark 1m close to value open positions; no mark-price protective execution is inferred.",
+      "quantity_rounding": "Floor size to 0.001 BTC as in the B0 input; min size/notional filters are unknown and therefore not verified.",
+      "funding": "Apply each actual funding_events.csv rate once when entry time is strictly before its event timestamp and the position is still open at the event; positive rate is paid by longs and received by shorts. Use mark 1m open at event minute as the funding notional proxy."
+    },
+    "cost_scenarios": {
+      "commission_placeholder_bps_per_side": 5,
+      "commission_status": "Unverified TakeProfit backtest placeholder; user's account rates remain unknown.",
+      "base_round_trip_total_bps": 15,
+      "base_composition": "10 bp modeled taker commission (5 bp per side) plus 5 bp unmeasured round-trip spread/slippage proxy. The 2 bp entry quote offset is already included in modeled fill price and is not deducted again.",
+      "fee_only_comparison_bps": 10,
+      "stress_scenarios": [
+        {
+          "execution_proxy_multiplier": 1.5,
+          "total_round_trip_bps": 17.5
+        },
+        {
+          "execution_proxy_multiplier": 2,
+          "total_round_trip_bps": 20
+        }
+      ],
+      "stress_status": "Only a hypothetical proxy stress is possible: measured spread/slippage is unavailable. It must not be described as measured or realistic for the user's venue.",
+      "fee_calculation": "Charge 5 bp on entry notional and 5 bp on exit notional; apply the extra execution proxy half at each leg using each leg's notional. Funding is a separate signed cash flow."
+    },
+    "uncertainty_and_decision_policy": {
+      "uncertainty": "Report event counts, 7-day circular block-bootstrap 95% interval for mean net R per eligible day when sample permits, plus assumption and history limitations.",
+      "sparse_sample": "If fewer than 30 closed modeled fills, classify profitability inference as inconclusive; no win-rate or PF claim for open-only/no-trade samples.",
+      "concentration": "Report share of positive net PnL contributed by the top five UTC winning days and net PnL excluding them.",
+      "decision_choices": [
+        "continue",
+        "revise",
+        "pivot"
+      ],
+      "no_profitability_promise": true
+    }
+  },
+  "deterministic_fixtures": {
+    "rolling_touch_selection": "PASS",
+    "no_fallback": "PASS",
+    "stop_first_collision": "PASS",
+    "adverse_gap_stop": "PASS",
+    "funding_sign": "PASS",
+    "cost_decomposition": "PASS"
+  },
+  "data_coverage": {
+    "coverage_report": "research/reports/btc_history_coverage.md",
+    "start_inclusive_utc": "2024-10-01T00:00:00Z",
+    "end_exclusive_utc": "2026-10-01T00:00:00Z",
+    "trade_1m_rows": 1051200,
+    "mark_1m_rows": 1051200,
+    "funding_events": 2190,
+    "independent_resampling_native_comparison": {
+      "5m": {
+        "reference_bars": 210240,
+        "native_bars": 210240,
+        "common_bars": 210240,
+        "missing_native_bars": 0,
+        "extra_native_bars": 0,
+        "mismatched_bars": 3,
+        "mismatches_by_field": {
+          "high": 1,
+          "base_volume": 3,
+          "quote_volume": 3,
+          "trade_count": 3,
+          "taker_buy_base_volume": 3,
+          "taker_buy_quote_volume": 3,
+          "low": 1,
+          "open": 1
+        },
+        "mismatch_examples": [
+          {
+            "open_time_utc": "2025-01-14T13:30:00.000Z",
+            "fields": [
+              {
+                "field": "high",
+                "reference": "97219.80",
+                "native": "97250.00"
+              },
+              {
+                "field": "base_volume",
+                "reference": "6348.647",
+                "native": "7851.823",
+                "absolute_difference": "-1503.176"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "614424295.1189",
+                "native": "760304187.54290",
+                "absolute_difference": "-145879892.424"
+              },
+              {
+                "field": "trade_count",
+                "reference": "80043",
+                "native": "102809"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "4073.694",
+                "native": "4842.052",
+                "absolute_difference": "-768.358"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "394163942.1346",
+                "native": "468753928.97470",
+                "absolute_difference": "-74589986.8401"
+              }
+            ]
+          },
+          {
+            "open_time_utc": "2025-01-14T15:00:00.000Z",
+            "fields": [
+              {
+                "field": "low",
+                "reference": "96139.20",
+                "native": "96249.00"
+              },
+              {
+                "field": "base_volume",
+                "reference": "1017.376",
+                "native": "394.011",
+                "absolute_difference": "623.365"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "97990039.5221",
+                "native": "37984179.94380",
+                "absolute_difference": "60005859.5783"
+              },
+              {
+                "field": "trade_count",
+                "reference": "27680",
+                "native": "10262"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "581.16",
+                "native": "210.900",
+                "absolute_difference": "370.26"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "55973625.7933",
+                "native": "20331625.08060",
+                "absolute_difference": "35642000.7127"
+              }
+            ]
+          },
+          {
+            "open_time_utc": "2025-01-29T01:35:00.000Z",
+            "fields": [
+              {
+                "field": "open",
+                "reference": "101422.20",
+                "native": "101520.00"
+              },
+              {
+                "field": "base_volume",
+                "reference": "193.915",
+                "native": "445.960",
+                "absolute_difference": "-252.045"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "19690013.7795",
+                "native": "45268639.93620",
+                "absolute_difference": "-25578626.1567"
+              },
+              {
+                "field": "trade_count",
+                "reference": "5012",
+                "native": "8605"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "109.591",
+                "native": "135.526",
+                "absolute_difference": "-25.935"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "11128853.5947",
+                "native": "13760607.95390",
+                "absolute_difference": "-2631754.3592"
+              }
+            ]
+          }
+        ],
+        "first_mismatch": {
+          "open_time_utc": "2025-01-14T13:30:00.000Z",
+          "fields": [
+            {
+              "field": "high",
+              "reference": "97219.80",
+              "native": "97250.00"
+            },
+            {
+              "field": "base_volume",
+              "reference": "6348.647",
+              "native": "7851.823",
+              "absolute_difference": "-1503.176"
+            },
+            {
+              "field": "quote_volume",
+              "reference": "614424295.1189",
+              "native": "760304187.54290",
+              "absolute_difference": "-145879892.424"
+            },
+            {
+              "field": "trade_count",
+              "reference": "80043",
+              "native": "102809"
+            },
+            {
+              "field": "taker_buy_base_volume",
+              "reference": "4073.694",
+              "native": "4842.052",
+              "absolute_difference": "-768.358"
+            },
+            {
+              "field": "taker_buy_quote_volume",
+              "reference": "394163942.1346",
+              "native": "468753928.97470",
+              "absolute_difference": "-74589986.8401"
+            }
+          ]
+        }
+      },
+      "15m": {
+        "reference_bars": 70080,
+        "native_bars": 70080,
+        "common_bars": 70080,
+        "missing_native_bars": 0,
+        "extra_native_bars": 0,
+        "mismatched_bars": 3,
+        "mismatches_by_field": {
+          "high": 1,
+          "base_volume": 3,
+          "quote_volume": 3,
+          "trade_count": 3,
+          "taker_buy_base_volume": 3,
+          "taker_buy_quote_volume": 3,
+          "low": 1,
+          "open": 1
+        },
+        "mismatch_examples": [
+          {
+            "open_time_utc": "2025-01-14T13:30:00.000Z",
+            "fields": [
+              {
+                "field": "high",
+                "reference": "97219.80",
+                "native": "97250.00"
+              },
+              {
+                "field": "base_volume",
+                "reference": "10589.807",
+                "native": "12092.983",
+                "absolute_difference": "-1503.176"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "1023652022.0714",
+                "native": "1169531914.49540",
+                "absolute_difference": "-145879892.424"
+              },
+              {
+                "field": "trade_count",
+                "reference": "153494",
+                "native": "176260"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "5959.18",
+                "native": "6727.538",
+                "absolute_difference": "-768.358"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "576111030.3399",
+                "native": "650701017.18000",
+                "absolute_difference": "-74589986.8401"
+              }
+            ]
+          },
+          {
+            "open_time_utc": "2025-01-14T15:00:00.000Z",
+            "fields": [
+              {
+                "field": "low",
+                "reference": "96139.20",
+                "native": "96249.00"
+              },
+              {
+                "field": "base_volume",
+                "reference": "3324.817",
+                "native": "2701.452",
+                "absolute_difference": "623.365"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "321014545.5847",
+                "native": "261008686.00640",
+                "absolute_difference": "60005859.5783"
+              },
+              {
+                "field": "trade_count",
+                "reference": "75469",
+                "native": "58051"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "1822.517",
+                "native": "1452.257",
+                "absolute_difference": "370.26"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "175952071.8598",
+                "native": "140310071.14710",
+                "absolute_difference": "35642000.7127"
+              }
+            ]
+          },
+          {
+            "open_time_utc": "2025-01-29T01:30:00.000Z",
+            "fields": [
+              {
+                "field": "open",
+                "reference": "101422.20",
+                "native": "101627.40"
+              },
+              {
+                "field": "base_volume",
+                "reference": "314.357",
+                "native": "836.779",
+                "absolute_difference": "-522.422"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "31934662.0863",
+                "native": "84976142.18930",
+                "absolute_difference": "-53041480.103"
+              },
+              {
+                "field": "trade_count",
+                "reference": "9344",
+                "native": "18918"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "171.123",
+                "native": "294.061",
+                "absolute_difference": "-122.938"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "17384466.4289",
+                "native": "29870556.35370",
+                "absolute_difference": "-12486089.9248"
+              }
+            ]
+          }
+        ],
+        "first_mismatch": {
+          "open_time_utc": "2025-01-14T13:30:00.000Z",
+          "fields": [
+            {
+              "field": "high",
+              "reference": "97219.80",
+              "native": "97250.00"
+            },
+            {
+              "field": "base_volume",
+              "reference": "10589.807",
+              "native": "12092.983",
+              "absolute_difference": "-1503.176"
+            },
+            {
+              "field": "quote_volume",
+              "reference": "1023652022.0714",
+              "native": "1169531914.49540",
+              "absolute_difference": "-145879892.424"
+            },
+            {
+              "field": "trade_count",
+              "reference": "153494",
+              "native": "176260"
+            },
+            {
+              "field": "taker_buy_base_volume",
+              "reference": "5959.18",
+              "native": "6727.538",
+              "absolute_difference": "-768.358"
+            },
+            {
+              "field": "taker_buy_quote_volume",
+              "reference": "576111030.3399",
+              "native": "650701017.18000",
+              "absolute_difference": "-74589986.8401"
+            }
+          ]
+        }
+      },
+      "1h": {
+        "reference_bars": 17520,
+        "native_bars": 17520,
+        "common_bars": 17520,
+        "missing_native_bars": 0,
+        "extra_native_bars": 0,
+        "mismatched_bars": 4,
+        "mismatches_by_field": {
+          "high": 1,
+          "base_volume": 4,
+          "quote_volume": 4,
+          "trade_count": 4,
+          "taker_buy_base_volume": 4,
+          "taker_buy_quote_volume": 4,
+          "low": 1
+        },
+        "mismatch_examples": [
+          {
+            "open_time_utc": "2025-01-14T13:00:00.000Z",
+            "fields": [
+              {
+                "field": "high",
+                "reference": "97219.80",
+                "native": "97250.00"
+              },
+              {
+                "field": "base_volume",
+                "reference": "18324.669",
+                "native": "19827.845",
+                "absolute_difference": "-1503.176"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "1767279414.0594",
+                "native": "1913159306.48340",
+                "absolute_difference": "-145879892.424"
+              },
+              {
+                "field": "trade_count",
+                "reference": "302842",
+                "native": "325608"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "9810.698",
+                "native": "10579.056",
+                "absolute_difference": "-768.358"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "946463312.3564",
+                "native": "1021053299.19650",
+                "absolute_difference": "-74589986.8401"
+              }
+            ]
+          },
+          {
+            "open_time_utc": "2025-01-14T15:00:00.000Z",
+            "fields": [
+              {
+                "field": "low",
+                "reference": "96139.20",
+                "native": "96249.00"
+              },
+              {
+                "field": "base_volume",
+                "reference": "11916.819",
+                "native": "11293.454",
+                "absolute_difference": "623.365"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "1150885263.9074",
+                "native": "1090879404.32910",
+                "absolute_difference": "60005859.5783"
+              },
+              {
+                "field": "trade_count",
+                "reference": "261302",
+                "native": "243884"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "5953.601",
+                "native": "5583.341",
+                "absolute_difference": "370.26"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "574977397.0981",
+                "native": "539335396.38540",
+                "absolute_difference": "35642000.7127"
+              }
+            ]
+          },
+          {
+            "open_time_utc": "2025-01-29T01:00:00.000Z",
+            "fields": [
+              {
+                "field": "base_volume",
+                "reference": "2744.621",
+                "native": "3718.573",
+                "absolute_difference": "-973.952"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "279337110.107",
+                "native": "378272412.27550",
+                "absolute_difference": "-98935302.1685"
+              },
+              {
+                "field": "trade_count",
+                "reference": "74566",
+                "native": "94041"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "1662.918",
+                "native": "1957.401",
+                "absolute_difference": "-294.483"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "169254372.8168",
+                "native": "199172874.51050",
+                "absolute_difference": "-29918501.6937"
+              }
+            ]
+          },
+          {
+            "open_time_utc": "2025-01-29T02:00:00.000Z",
+            "fields": [
+              {
+                "field": "base_volume",
+                "reference": "3606.955",
+                "native": "3752.320",
+                "absolute_difference": "-145.365"
+              },
+              {
+                "field": "quote_volume",
+                "reference": "367700579.6213",
+                "native": "382495362.71230",
+                "absolute_difference": "-14794783.091"
+              },
+              {
+                "field": "trade_count",
+                "reference": "87123",
+                "native": "90435"
+              },
+              {
+                "field": "taker_buy_base_volume",
+                "reference": "1792.458",
+                "native": "1820.057",
+                "absolute_difference": "-27.599"
+              },
+              {
+                "field": "taker_buy_quote_volume",
+                "reference": "182805594.0375",
+                "native": "185613971.40080",
+                "absolute_difference": "-2808377.3633"
+              }
+            ]
+          }
+        ],
+        "first_mismatch": {
+          "open_time_utc": "2025-01-14T13:00:00.000Z",
+          "fields": [
+            {
+              "field": "high",
+              "reference": "97219.80",
+              "native": "97250.00"
+            },
+            {
+              "field": "base_volume",
+              "reference": "18324.669",
+              "native": "19827.845",
+              "absolute_difference": "-1503.176"
+            },
+            {
+              "field": "quote_volume",
+              "reference": "1767279414.0594",
+              "native": "1913159306.48340",
+              "absolute_difference": "-145879892.424"
+            },
+            {
+              "field": "trade_count",
+              "reference": "302842",
+              "native": "325608"
+            },
+            {
+              "field": "taker_buy_base_volume",
+              "reference": "9810.698",
+              "native": "10579.056",
+              "absolute_difference": "-768.358"
+            },
+            {
+              "field": "taker_buy_quote_volume",
+              "reference": "946463312.3564",
+              "native": "1021053299.19650",
+              "absolute_difference": "-74589986.8401"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "accounting_validation": {
+    "frozen_inputs_hash_checked": true,
+    "inputs": [
+      {
+        "name": "rule_source",
+        "path": "indie/btc_pullback_strategy.indie",
+        "sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+        "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+      },
+      {
+        "name": "indicator_source",
+        "path": "indie/btc_pullback_indicator.indie",
+        "sha256": "7a6bb98817cc7be4c643b09516a7a14e56e668bdd48764b3d8512378aaa3fb58",
+        "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+      },
+      {
+        "name": "rule_spec",
+        "path": "research/specs/baseline.json",
+        "sha256": "aafe01c9116d5648a6dce9d6c72a6236d0878d428a928f503bdda870795f25dd",
+        "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+      },
+      {
+        "name": "history_audit",
+        "path": "research/reports/btc_history_coverage.json",
+        "sha256": "3fe690f677d544c7c42850e5e0c364d17c8681a48f987fbd9a0f8a8d55d39c94",
+        "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+      },
+      {
+        "name": "archive_manifest",
+        "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+        "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418",
+        "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+      },
+      {
+        "name": "execution_5m",
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_5m_resampled.csv",
+        "sha256": "771c06242a587de639b880f7f32591ad132669e0e050a81df597129559589314",
+        "hash_method": "raw bytes"
+      },
+      {
+        "name": "execution_15m",
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_15m_resampled.csv",
+        "sha256": "8dd5cf61a54ae0d9be1450ddec6f2ef5cb9346af00c4d2d3108038f882c8352c",
+        "hash_method": "raw bytes"
+      },
+      {
+        "name": "trade_path_1m",
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+        "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1",
+        "hash_method": "raw bytes"
+      },
+      {
+        "name": "mark_path_1m",
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv",
+        "sha256": "2f9c12c66b7b12aaeb99ad0c381661e87e723f86a8a46697db4d3c4097939457",
+        "hash_method": "raw bytes"
+      },
+      {
+        "name": "funding_events",
+        "path": "research/data/btcusdt_2024-10_2026-09/derived/funding_events.csv",
+        "sha256": "74d971baac1411a7b46d39ffe80a0020a30982ae1e26fdd82886ea310cc0e1b6",
+        "hash_method": "raw bytes"
+      }
+    ],
+    "candidates_all_dispositioned": true,
+    "model_orders_all_have_one_per_scenario_fill_disposition": true,
+    "closed_fill_pnl_identity_checked": true,
+    "position_open_at_end_preserved": false,
+    "artifact_rows": {
+      "candidates": 6551,
+      "orders": 6551,
+      "fills": 956,
+      "costs": 1912,
+      "daily_equity": 5840
+    },
+    "profile_summaries": [
+      {
+        "profile": "5m/15m",
+        "eligible_days": 725,
+        "signals": 5068,
+        "assumed_orders": 103,
+        "resets": 6,
+        "conflict_counts": {
+          "execution": 3,
+          "higher": 3
+        }
+      },
+      {
+        "profile": "15m/60m",
+        "eligible_days": 701,
+        "signals": 1483,
+        "assumed_orders": 136,
+        "resets": 7,
+        "conflict_counts": {
+          "execution": 3,
+          "higher": 4
+        }
+      }
+    ],
+    "scenario_summaries": [
+      {
+        "profile": "5m/15m",
+        "scenario": "fee_only_10bp",
+        "signals": 5068,
+        "risk_pass_signals": 120,
+        "modeled_orders": 103,
+        "modeled_fills": 103,
+        "observed_fills": 0,
+        "order_blockers": {
+          "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 103,
+          "RISK_REJECT:COST_TO_R_OVER_CAP": 4152,
+          "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 796,
+          "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 17
+        },
+        "closed_modeled_fills": 103,
+        "open_at_data_end": 0,
+        "eligible_days": 725,
+        "net_expectancy_usdt_per_closed_fill": -1.98516635,
+        "net_expectancy_initial_R": -0.09137598,
+        "net_R_per_eligible_day": -0.01298169,
+        "total_net_closed_pnl_usdt": -204.47213366,
+        "profit_factor_net": 0.85574187,
+        "closed_trade_win_rate": 0.40776699,
+        "open_equity_max_drawdown_usdt": 332.75846849,
+        "open_equity_max_drawdown_pct": 3.30348561,
+        "final_cash_usdt": 9795.5278664,
+        "open_position_marked_net_pnl_usdt": [],
+        "holding_minutes": {
+          "mean": 127.7864,
+          "median": 52,
+          "p90": 304.59999999999997,
+          "max": 1057
+        },
+        "positive_net_pnl_top5_day_share": 0.37729165,
+        "net_pnl_excluding_top5_winning_days_usdt": -504.67887449,
+        "top5_winning_days": [
+          {
+            "date_utc": "2026-02-05",
+            "net_pnl_usdt": 95.13511856
+          },
+          {
+            "date_utc": "2025-02-03",
+            "net_pnl_usdt": 87.49860779
+          },
+          {
+            "date_utc": "2026-02-24",
+            "net_pnl_usdt": 55.78104794
+          },
+          {
+            "date_utc": "2025-01-23",
+            "net_pnl_usdt": 32.00361669
+          },
+          {
+            "date_utc": "2025-04-08",
+            "net_pnl_usdt": 29.78834986
+          }
+        ],
+        "by_side_and_regime": {
+          "SHORT/HTF_BEAR_BIAS": {
+            "trades": 78,
+            "net_pnl_usdt": -198.03197803,
+            "net_R": -8.99655985,
+            "wins": 31,
+            "win_rate": 0.3974359
+          },
+          "LONG/HTF_BULL_BIAS": {
+            "trades": 25,
+            "net_pnl_usdt": -6.44015563,
+            "net_R": -0.41516644,
+            "wins": 11,
+            "win_rate": 0.44
+          }
+        },
+        "by_utc_month": {
+          "2024-10": {
+            "trades": 3,
+            "net_pnl_usdt": -18.2711422,
+            "net_R": -0.85624442
+          },
+          "2024-11": {
+            "trades": 6,
+            "net_pnl_usdt": -89.15137303,
+            "net_R": -4.19566363
+          },
+          "2024-12": {
+            "trades": 10,
+            "net_pnl_usdt": 25.96211277,
+            "net_R": 1.27549713
+          },
+          "2025-01": {
+            "trades": 6,
+            "net_pnl_usdt": 21.07773274,
+            "net_R": 0.87079608
+          },
+          "2025-02": {
+            "trades": 9,
+            "net_pnl_usdt": 52.34437896,
+            "net_R": 2.59008433
+          },
+          "2025-03": {
+            "trades": 13,
+            "net_pnl_usdt": 11.10687462,
+            "net_R": 0.6138496
+          },
+          "2025-04": {
+            "trades": 8,
+            "net_pnl_usdt": -28.15677958,
+            "net_R": -1.3585319
+          },
+          "2025-10": {
+            "trades": 5,
+            "net_pnl_usdt": -63.49768698,
+            "net_R": -3.04383521
+          },
+          "2025-11": {
+            "trades": 5,
+            "net_pnl_usdt": -11.76000475,
+            "net_R": -0.62745264
+          },
+          "2025-12": {
+            "trades": 4,
+            "net_pnl_usdt": -93.44434278,
+            "net_R": -4.47770206
+          },
+          "2026-01": {
+            "trades": 1,
+            "net_pnl_usdt": -23.3485401,
+            "net_R": -1.10765786
+          },
+          "2026-02": {
+            "trades": 18,
+            "net_pnl_usdt": 101.25361834,
+            "net_R": 5.1261946
+          },
+          "2026-03": {
+            "trades": 4,
+            "net_pnl_usdt": 11.80042106,
+            "net_R": 0.51759674
+          },
+          "2026-06": {
+            "trades": 9,
+            "net_pnl_usdt": -54.39679869,
+            "net_R": -2.5373123
+          },
+          "2026-07": {
+            "trades": 1,
+            "net_pnl_usdt": -22.89901881,
+            "net_R": -1.09755498
+          },
+          "2026-08": {
+            "trades": 1,
+            "net_pnl_usdt": -23.09158523,
+            "net_R": -1.10378977
+          }
+        },
+        "confidence": {
+          "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+          "closed_fill_count": 103,
+          "eligible_daily_observations": 725,
+          "block_days": 7,
+          "replicates": 5000,
+          "mean_daily_net_R_ci95": [
+            -0.03844914,
+            0.01378429
+          ]
+        },
+        "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+      },
+      {
+        "profile": "5m/15m",
+        "scenario": "base_15bp",
+        "signals": 5068,
+        "risk_pass_signals": 120,
+        "modeled_orders": 103,
+        "modeled_fills": 103,
+        "observed_fills": 0,
+        "order_blockers": {
+          "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 103,
+          "RISK_REJECT:COST_TO_R_OVER_CAP": 4152,
+          "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 796,
+          "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 17
+        },
+        "closed_modeled_fills": 103,
+        "open_at_data_end": 0,
+        "eligible_days": 725,
+        "net_expectancy_usdt_per_closed_fill": -3.14137235,
+        "net_expectancy_initial_R": -0.1469077,
+        "net_R_per_eligible_day": -0.02087103,
+        "total_net_closed_pnl_usdt": -323.56135244,
+        "profit_factor_net": 0.78246172,
+        "closed_trade_win_rate": 0.40776699,
+        "open_equity_max_drawdown_usdt": 378.2873903,
+        "open_equity_max_drawdown_pct": 3.77184789,
+        "final_cash_usdt": 9676.43864757,
+        "open_position_marked_net_pnl_usdt": [],
+        "holding_minutes": {
+          "mean": 127.7864,
+          "median": 52,
+          "p90": 304.59999999999997,
+          "max": 1057
+        },
+        "positive_net_pnl_top5_day_share": 0.39106748,
+        "net_pnl_excluding_top5_winning_days_usdt": -611.49513169,
+        "top5_winning_days": [
+          {
+            "date_utc": "2026-02-05",
+            "net_pnl_usdt": 90.5858032
+          },
+          {
+            "date_utc": "2025-02-03",
+            "net_pnl_usdt": 84.09548679
+          },
+          {
+            "date_utc": "2026-02-24",
+            "net_pnl_usdt": 53.21415995
+          },
+          {
+            "date_utc": "2025-01-23",
+            "net_pnl_usdt": 31.26654692
+          },
+          {
+            "date_utc": "2025-03-11",
+            "net_pnl_usdt": 28.77178239
+          }
+        ],
+        "by_side_and_regime": {
+          "SHORT/HTF_BEAR_BIAS": {
+            "trades": 78,
+            "net_pnl_usdt": -287.27979091,
+            "net_R": -13.27872501,
+            "wins": 31,
+            "win_rate": 0.3974359
+          },
+          "LONG/HTF_BULL_BIAS": {
+            "trades": 25,
+            "net_pnl_usdt": -36.28156153,
+            "net_R": -1.8527682,
+            "wins": 11,
+            "win_rate": 0.44
+          }
+        },
+        "by_utc_month": {
+          "2024-10": {
+            "trades": 3,
+            "net_pnl_usdt": -22.05520008,
+            "net_R": -1.03703789
+          },
+          "2024-11": {
+            "trades": 6,
+            "net_pnl_usdt": -96.44075429,
+            "net_R": -4.54349544
+          },
+          "2024-12": {
+            "trades": 10,
+            "net_pnl_usdt": 13.36025665,
+            "net_R": 0.66325312
+          },
+          "2025-01": {
+            "trades": 6,
+            "net_pnl_usdt": 14.53036485,
+            "net_R": 0.55379349
+          },
+          "2025-02": {
+            "trades": 9,
+            "net_pnl_usdt": 42.6041849,
+            "net_R": 2.13091081
+          },
+          "2025-03": {
+            "trades": 13,
+            "net_pnl_usdt": -3.53766245,
+            "net_R": -0.08106282
+          },
+          "2025-04": {
+            "trades": 8,
+            "net_pnl_usdt": -37.39032037,
+            "net_R": -1.79665896
+          },
+          "2025-10": {
+            "trades": 5,
+            "net_pnl_usdt": -69.07480812,
+            "net_R": -3.31557158
+          },
+          "2025-11": {
+            "trades": 5,
+            "net_pnl_usdt": -18.20531657,
+            "net_R": -0.94117896
+          },
+          "2025-12": {
+            "trades": 4,
+            "net_pnl_usdt": -98.29647935,
+            "net_R": -4.71045862
+          },
+          "2026-01": {
+            "trades": 1,
+            "net_pnl_usdt": -24.48321082,
+            "net_R": -1.16148679
+          },
+          "2026-02": {
+            "trades": 18,
+            "net_pnl_usdt": 81.94375387,
+            "net_R": 4.1963204
+          },
+          "2026-03": {
+            "trades": 4,
+            "net_pnl_usdt": 6.77935747,
+            "net_R": 0.2753227
+          },
+          "2026-06": {
+            "trades": 9,
+            "net_pnl_usdt": -65.10309384,
+            "net_R": -3.057405
+          },
+          "2026-07": {
+            "trades": 1,
+            "net_pnl_usdt": -24.0151838,
+            "net_R": -1.15105301
+          },
+          "2026-08": {
+            "trades": 1,
+            "net_pnl_usdt": -24.17724049,
+            "net_R": -1.15568466
+          }
+        },
+        "confidence": {
+          "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+          "closed_fill_count": 103,
+          "eligible_daily_observations": 725,
+          "block_days": 7,
+          "replicates": 5000,
+          "mean_daily_net_R_ci95": [
+            -0.04711206,
+            0.00593875
+          ]
+        },
+        "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+      },
+      {
+        "profile": "5m/15m",
+        "scenario": "stress_1_5x_17_5bp",
+        "signals": 5068,
+        "risk_pass_signals": 120,
+        "modeled_orders": 103,
+        "modeled_fills": 103,
+        "observed_fills": 0,
+        "order_blockers": {
+          "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 103,
+          "RISK_REJECT:COST_TO_R_OVER_CAP": 4152,
+          "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 796,
+          "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 17
+        },
+        "closed_modeled_fills": 103,
+        "open_at_data_end": 0,
+        "eligible_days": 725,
+        "net_expectancy_usdt_per_closed_fill": -3.71947536,
+        "net_expectancy_initial_R": -0.17467356,
+        "net_R_per_eligible_day": -0.02481569,
+        "total_net_closed_pnl_usdt": -383.1059618,
+        "profit_factor_net": 0.74834776,
+        "closed_trade_win_rate": 0.40776699,
+        "open_equity_max_drawdown_usdt": 406.68841565,
+        "open_equity_max_drawdown_pct": 4.06160004,
+        "final_cash_usdt": 9616.89403816,
+        "open_position_marked_net_pnl_usdt": [],
+        "holding_minutes": {
+          "mean": 127.7864,
+          "median": 52,
+          "p90": 304.59999999999997,
+          "max": 1057
+        },
+        "positive_net_pnl_top5_day_share": 0.3988425,
+        "net_pnl_excluding_top5_winning_days_usdt": -664.91622297,
+        "top5_winning_days": [
+          {
+            "date_utc": "2026-02-05",
+            "net_pnl_usdt": 88.31114553
+          },
+          {
+            "date_utc": "2025-02-03",
+            "net_pnl_usdt": 82.39392629
+          },
+          {
+            "date_utc": "2026-02-24",
+            "net_pnl_usdt": 51.93071595
+          },
+          {
+            "date_utc": "2025-01-23",
+            "net_pnl_usdt": 30.89801203
+          },
+          {
+            "date_utc": "2025-03-11",
+            "net_pnl_usdt": 28.27646138
+          }
+        ],
+        "by_side_and_regime": {
+          "SHORT/HTF_BEAR_BIAS": {
+            "trades": 78,
+            "net_pnl_usdt": -331.90369732,
+            "net_R": -15.41980761,
+            "wins": 31,
+            "win_rate": 0.3974359
+          },
+          "LONG/HTF_BULL_BIAS": {
+            "trades": 25,
+            "net_pnl_usdt": -51.20226448,
+            "net_R": -2.57156909,
+            "wins": 11,
+            "win_rate": 0.44
+          }
+        },
+        "by_utc_month": {
+          "2024-10": {
+            "trades": 3,
+            "net_pnl_usdt": -23.94722902,
+            "net_R": -1.12743462
+          },
+          "2024-11": {
+            "trades": 6,
+            "net_pnl_usdt": -100.0854449,
+            "net_R": -4.71741136
+          },
+          "2024-12": {
+            "trades": 10,
+            "net_pnl_usdt": 7.05932857,
+            "net_R": 0.35713115
+          },
+          "2025-01": {
+            "trades": 6,
+            "net_pnl_usdt": 11.2566809,
+            "net_R": 0.3952922
+          },
+          "2025-02": {
+            "trades": 9,
+            "net_pnl_usdt": 37.73408787,
+            "net_R": 1.90132405
+          },
+          "2025-03": {
+            "trades": 13,
+            "net_pnl_usdt": -10.85993099,
+            "net_R": -0.42851904
+          },
+          "2025-04": {
+            "trades": 8,
+            "net_pnl_usdt": -42.00709075,
+            "net_R": -2.01572248
+          },
+          "2025-10": {
+            "trades": 5,
+            "net_pnl_usdt": -71.86336867,
+            "net_R": -3.45143977
+          },
+          "2025-11": {
+            "trades": 5,
+            "net_pnl_usdt": -21.42797247,
+            "net_R": -1.09804213
+          },
+          "2025-12": {
+            "trades": 4,
+            "net_pnl_usdt": -100.72254764,
+            "net_R": -4.82683691
+          },
+          "2026-01": {
+            "trades": 1,
+            "net_pnl_usdt": -25.05054618,
+            "net_R": -1.18840126
+          },
+          "2026-02": {
+            "trades": 18,
+            "net_pnl_usdt": 72.28882164,
+            "net_R": 3.73138328
+          },
+          "2026-03": {
+            "trades": 4,
+            "net_pnl_usdt": 4.26882568,
+            "net_R": 0.15418568
+          },
+          "2026-06": {
+            "trades": 9,
+            "net_pnl_usdt": -70.45624142,
+            "net_R": -3.31745136
+          },
+          "2026-07": {
+            "trades": 1,
+            "net_pnl_usdt": -24.57326629,
+            "net_R": -1.17780203
+          },
+          "2026-08": {
+            "trades": 1,
+            "net_pnl_usdt": -24.72006813,
+            "net_R": -1.1816321
+          }
+        },
+        "confidence": {
+          "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+          "closed_fill_count": 103,
+          "eligible_daily_observations": 725,
+          "block_days": 7,
+          "replicates": 5000,
+          "mean_daily_net_R_ci95": [
+            -0.05088647,
+            0.00238424
+          ]
+        },
+        "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+      },
+      {
+        "profile": "5m/15m",
+        "scenario": "stress_2x_20bp",
+        "signals": 5068,
+        "risk_pass_signals": 120,
+        "modeled_orders": 103,
+        "modeled_fills": 103,
+        "observed_fills": 0,
+        "order_blockers": {
+          "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 103,
+          "RISK_REJECT:COST_TO_R_OVER_CAP": 4152,
+          "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 796,
+          "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 17
+        },
+        "closed_modeled_fills": 103,
+        "open_at_data_end": 0,
+        "eligible_days": 725,
+        "net_expectancy_usdt_per_closed_fill": -4.29757836,
+        "net_expectancy_initial_R": -0.20243942,
+        "net_R_per_eligible_day": -0.02876036,
+        "total_net_closed_pnl_usdt": -442.65057125,
+        "profit_factor_net": 0.71576656,
+        "closed_trade_win_rate": 0.40776699,
+        "open_equity_max_drawdown_usdt": 453.76384674,
+        "open_equity_max_drawdown_pct": 4.53260126,
+        "final_cash_usdt": 9557.34942874,
+        "open_position_marked_net_pnl_usdt": [],
+        "holding_minutes": {
+          "mean": 127.7864,
+          "median": 52,
+          "p90": 304.59999999999997,
+          "max": 1057
+        },
+        "positive_net_pnl_top5_day_share": 0.40705238,
+        "net_pnl_excluding_top5_winning_days_usdt": -718.33731435,
+        "top5_winning_days": [
+          {
+            "date_utc": "2026-02-05",
+            "net_pnl_usdt": 86.03648785
+          },
+          {
+            "date_utc": "2025-02-03",
+            "net_pnl_usdt": 80.69236579
+          },
+          {
+            "date_utc": "2026-02-24",
+            "net_pnl_usdt": 50.64727195
+          },
+          {
+            "date_utc": "2025-01-23",
+            "net_pnl_usdt": 30.52947715
+          },
+          {
+            "date_utc": "2025-03-11",
+            "net_pnl_usdt": 27.78114036
+          }
+        ],
+        "by_side_and_regime": {
+          "SHORT/HTF_BEAR_BIAS": {
+            "trades": 78,
+            "net_pnl_usdt": -376.52760381,
+            "net_R": -17.56089023,
+            "wins": 31,
+            "win_rate": 0.3974359
+          },
+          "LONG/HTF_BULL_BIAS": {
+            "trades": 25,
+            "net_pnl_usdt": -66.12296744,
+            "net_R": -3.29036997,
+            "wins": 11,
+            "win_rate": 0.44
+          }
+        },
+        "by_utc_month": {
+          "2024-10": {
+            "trades": 3,
+            "net_pnl_usdt": -25.83925795,
+            "net_R": -1.21783135
+          },
+          "2024-11": {
+            "trades": 6,
+            "net_pnl_usdt": -103.73013555,
+            "net_R": -4.89132726
+          },
+          "2024-12": {
+            "trades": 10,
+            "net_pnl_usdt": 0.75840047,
+            "net_R": 0.05100916
+          },
+          "2025-01": {
+            "trades": 6,
+            "net_pnl_usdt": 7.98299695,
+            "net_R": 0.23679089
+          },
+          "2025-02": {
+            "trades": 9,
+            "net_pnl_usdt": 32.86399084,
+            "net_R": 1.67173729
+          },
+          "2025-03": {
+            "trades": 13,
+            "net_pnl_usdt": -18.18219952,
+            "net_R": -0.77597526
+          },
+          "2025-04": {
+            "trades": 8,
+            "net_pnl_usdt": -46.62386115,
+            "net_R": -2.23478603
+          },
+          "2025-10": {
+            "trades": 5,
+            "net_pnl_usdt": -74.65192923,
+            "net_R": -3.58730797
+          },
+          "2025-11": {
+            "trades": 5,
+            "net_pnl_usdt": -24.65062839,
+            "net_R": -1.25490528
+          },
+          "2025-12": {
+            "trades": 4,
+            "net_pnl_usdt": -103.14861593,
+            "net_R": -4.94321519
+          },
+          "2026-01": {
+            "trades": 1,
+            "net_pnl_usdt": -25.61788154,
+            "net_R": -1.21531572
+          },
+          "2026-02": {
+            "trades": 18,
+            "net_pnl_usdt": 62.63388942,
+            "net_R": 3.26644618
+          },
+          "2026-03": {
+            "trades": 4,
+            "net_pnl_usdt": 1.75829388,
+            "net_R": 0.03304866
+          },
+          "2026-06": {
+            "trades": 9,
+            "net_pnl_usdt": -75.80938901,
+            "net_R": -3.57749773
+          },
+          "2026-07": {
+            "trades": 1,
+            "net_pnl_usdt": -25.13134878,
+            "net_R": -1.20455105
+          },
+          "2026-08": {
+            "trades": 1,
+            "net_pnl_usdt": -25.26289576,
+            "net_R": -1.20757954
+          }
+        },
+        "confidence": {
+          "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+          "closed_fill_count": 103,
+          "eligible_daily_observations": 725,
+          "block_days": 7,
+          "replicates": 5000,
+          "mean_daily_net_R_ci95": [
+            -0.05677612,
+            -0.00180837
+          ]
+        },
+        "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+      },
+      {
+        "profile": "15m/60m",
+        "scenario": "fee_only_10bp",
+        "signals": 1483,
+        "risk_pass_signals": 171,
+        "modeled_orders": 136,
+        "modeled_fills": 136,
+        "observed_fills": 0,
+        "order_blockers": {
+          "RISK_REJECT:COST_TO_R_OVER_CAP": 1085,
+          "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 227,
+          "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 136,
+          "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 33,
+          "BLOCKED_EXIT_COOLDOWN": 2
+        },
+        "closed_modeled_fills": 136,
+        "open_at_data_end": 0,
+        "eligible_days": 701,
+        "net_expectancy_usdt_per_closed_fill": -2.6154401,
+        "net_expectancy_initial_R": -0.1281818,
+        "net_R_per_eligible_day": -0.02486837,
+        "total_net_closed_pnl_usdt": -355.69985342,
+        "profit_factor_net": 0.81463849,
+        "closed_trade_win_rate": 0.38970588,
+        "open_equity_max_drawdown_usdt": 419.22971385,
+        "open_equity_max_drawdown_pct": 4.17191761,
+        "final_cash_usdt": 9644.3001466,
+        "open_position_marked_net_pnl_usdt": [],
+        "holding_minutes": {
+          "mean": 300.375,
+          "median": 162.5,
+          "p90": 621,
+          "max": 2668
+        },
+        "positive_net_pnl_top5_day_share": 0.22673616,
+        "net_pnl_excluding_top5_winning_days_usdt": -631.27831082,
+        "top5_winning_days": [
+          {
+            "date_utc": "2026-06-05",
+            "net_pnl_usdt": 90.25881738
+          },
+          {
+            "date_utc": "2026-02-04",
+            "net_pnl_usdt": 58.71997614
+          },
+          {
+            "date_utc": "2025-01-09",
+            "net_pnl_usdt": 56.31154741
+          },
+          {
+            "date_utc": "2025-03-04",
+            "net_pnl_usdt": 36.62154406
+          },
+          {
+            "date_utc": "2026-08-20",
+            "net_pnl_usdt": 33.66657241
+          }
+        ],
+        "by_side_and_regime": {
+          "LONG/HTF_BULL_BIAS": {
+            "trades": 59,
+            "net_pnl_usdt": -163.51101602,
+            "net_R": -7.98896427,
+            "wins": 23,
+            "win_rate": 0.38983051
+          },
+          "SHORT/HTF_BEAR_BIAS": {
+            "trades": 77,
+            "net_pnl_usdt": -192.1888374,
+            "net_R": -9.44375986,
+            "wins": 30,
+            "win_rate": 0.38961039
+          }
+        },
+        "by_utc_month": {
+          "2024-10": {
+            "trades": 4,
+            "net_pnl_usdt": 8.88617289,
+            "net_R": 0.4834058
+          },
+          "2024-11": {
+            "trades": 16,
+            "net_pnl_usdt": -4.65342941,
+            "net_R": -0.31623879
+          },
+          "2024-12": {
+            "trades": 9,
+            "net_pnl_usdt": -49.7593781,
+            "net_R": -2.43766647
+          },
+          "2025-01": {
+            "trades": 6,
+            "net_pnl_usdt": 13.78787833,
+            "net_R": 0.79408971
+          },
+          "2025-02": {
+            "trades": 5,
+            "net_pnl_usdt": -63.05341205,
+            "net_R": -2.88839827
+          },
+          "2025-03": {
+            "trades": 13,
+            "net_pnl_usdt": 17.1917397,
+            "net_R": 0.69790125
+          },
+          "2025-04": {
+            "trades": 8,
+            "net_pnl_usdt": -23.50709904,
+            "net_R": -1.23501343
+          },
+          "2025-05": {
+            "trades": 1,
+            "net_pnl_usdt": 28.11481231,
+            "net_R": 1.37108404
+          },
+          "2025-06": {
+            "trades": 1,
+            "net_pnl_usdt": -22.66665106,
+            "net_R": -1.10203933
+          },
+          "2025-07": {
+            "trades": 2,
+            "net_pnl_usdt": -45.25435486,
+            "net_R": -2.25350465
+          },
+          "2025-08": {
+            "trades": 1,
+            "net_pnl_usdt": 28.43976642,
+            "net_R": 1.40448037
+          },
+          "2025-10": {
+            "trades": 4,
+            "net_pnl_usdt": -91.95383402,
+            "net_R": -4.4182084
+          },
+          "2025-11": {
+            "trades": 11,
+            "net_pnl_usdt": -91.69445011,
+            "net_R": -4.56034779
+          },
+          "2025-12": {
+            "trades": 3,
+            "net_pnl_usdt": -16.29883016,
+            "net_R": -0.8491975
+          },
+          "2026-01": {
+            "trades": 3,
+            "net_pnl_usdt": -15.6060203,
+            "net_R": -0.85100797
+          },
+          "2026-02": {
+            "trades": 15,
+            "net_pnl_usdt": 128.89966891,
+            "net_R": 6.24100346
+          },
+          "2026-03": {
+            "trades": 13,
+            "net_pnl_usdt": -143.73728331,
+            "net_R": -6.92272096
+          },
+          "2026-04": {
+            "trades": 3,
+            "net_pnl_usdt": -16.98839528,
+            "net_R": -0.82441693
+          },
+          "2026-05": {
+            "trades": 1,
+            "net_pnl_usdt": 29.43713385,
+            "net_R": 1.40359477
+          },
+          "2026-06": {
+            "trades": 11,
+            "net_pnl_usdt": 10.0197349,
+            "net_R": 0.4099985
+          },
+          "2026-08": {
+            "trades": 6,
+            "net_pnl_usdt": -35.30362303,
+            "net_R": -1.57952154
+          }
+        },
+        "confidence": {
+          "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+          "closed_fill_count": 136,
+          "eligible_daily_observations": 701,
+          "block_days": 7,
+          "replicates": 5000,
+          "mean_daily_net_R_ci95": [
+            -0.06260193,
+            0.01416906
+          ]
+        },
+        "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+      },
+      {
+        "profile": "15m/60m",
+        "scenario": "base_15bp",
+        "signals": 1483,
+        "risk_pass_signals": 171,
+        "modeled_orders": 136,
+        "modeled_fills": 136,
+        "observed_fills": 0,
+        "order_blockers": {
+          "RISK_REJECT:COST_TO_R_OVER_CAP": 1085,
+          "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 227,
+          "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 136,
+          "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 33,
+          "BLOCKED_EXIT_COOLDOWN": 2
+        },
+        "closed_modeled_fills": 136,
+        "open_at_data_end": 0,
+        "eligible_days": 701,
+        "net_expectancy_usdt_per_closed_fill": -3.67193899,
+        "net_expectancy_initial_R": -0.17883739,
+        "net_R_per_eligible_day": -0.03469599,
+        "total_net_closed_pnl_usdt": -499.38370225,
+        "profit_factor_net": 0.75138777,
+        "closed_trade_win_rate": 0.38970588,
+        "open_equity_max_drawdown_usdt": 531.13150485,
+        "open_equity_max_drawdown_pct": 5.29450615,
+        "final_cash_usdt": 9500.61629764,
+        "open_position_marked_net_pnl_usdt": [],
+        "holding_minutes": {
+          "mean": 300.375,
+          "median": 162.5,
+          "p90": 621,
+          "max": 2668
+        },
+        "positive_net_pnl_top5_day_share": 0.22999242,
+        "net_pnl_excluding_top5_winning_days_usdt": -762.92508515,
+        "top5_winning_days": [
+          {
+            "date_utc": "2026-06-05",
+            "net_pnl_usdt": 87.65660941
+          },
+          {
+            "date_utc": "2026-02-04",
+            "net_pnl_usdt": 56.71640429
+          },
+          {
+            "date_utc": "2025-01-09",
+            "net_pnl_usdt": 53.75711502
+          },
+          {
+            "date_utc": "2025-03-04",
+            "net_pnl_usdt": 34.02522914
+          },
+          {
+            "date_utc": "2025-03-07",
+            "net_pnl_usdt": 31.38602504
+          }
+        ],
+        "by_side_and_regime": {
+          "LONG/HTF_BULL_BIAS": {
+            "trades": 59,
+            "net_pnl_usdt": -228.19411633,
+            "net_R": -11.09559278,
+            "wins": 23,
+            "win_rate": 0.38983051
+          },
+          "SHORT/HTF_BEAR_BIAS": {
+            "trades": 77,
+            "net_pnl_usdt": -271.18958592,
+            "net_R": -13.22629271,
+            "wins": 30,
+            "win_rate": 0.38961039
+          }
+        },
+        "by_utc_month": {
+          "2024-10": {
+            "trades": 4,
+            "net_pnl_usdt": 3.98708581,
+            "net_R": 0.24742036
+          },
+          "2024-11": {
+            "trades": 16,
+            "net_pnl_usdt": -22.62330509,
+            "net_R": -1.16915274
+          },
+          "2024-12": {
+            "trades": 9,
+            "net_pnl_usdt": -59.94976612,
+            "net_R": -2.92073689
+          },
+          "2025-01": {
+            "trades": 6,
+            "net_pnl_usdt": 6.63948441,
+            "net_R": 0.45011647
+          },
+          "2025-02": {
+            "trades": 5,
+            "net_pnl_usdt": -67.32052543,
+            "net_R": -3.08766162
+          },
+          "2025-03": {
+            "trades": 13,
+            "net_pnl_usdt": 3.29937215,
+            "net_R": 0.04094297
+          },
+          "2025-04": {
+            "trades": 8,
+            "net_pnl_usdt": -31.30383079,
+            "net_R": -1.60445042
+          },
+          "2025-05": {
+            "trades": 1,
+            "net_pnl_usdt": 26.89475156,
+            "net_R": 1.31158495
+          },
+          "2025-06": {
+            "trades": 1,
+            "net_pnl_usdt": -23.71601915,
+            "net_R": -1.15305899
+          },
+          "2025-07": {
+            "trades": 2,
+            "net_pnl_usdt": -47.93324258,
+            "net_R": -2.38690873
+          },
+          "2025-08": {
+            "trades": 1,
+            "net_pnl_usdt": 27.36369414,
+            "net_R": 1.3513392
+          },
+          "2025-10": {
+            "trades": 4,
+            "net_pnl_usdt": -96.00551975,
+            "net_R": -4.61496922
+          },
+          "2025-11": {
+            "trades": 11,
+            "net_pnl_usdt": -103.03436149,
+            "net_R": -5.11027114
+          },
+          "2025-12": {
+            "trades": 3,
+            "net_pnl_usdt": -19.79447857,
+            "net_R": -1.02049261
+          },
+          "2026-01": {
+            "trades": 3,
+            "net_pnl_usdt": -19.02614571,
+            "net_R": -1.018862
+          },
+          "2026-02": {
+            "trades": 15,
+            "net_pnl_usdt": 115.52241153,
+            "net_R": 5.60645216
+          },
+          "2026-03": {
+            "trades": 13,
+            "net_pnl_usdt": -158.17280492,
+            "net_R": -7.62312982
+          },
+          "2026-04": {
+            "trades": 3,
+            "net_pnl_usdt": -20.32740781,
+            "net_R": -0.98913807
+          },
+          "2026-05": {
+            "trades": 1,
+            "net_pnl_usdt": 28.38936536,
+            "net_R": 1.35363602
+          },
+          "2026-06": {
+            "trades": 11,
+            "net_pnl_usdt": -1.41101494,
+            "net_R": -0.13806976
+          },
+          "2026-08": {
+            "trades": 6,
+            "net_pnl_usdt": -40.86144486,
+            "net_R": -1.84647561
+          }
+        },
+        "confidence": {
+          "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+          "closed_fill_count": 136,
+          "eligible_daily_observations": 701,
+          "block_days": 7,
+          "replicates": 5000,
+          "mean_daily_net_R_ci95": [
+            -0.07338868,
+            0.00449682
+          ]
+        },
+        "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+      },
+      {
+        "profile": "15m/60m",
+        "scenario": "stress_1_5x_17_5bp",
+        "signals": 1483,
+        "risk_pass_signals": 171,
+        "modeled_orders": 136,
+        "modeled_fills": 136,
+        "observed_fills": 0,
+        "order_blockers": {
+          "RISK_REJECT:COST_TO_R_OVER_CAP": 1085,
+          "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 227,
+          "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 136,
+          "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 33,
+          "BLOCKED_EXIT_COOLDOWN": 2
+        },
+        "closed_modeled_fills": 136,
+        "open_at_data_end": 0,
+        "eligible_days": 701,
+        "net_expectancy_usdt_per_closed_fill": -4.20018843,
+        "net_expectancy_initial_R": -0.20416519,
+        "net_R_per_eligible_day": -0.03960979,
+        "total_net_closed_pnl_usdt": -571.22562681,
+        "profit_factor_net": 0.72183529,
+        "closed_trade_win_rate": 0.38970588,
+        "open_equity_max_drawdown_usdt": 600.52044403,
+        "open_equity_max_drawdown_pct": 5.98766369,
+        "final_cash_usdt": 9428.77437316,
+        "open_position_marked_net_pnl_usdt": [],
+        "holding_minutes": {
+          "mean": 300.375,
+          "median": 162.5,
+          "p90": 621,
+          "max": 2668
+        },
+        "positive_net_pnl_top5_day_share": 0.23248858,
+        "net_pnl_excluding_top5_winning_days_usdt": -829.54310496,
+        "top5_winning_days": [
+          {
+            "date_utc": "2026-06-05",
+            "net_pnl_usdt": 86.35550542
+          },
+          {
+            "date_utc": "2026-02-04",
+            "net_pnl_usdt": 55.71461837
+          },
+          {
+            "date_utc": "2025-01-09",
+            "net_pnl_usdt": 52.47989883
+          },
+          {
+            "date_utc": "2025-03-04",
+            "net_pnl_usdt": 32.72707168
+          },
+          {
+            "date_utc": "2025-03-07",
+            "net_pnl_usdt": 31.04038385
+          }
+        ],
+        "by_side_and_regime": {
+          "LONG/HTF_BULL_BIAS": {
+            "trades": 59,
+            "net_pnl_usdt": -260.53566661,
+            "net_R": -12.64890708,
+            "wins": 23,
+            "win_rate": 0.38983051
+          },
+          "SHORT/HTF_BEAR_BIAS": {
+            "trades": 77,
+            "net_pnl_usdt": -310.6899602,
+            "net_R": -15.11755916,
+            "wins": 30,
+            "win_rate": 0.38961039
+          }
+        },
+        "by_utc_month": {
+          "2024-10": {
+            "trades": 4,
+            "net_pnl_usdt": 1.53754227,
+            "net_R": 0.12942764
+          },
+          "2024-11": {
+            "trades": 16,
+            "net_pnl_usdt": -31.60824297,
+            "net_R": -1.59560973
+          },
+          "2024-12": {
+            "trades": 9,
+            "net_pnl_usdt": -65.0449601,
+            "net_R": -3.16227214
+          },
+          "2025-01": {
+            "trades": 6,
+            "net_pnl_usdt": 3.06528745,
+            "net_R": 0.27812986
+          },
+          "2025-02": {
+            "trades": 5,
+            "net_pnl_usdt": -69.45408214,
+            "net_R": -3.18729328
+          },
+          "2025-03": {
+            "trades": 13,
+            "net_pnl_usdt": -3.64681165,
+            "net_R": -0.28753615
+          },
+          "2025-04": {
+            "trades": 8,
+            "net_pnl_usdt": -35.20219667,
+            "net_R": -1.78916893
+          },
+          "2025-05": {
+            "trades": 1,
+            "net_pnl_usdt": 26.28472118,
+            "net_R": 1.2818354
+          },
+          "2025-06": {
+            "trades": 1,
+            "net_pnl_usdt": -24.24070319,
+            "net_R": -1.17856882
+          },
+          "2025-07": {
+            "trades": 2,
+            "net_pnl_usdt": -49.27268645,
+            "net_R": -2.45361077
+          },
+          "2025-08": {
+            "trades": 1,
+            "net_pnl_usdt": 26.825658,
+            "net_R": 1.32476862
+          },
+          "2025-10": {
+            "trades": 4,
+            "net_pnl_usdt": -98.03136261,
+            "net_R": -4.71334963
+          },
+          "2025-11": {
+            "trades": 11,
+            "net_pnl_usdt": -108.70431715,
+            "net_R": -5.38523281
+          },
+          "2025-12": {
+            "trades": 3,
+            "net_pnl_usdt": -21.54230279,
+            "net_R": -1.10614016
+          },
+          "2026-01": {
+            "trades": 3,
+            "net_pnl_usdt": -20.73620844,
+            "net_R": -1.10278901
+          },
+          "2026-02": {
+            "trades": 15,
+            "net_pnl_usdt": 108.83378284,
+            "net_R": 5.28917648
+          },
+          "2026-03": {
+            "trades": 13,
+            "net_pnl_usdt": -165.39056574,
+            "net_R": -7.97333428
+          },
+          "2026-04": {
+            "trades": 3,
+            "net_pnl_usdt": -21.99691408,
+            "net_R": -1.07149865
+          },
+          "2026-05": {
+            "trades": 1,
+            "net_pnl_usdt": 27.86548111,
+            "net_R": 1.32865665
+          },
+          "2026-06": {
+            "trades": 11,
+            "net_pnl_usdt": -7.12638987,
+            "net_R": -0.41210389
+          },
+          "2026-08": {
+            "trades": 6,
+            "net_pnl_usdt": -43.64035581,
+            "net_R": -1.97995264
+          }
+        },
+        "confidence": {
+          "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+          "closed_fill_count": 136,
+          "eligible_daily_observations": 701,
+          "block_days": 7,
+          "replicates": 5000,
+          "mean_daily_net_R_ci95": [
+            -0.07870318,
+            -0.00025373
+          ]
+        },
+        "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+      },
+      {
+        "profile": "15m/60m",
+        "scenario": "stress_2x_20bp",
+        "signals": 1483,
+        "risk_pass_signals": 171,
+        "modeled_orders": 136,
+        "modeled_fills": 136,
+        "observed_fills": 0,
+        "order_blockers": {
+          "RISK_REJECT:COST_TO_R_OVER_CAP": 1085,
+          "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 227,
+          "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 136,
+          "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 33,
+          "BLOCKED_EXIT_COOLDOWN": 2
+        },
+        "closed_modeled_fills": 136,
+        "open_at_data_end": 0,
+        "eligible_days": 701,
+        "net_expectancy_usdt_per_closed_fill": -4.72843788,
+        "net_expectancy_initial_R": -0.22949299,
+        "net_R_per_eligible_day": -0.0445236,
+        "total_net_closed_pnl_usdt": -643.06755137,
+        "profit_factor_net": 0.69354653,
+        "closed_trade_win_rate": 0.38970588,
+        "open_equity_max_drawdown_usdt": 669.90938321,
+        "open_equity_max_drawdown_pct": 6.68116037,
+        "final_cash_usdt": 9356.93244869,
+        "open_position_marked_net_pnl_usdt": [],
+        "holding_minutes": {
+          "mean": 300.375,
+          "median": 162.5,
+          "p90": 621,
+          "max": 2668
+        },
+        "positive_net_pnl_top5_day_share": 0.23498688,
+        "net_pnl_excluding_top5_winning_days_usdt": -896.16112478,
+        "top5_winning_days": [
+          {
+            "date_utc": "2026-06-05",
+            "net_pnl_usdt": 85.05440144
+          },
+          {
+            "date_utc": "2026-02-04",
+            "net_pnl_usdt": 54.71283245
+          },
+          {
+            "date_utc": "2025-01-09",
+            "net_pnl_usdt": 51.20268263
+          },
+          {
+            "date_utc": "2025-03-04",
+            "net_pnl_usdt": 31.42891422
+          },
+          {
+            "date_utc": "2025-03-07",
+            "net_pnl_usdt": 30.69474267
+          }
+        ],
+        "by_side_and_regime": {
+          "LONG/HTF_BULL_BIAS": {
+            "trades": 59,
+            "net_pnl_usdt": -292.87721684,
+            "net_R": -14.20222133,
+            "wins": 23,
+            "win_rate": 0.38983051
+          },
+          "SHORT/HTF_BEAR_BIAS": {
+            "trades": 77,
+            "net_pnl_usdt": -350.19033453,
+            "net_R": -17.00882559,
+            "wins": 30,
+            "win_rate": 0.38961039
+          }
+        },
+        "by_utc_month": {
+          "2024-10": {
+            "trades": 4,
+            "net_pnl_usdt": -0.91200129,
+            "net_R": 0.01143492
+          },
+          "2024-11": {
+            "trades": 16,
+            "net_pnl_usdt": -40.59318083,
+            "net_R": -2.02206672
+          },
+          "2024-12": {
+            "trades": 9,
+            "net_pnl_usdt": -70.14015412,
+            "net_R": -3.40380735
+          },
+          "2025-01": {
+            "trades": 6,
+            "net_pnl_usdt": -0.50890953,
+            "net_R": 0.10614323
+          },
+          "2025-02": {
+            "trades": 5,
+            "net_pnl_usdt": -71.58763882,
+            "net_R": -3.28692497
+          },
+          "2025-03": {
+            "trades": 13,
+            "net_pnl_usdt": -10.59299544,
+            "net_R": -0.61601523
+          },
+          "2025-04": {
+            "trades": 8,
+            "net_pnl_usdt": -39.10056254,
+            "net_R": -1.97388743
+          },
+          "2025-05": {
+            "trades": 1,
+            "net_pnl_usdt": 25.6746908,
+            "net_R": 1.25208586
+          },
+          "2025-06": {
+            "trades": 1,
+            "net_pnl_usdt": -24.76538724,
+            "net_R": -1.20407865
+          },
+          "2025-07": {
+            "trades": 2,
+            "net_pnl_usdt": -50.61213031,
+            "net_R": -2.52031282
+          },
+          "2025-08": {
+            "trades": 1,
+            "net_pnl_usdt": 26.28762186,
+            "net_R": 1.29819803
+          },
+          "2025-10": {
+            "trades": 4,
+            "net_pnl_usdt": -100.05720547,
+            "net_R": -4.81173003
+          },
+          "2025-11": {
+            "trades": 11,
+            "net_pnl_usdt": -114.37427286,
+            "net_R": -5.6601945
+          },
+          "2025-12": {
+            "trades": 3,
+            "net_pnl_usdt": -23.29012699,
+            "net_R": -1.19178772
+          },
+          "2026-01": {
+            "trades": 3,
+            "net_pnl_usdt": -22.44627114,
+            "net_R": -1.18671604
+          },
+          "2026-02": {
+            "trades": 15,
+            "net_pnl_usdt": 102.14515411,
+            "net_R": 4.97190089
+          },
+          "2026-03": {
+            "trades": 13,
+            "net_pnl_usdt": -172.60832657,
+            "net_R": -8.32353872
+          },
+          "2026-04": {
+            "trades": 3,
+            "net_pnl_usdt": -23.66642035,
+            "net_R": -1.15385923
+          },
+          "2026-05": {
+            "trades": 1,
+            "net_pnl_usdt": 27.34159687,
+            "net_R": 1.30367727
+          },
+          "2026-06": {
+            "trades": 11,
+            "net_pnl_usdt": -12.84176478,
+            "net_R": -0.68613803
+          },
+          "2026-08": {
+            "trades": 6,
+            "net_pnl_usdt": -46.41926673,
+            "net_R": -2.11342968
+          }
+        },
+        "confidence": {
+          "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+          "closed_fill_count": 136,
+          "eligible_daily_observations": 701,
+          "block_days": 7,
+          "replicates": 5000,
+          "mean_daily_net_R_ci95": [
+            -0.08413304,
+            -0.00536233
+          ]
+        },
+        "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+      }
+    ]
+  },
+  "native_reference_reconciliation": {
+    "status": "BLOCKED_FULL_HISTORY_PLATFORM_QUOTA_AND_WINDOW_MISMATCH",
+    "evaluated_local_source_normalized_sha256": "473cc77bee0f8e83b177fe394ece4ea928fb821ef18203910b00a83d197b8e7c",
+    "temporary_ephemeral_script": {
+      "script_id": "99688857-9e31-4a38-8a41-a6f8fa5a2a97",
+      "version": 1,
+      "line_count": 436,
+      "compile_valid": true,
+      "runtime_quick_valid": true,
+      "runtime_quick_bars": 5000
+    },
+    "full_history_requests": [
+      {
+        "profile": "5m/15m",
+        "requested_from_utc": "2024-10-01T00:00:00Z",
+        "requested_to_utc": "2026-10-01T00:00:00Z",
+        "requested_bars": 210241,
+        "plan_maximum_bars": 5060,
+        "status": "DENIED_BY_TAKEPROFIT_PLAN_LIMIT",
+        "request_id": "942ae8cd18f6498e85d8e1d336e39f47"
+      },
+      {
+        "profile": "15m/60m",
+        "requested_from_utc": "2024-10-01T00:00:00Z",
+        "requested_to_utc": "2026-10-01T00:00:00Z",
+        "requested_bars": 70081,
+        "plan_maximum_bars": 5060,
+        "status": "DENIED_BY_TAKEPROFIT_PLAN_LIMIT",
+        "request_id": "a5618b760a9e49fe8395b991c4730dc1"
+      }
+    ],
+    "bounded_requests": [
+      {
+        "profile": "5m/15m",
+        "requested_from_utc": "2026-09-14T00:00:00Z",
+        "requested_to_utc": "2026-10-01T00:00:00Z",
+        "indicator_instance_id": "36d43f4e-9cc1-4776-9f17-23ae3e323466",
+        "last_bar_returned_utc": "2026-10-27T13:10:00Z",
+        "is_history_depth_sufficient": false,
+        "has_more_items_on_left": true,
+        "trades": 0,
+        "realized_pnl_usdt": 0,
+        "total_commissions_usdt": 0,
+        "request_id": "99b187f9bf204b53805e9f4a67c33d2e",
+        "interpretation": "Not a valid common-window reconciliation: returned last bar is after requested end and the history snapshot is incomplete."
+      },
+      {
+        "profile": "15m/60m",
+        "requested_from_utc": "2026-09-14T00:00:00Z",
+        "requested_to_utc": "2026-10-01T00:00:00Z",
+        "indicator_instance_id": "ae94c8e0-b261-45b0-af0a-660fd77208c1",
+        "last_bar_returned_utc": "2026-10-20T14:30:00Z",
+        "is_history_depth_sufficient": false,
+        "has_more_items_on_left": true,
+        "trades": 0,
+        "realized_pnl_usdt": 0,
+        "total_commissions_usdt": 0,
+        "request_id": "f9e855c6f46047418e364b14be6294d7",
+        "interpretation": "Not a valid common-window reconciliation: returned last bar is after requested end and the history snapshot is incomplete."
+      }
+    ],
+    "conclusion": "The local independent engine completed the full 24-month reference replay. TakeProfit's 5,060-bar cap prevents the required native 24-month runs, and the bounded snapshots did not honor the requested scoring end. Native/reference parity and native order/fill reconciliation remain unverified; do not use the zero-trade bounded snapshots as evidence of zero B0 activity or flat profitability."
+  },
+  "user_economics_overlay": {
+    "user_reported_margin_usdt": [
+      5,
+      10
+    ],
+    "user_reported_leverage_x": [
+      20,
+      50
+    ],
+    "implied_linear_notional_usdt": [
+      100,
+      500
+    ],
+    "user_all_in_max_loss_usdt": 1,
+    "user_target_minimum_usdt_exclusive": 5,
+    "b0_target_multiple_R": 1.5,
+    "arithmetic_conclusion": "A fixed 1.5R target cannot gross $5 when all-in planned loss is capped at $1 (at most $1.50 gross before costs); the B0 target/risk geometry does not meet the stated personal dollar target. At the declared 10-20 bp modeled cost, the user-sized net outcome is lower. This is an objective mismatch, not a performance estimate."
+  },
+  "results": [
+    {
+      "profile": "5m/15m",
+      "scenario": "fee_only_10bp",
+      "signals": 5068,
+      "risk_pass_signals": 120,
+      "modeled_orders": 103,
+      "modeled_fills": 103,
+      "observed_fills": 0,
+      "order_blockers": {
+        "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 103,
+        "RISK_REJECT:COST_TO_R_OVER_CAP": 4152,
+        "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 796,
+        "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 17
+      },
+      "closed_modeled_fills": 103,
+      "open_at_data_end": 0,
+      "eligible_days": 725,
+      "net_expectancy_usdt_per_closed_fill": -1.98516635,
+      "net_expectancy_initial_R": -0.09137598,
+      "net_R_per_eligible_day": -0.01298169,
+      "total_net_closed_pnl_usdt": -204.47213366,
+      "profit_factor_net": 0.85574187,
+      "closed_trade_win_rate": 0.40776699,
+      "open_equity_max_drawdown_usdt": 332.75846849,
+      "open_equity_max_drawdown_pct": 3.30348561,
+      "final_cash_usdt": 9795.5278664,
+      "open_position_marked_net_pnl_usdt": [],
+      "holding_minutes": {
+        "mean": 127.7864,
+        "median": 52,
+        "p90": 304.59999999999997,
+        "max": 1057
+      },
+      "positive_net_pnl_top5_day_share": 0.37729165,
+      "net_pnl_excluding_top5_winning_days_usdt": -504.67887449,
+      "top5_winning_days": [
+        {
+          "date_utc": "2026-02-05",
+          "net_pnl_usdt": 95.13511856
+        },
+        {
+          "date_utc": "2025-02-03",
+          "net_pnl_usdt": 87.49860779
+        },
+        {
+          "date_utc": "2026-02-24",
+          "net_pnl_usdt": 55.78104794
+        },
+        {
+          "date_utc": "2025-01-23",
+          "net_pnl_usdt": 32.00361669
+        },
+        {
+          "date_utc": "2025-04-08",
+          "net_pnl_usdt": 29.78834986
+        }
+      ],
+      "by_side_and_regime": {
+        "SHORT/HTF_BEAR_BIAS": {
+          "trades": 78,
+          "net_pnl_usdt": -198.03197803,
+          "net_R": -8.99655985,
+          "wins": 31,
+          "win_rate": 0.3974359
+        },
+        "LONG/HTF_BULL_BIAS": {
+          "trades": 25,
+          "net_pnl_usdt": -6.44015563,
+          "net_R": -0.41516644,
+          "wins": 11,
+          "win_rate": 0.44
+        }
+      },
+      "by_utc_month": {
+        "2024-10": {
+          "trades": 3,
+          "net_pnl_usdt": -18.2711422,
+          "net_R": -0.85624442
+        },
+        "2024-11": {
+          "trades": 6,
+          "net_pnl_usdt": -89.15137303,
+          "net_R": -4.19566363
+        },
+        "2024-12": {
+          "trades": 10,
+          "net_pnl_usdt": 25.96211277,
+          "net_R": 1.27549713
+        },
+        "2025-01": {
+          "trades": 6,
+          "net_pnl_usdt": 21.07773274,
+          "net_R": 0.87079608
+        },
+        "2025-02": {
+          "trades": 9,
+          "net_pnl_usdt": 52.34437896,
+          "net_R": 2.59008433
+        },
+        "2025-03": {
+          "trades": 13,
+          "net_pnl_usdt": 11.10687462,
+          "net_R": 0.6138496
+        },
+        "2025-04": {
+          "trades": 8,
+          "net_pnl_usdt": -28.15677958,
+          "net_R": -1.3585319
+        },
+        "2025-10": {
+          "trades": 5,
+          "net_pnl_usdt": -63.49768698,
+          "net_R": -3.04383521
+        },
+        "2025-11": {
+          "trades": 5,
+          "net_pnl_usdt": -11.76000475,
+          "net_R": -0.62745264
+        },
+        "2025-12": {
+          "trades": 4,
+          "net_pnl_usdt": -93.44434278,
+          "net_R": -4.47770206
+        },
+        "2026-01": {
+          "trades": 1,
+          "net_pnl_usdt": -23.3485401,
+          "net_R": -1.10765786
+        },
+        "2026-02": {
+          "trades": 18,
+          "net_pnl_usdt": 101.25361834,
+          "net_R": 5.1261946
+        },
+        "2026-03": {
+          "trades": 4,
+          "net_pnl_usdt": 11.80042106,
+          "net_R": 0.51759674
+        },
+        "2026-06": {
+          "trades": 9,
+          "net_pnl_usdt": -54.39679869,
+          "net_R": -2.5373123
+        },
+        "2026-07": {
+          "trades": 1,
+          "net_pnl_usdt": -22.89901881,
+          "net_R": -1.09755498
+        },
+        "2026-08": {
+          "trades": 1,
+          "net_pnl_usdt": -23.09158523,
+          "net_R": -1.10378977
+        }
+      },
+      "confidence": {
+        "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+        "closed_fill_count": 103,
+        "eligible_daily_observations": 725,
+        "block_days": 7,
+        "replicates": 5000,
+        "mean_daily_net_R_ci95": [
+          -0.03844914,
+          0.01378429
+        ]
+      },
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "5m/15m",
+      "scenario": "base_15bp",
+      "signals": 5068,
+      "risk_pass_signals": 120,
+      "modeled_orders": 103,
+      "modeled_fills": 103,
+      "observed_fills": 0,
+      "order_blockers": {
+        "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 103,
+        "RISK_REJECT:COST_TO_R_OVER_CAP": 4152,
+        "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 796,
+        "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 17
+      },
+      "closed_modeled_fills": 103,
+      "open_at_data_end": 0,
+      "eligible_days": 725,
+      "net_expectancy_usdt_per_closed_fill": -3.14137235,
+      "net_expectancy_initial_R": -0.1469077,
+      "net_R_per_eligible_day": -0.02087103,
+      "total_net_closed_pnl_usdt": -323.56135244,
+      "profit_factor_net": 0.78246172,
+      "closed_trade_win_rate": 0.40776699,
+      "open_equity_max_drawdown_usdt": 378.2873903,
+      "open_equity_max_drawdown_pct": 3.77184789,
+      "final_cash_usdt": 9676.43864757,
+      "open_position_marked_net_pnl_usdt": [],
+      "holding_minutes": {
+        "mean": 127.7864,
+        "median": 52,
+        "p90": 304.59999999999997,
+        "max": 1057
+      },
+      "positive_net_pnl_top5_day_share": 0.39106748,
+      "net_pnl_excluding_top5_winning_days_usdt": -611.49513169,
+      "top5_winning_days": [
+        {
+          "date_utc": "2026-02-05",
+          "net_pnl_usdt": 90.5858032
+        },
+        {
+          "date_utc": "2025-02-03",
+          "net_pnl_usdt": 84.09548679
+        },
+        {
+          "date_utc": "2026-02-24",
+          "net_pnl_usdt": 53.21415995
+        },
+        {
+          "date_utc": "2025-01-23",
+          "net_pnl_usdt": 31.26654692
+        },
+        {
+          "date_utc": "2025-03-11",
+          "net_pnl_usdt": 28.77178239
+        }
+      ],
+      "by_side_and_regime": {
+        "SHORT/HTF_BEAR_BIAS": {
+          "trades": 78,
+          "net_pnl_usdt": -287.27979091,
+          "net_R": -13.27872501,
+          "wins": 31,
+          "win_rate": 0.3974359
+        },
+        "LONG/HTF_BULL_BIAS": {
+          "trades": 25,
+          "net_pnl_usdt": -36.28156153,
+          "net_R": -1.8527682,
+          "wins": 11,
+          "win_rate": 0.44
+        }
+      },
+      "by_utc_month": {
+        "2024-10": {
+          "trades": 3,
+          "net_pnl_usdt": -22.05520008,
+          "net_R": -1.03703789
+        },
+        "2024-11": {
+          "trades": 6,
+          "net_pnl_usdt": -96.44075429,
+          "net_R": -4.54349544
+        },
+        "2024-12": {
+          "trades": 10,
+          "net_pnl_usdt": 13.36025665,
+          "net_R": 0.66325312
+        },
+        "2025-01": {
+          "trades": 6,
+          "net_pnl_usdt": 14.53036485,
+          "net_R": 0.55379349
+        },
+        "2025-02": {
+          "trades": 9,
+          "net_pnl_usdt": 42.6041849,
+          "net_R": 2.13091081
+        },
+        "2025-03": {
+          "trades": 13,
+          "net_pnl_usdt": -3.53766245,
+          "net_R": -0.08106282
+        },
+        "2025-04": {
+          "trades": 8,
+          "net_pnl_usdt": -37.39032037,
+          "net_R": -1.79665896
+        },
+        "2025-10": {
+          "trades": 5,
+          "net_pnl_usdt": -69.07480812,
+          "net_R": -3.31557158
+        },
+        "2025-11": {
+          "trades": 5,
+          "net_pnl_usdt": -18.20531657,
+          "net_R": -0.94117896
+        },
+        "2025-12": {
+          "trades": 4,
+          "net_pnl_usdt": -98.29647935,
+          "net_R": -4.71045862
+        },
+        "2026-01": {
+          "trades": 1,
+          "net_pnl_usdt": -24.48321082,
+          "net_R": -1.16148679
+        },
+        "2026-02": {
+          "trades": 18,
+          "net_pnl_usdt": 81.94375387,
+          "net_R": 4.1963204
+        },
+        "2026-03": {
+          "trades": 4,
+          "net_pnl_usdt": 6.77935747,
+          "net_R": 0.2753227
+        },
+        "2026-06": {
+          "trades": 9,
+          "net_pnl_usdt": -65.10309384,
+          "net_R": -3.057405
+        },
+        "2026-07": {
+          "trades": 1,
+          "net_pnl_usdt": -24.0151838,
+          "net_R": -1.15105301
+        },
+        "2026-08": {
+          "trades": 1,
+          "net_pnl_usdt": -24.17724049,
+          "net_R": -1.15568466
+        }
+      },
+      "confidence": {
+        "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+        "closed_fill_count": 103,
+        "eligible_daily_observations": 725,
+        "block_days": 7,
+        "replicates": 5000,
+        "mean_daily_net_R_ci95": [
+          -0.04711206,
+          0.00593875
+        ]
+      },
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "5m/15m",
+      "scenario": "stress_1_5x_17_5bp",
+      "signals": 5068,
+      "risk_pass_signals": 120,
+      "modeled_orders": 103,
+      "modeled_fills": 103,
+      "observed_fills": 0,
+      "order_blockers": {
+        "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 103,
+        "RISK_REJECT:COST_TO_R_OVER_CAP": 4152,
+        "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 796,
+        "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 17
+      },
+      "closed_modeled_fills": 103,
+      "open_at_data_end": 0,
+      "eligible_days": 725,
+      "net_expectancy_usdt_per_closed_fill": -3.71947536,
+      "net_expectancy_initial_R": -0.17467356,
+      "net_R_per_eligible_day": -0.02481569,
+      "total_net_closed_pnl_usdt": -383.1059618,
+      "profit_factor_net": 0.74834776,
+      "closed_trade_win_rate": 0.40776699,
+      "open_equity_max_drawdown_usdt": 406.68841565,
+      "open_equity_max_drawdown_pct": 4.06160004,
+      "final_cash_usdt": 9616.89403816,
+      "open_position_marked_net_pnl_usdt": [],
+      "holding_minutes": {
+        "mean": 127.7864,
+        "median": 52,
+        "p90": 304.59999999999997,
+        "max": 1057
+      },
+      "positive_net_pnl_top5_day_share": 0.3988425,
+      "net_pnl_excluding_top5_winning_days_usdt": -664.91622297,
+      "top5_winning_days": [
+        {
+          "date_utc": "2026-02-05",
+          "net_pnl_usdt": 88.31114553
+        },
+        {
+          "date_utc": "2025-02-03",
+          "net_pnl_usdt": 82.39392629
+        },
+        {
+          "date_utc": "2026-02-24",
+          "net_pnl_usdt": 51.93071595
+        },
+        {
+          "date_utc": "2025-01-23",
+          "net_pnl_usdt": 30.89801203
+        },
+        {
+          "date_utc": "2025-03-11",
+          "net_pnl_usdt": 28.27646138
+        }
+      ],
+      "by_side_and_regime": {
+        "SHORT/HTF_BEAR_BIAS": {
+          "trades": 78,
+          "net_pnl_usdt": -331.90369732,
+          "net_R": -15.41980761,
+          "wins": 31,
+          "win_rate": 0.3974359
+        },
+        "LONG/HTF_BULL_BIAS": {
+          "trades": 25,
+          "net_pnl_usdt": -51.20226448,
+          "net_R": -2.57156909,
+          "wins": 11,
+          "win_rate": 0.44
+        }
+      },
+      "by_utc_month": {
+        "2024-10": {
+          "trades": 3,
+          "net_pnl_usdt": -23.94722902,
+          "net_R": -1.12743462
+        },
+        "2024-11": {
+          "trades": 6,
+          "net_pnl_usdt": -100.0854449,
+          "net_R": -4.71741136
+        },
+        "2024-12": {
+          "trades": 10,
+          "net_pnl_usdt": 7.05932857,
+          "net_R": 0.35713115
+        },
+        "2025-01": {
+          "trades": 6,
+          "net_pnl_usdt": 11.2566809,
+          "net_R": 0.3952922
+        },
+        "2025-02": {
+          "trades": 9,
+          "net_pnl_usdt": 37.73408787,
+          "net_R": 1.90132405
+        },
+        "2025-03": {
+          "trades": 13,
+          "net_pnl_usdt": -10.85993099,
+          "net_R": -0.42851904
+        },
+        "2025-04": {
+          "trades": 8,
+          "net_pnl_usdt": -42.00709075,
+          "net_R": -2.01572248
+        },
+        "2025-10": {
+          "trades": 5,
+          "net_pnl_usdt": -71.86336867,
+          "net_R": -3.45143977
+        },
+        "2025-11": {
+          "trades": 5,
+          "net_pnl_usdt": -21.42797247,
+          "net_R": -1.09804213
+        },
+        "2025-12": {
+          "trades": 4,
+          "net_pnl_usdt": -100.72254764,
+          "net_R": -4.82683691
+        },
+        "2026-01": {
+          "trades": 1,
+          "net_pnl_usdt": -25.05054618,
+          "net_R": -1.18840126
+        },
+        "2026-02": {
+          "trades": 18,
+          "net_pnl_usdt": 72.28882164,
+          "net_R": 3.73138328
+        },
+        "2026-03": {
+          "trades": 4,
+          "net_pnl_usdt": 4.26882568,
+          "net_R": 0.15418568
+        },
+        "2026-06": {
+          "trades": 9,
+          "net_pnl_usdt": -70.45624142,
+          "net_R": -3.31745136
+        },
+        "2026-07": {
+          "trades": 1,
+          "net_pnl_usdt": -24.57326629,
+          "net_R": -1.17780203
+        },
+        "2026-08": {
+          "trades": 1,
+          "net_pnl_usdt": -24.72006813,
+          "net_R": -1.1816321
+        }
+      },
+      "confidence": {
+        "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+        "closed_fill_count": 103,
+        "eligible_daily_observations": 725,
+        "block_days": 7,
+        "replicates": 5000,
+        "mean_daily_net_R_ci95": [
+          -0.05088647,
+          0.00238424
+        ]
+      },
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "5m/15m",
+      "scenario": "stress_2x_20bp",
+      "signals": 5068,
+      "risk_pass_signals": 120,
+      "modeled_orders": 103,
+      "modeled_fills": 103,
+      "observed_fills": 0,
+      "order_blockers": {
+        "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 103,
+        "RISK_REJECT:COST_TO_R_OVER_CAP": 4152,
+        "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 796,
+        "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 17
+      },
+      "closed_modeled_fills": 103,
+      "open_at_data_end": 0,
+      "eligible_days": 725,
+      "net_expectancy_usdt_per_closed_fill": -4.29757836,
+      "net_expectancy_initial_R": -0.20243942,
+      "net_R_per_eligible_day": -0.02876036,
+      "total_net_closed_pnl_usdt": -442.65057125,
+      "profit_factor_net": 0.71576656,
+      "closed_trade_win_rate": 0.40776699,
+      "open_equity_max_drawdown_usdt": 453.76384674,
+      "open_equity_max_drawdown_pct": 4.53260126,
+      "final_cash_usdt": 9557.34942874,
+      "open_position_marked_net_pnl_usdt": [],
+      "holding_minutes": {
+        "mean": 127.7864,
+        "median": 52,
+        "p90": 304.59999999999997,
+        "max": 1057
+      },
+      "positive_net_pnl_top5_day_share": 0.40705238,
+      "net_pnl_excluding_top5_winning_days_usdt": -718.33731435,
+      "top5_winning_days": [
+        {
+          "date_utc": "2026-02-05",
+          "net_pnl_usdt": 86.03648785
+        },
+        {
+          "date_utc": "2025-02-03",
+          "net_pnl_usdt": 80.69236579
+        },
+        {
+          "date_utc": "2026-02-24",
+          "net_pnl_usdt": 50.64727195
+        },
+        {
+          "date_utc": "2025-01-23",
+          "net_pnl_usdt": 30.52947715
+        },
+        {
+          "date_utc": "2025-03-11",
+          "net_pnl_usdt": 27.78114036
+        }
+      ],
+      "by_side_and_regime": {
+        "SHORT/HTF_BEAR_BIAS": {
+          "trades": 78,
+          "net_pnl_usdt": -376.52760381,
+          "net_R": -17.56089023,
+          "wins": 31,
+          "win_rate": 0.3974359
+        },
+        "LONG/HTF_BULL_BIAS": {
+          "trades": 25,
+          "net_pnl_usdt": -66.12296744,
+          "net_R": -3.29036997,
+          "wins": 11,
+          "win_rate": 0.44
+        }
+      },
+      "by_utc_month": {
+        "2024-10": {
+          "trades": 3,
+          "net_pnl_usdt": -25.83925795,
+          "net_R": -1.21783135
+        },
+        "2024-11": {
+          "trades": 6,
+          "net_pnl_usdt": -103.73013555,
+          "net_R": -4.89132726
+        },
+        "2024-12": {
+          "trades": 10,
+          "net_pnl_usdt": 0.75840047,
+          "net_R": 0.05100916
+        },
+        "2025-01": {
+          "trades": 6,
+          "net_pnl_usdt": 7.98299695,
+          "net_R": 0.23679089
+        },
+        "2025-02": {
+          "trades": 9,
+          "net_pnl_usdt": 32.86399084,
+          "net_R": 1.67173729
+        },
+        "2025-03": {
+          "trades": 13,
+          "net_pnl_usdt": -18.18219952,
+          "net_R": -0.77597526
+        },
+        "2025-04": {
+          "trades": 8,
+          "net_pnl_usdt": -46.62386115,
+          "net_R": -2.23478603
+        },
+        "2025-10": {
+          "trades": 5,
+          "net_pnl_usdt": -74.65192923,
+          "net_R": -3.58730797
+        },
+        "2025-11": {
+          "trades": 5,
+          "net_pnl_usdt": -24.65062839,
+          "net_R": -1.25490528
+        },
+        "2025-12": {
+          "trades": 4,
+          "net_pnl_usdt": -103.14861593,
+          "net_R": -4.94321519
+        },
+        "2026-01": {
+          "trades": 1,
+          "net_pnl_usdt": -25.61788154,
+          "net_R": -1.21531572
+        },
+        "2026-02": {
+          "trades": 18,
+          "net_pnl_usdt": 62.63388942,
+          "net_R": 3.26644618
+        },
+        "2026-03": {
+          "trades": 4,
+          "net_pnl_usdt": 1.75829388,
+          "net_R": 0.03304866
+        },
+        "2026-06": {
+          "trades": 9,
+          "net_pnl_usdt": -75.80938901,
+          "net_R": -3.57749773
+        },
+        "2026-07": {
+          "trades": 1,
+          "net_pnl_usdt": -25.13134878,
+          "net_R": -1.20455105
+        },
+        "2026-08": {
+          "trades": 1,
+          "net_pnl_usdt": -25.26289576,
+          "net_R": -1.20757954
+        }
+      },
+      "confidence": {
+        "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+        "closed_fill_count": 103,
+        "eligible_daily_observations": 725,
+        "block_days": 7,
+        "replicates": 5000,
+        "mean_daily_net_R_ci95": [
+          -0.05677612,
+          -0.00180837
+        ]
+      },
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "15m/60m",
+      "scenario": "fee_only_10bp",
+      "signals": 1483,
+      "risk_pass_signals": 171,
+      "modeled_orders": 136,
+      "modeled_fills": 136,
+      "observed_fills": 0,
+      "order_blockers": {
+        "RISK_REJECT:COST_TO_R_OVER_CAP": 1085,
+        "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 227,
+        "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 136,
+        "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 33,
+        "BLOCKED_EXIT_COOLDOWN": 2
+      },
+      "closed_modeled_fills": 136,
+      "open_at_data_end": 0,
+      "eligible_days": 701,
+      "net_expectancy_usdt_per_closed_fill": -2.6154401,
+      "net_expectancy_initial_R": -0.1281818,
+      "net_R_per_eligible_day": -0.02486837,
+      "total_net_closed_pnl_usdt": -355.69985342,
+      "profit_factor_net": 0.81463849,
+      "closed_trade_win_rate": 0.38970588,
+      "open_equity_max_drawdown_usdt": 419.22971385,
+      "open_equity_max_drawdown_pct": 4.17191761,
+      "final_cash_usdt": 9644.3001466,
+      "open_position_marked_net_pnl_usdt": [],
+      "holding_minutes": {
+        "mean": 300.375,
+        "median": 162.5,
+        "p90": 621,
+        "max": 2668
+      },
+      "positive_net_pnl_top5_day_share": 0.22673616,
+      "net_pnl_excluding_top5_winning_days_usdt": -631.27831082,
+      "top5_winning_days": [
+        {
+          "date_utc": "2026-06-05",
+          "net_pnl_usdt": 90.25881738
+        },
+        {
+          "date_utc": "2026-02-04",
+          "net_pnl_usdt": 58.71997614
+        },
+        {
+          "date_utc": "2025-01-09",
+          "net_pnl_usdt": 56.31154741
+        },
+        {
+          "date_utc": "2025-03-04",
+          "net_pnl_usdt": 36.62154406
+        },
+        {
+          "date_utc": "2026-08-20",
+          "net_pnl_usdt": 33.66657241
+        }
+      ],
+      "by_side_and_regime": {
+        "LONG/HTF_BULL_BIAS": {
+          "trades": 59,
+          "net_pnl_usdt": -163.51101602,
+          "net_R": -7.98896427,
+          "wins": 23,
+          "win_rate": 0.38983051
+        },
+        "SHORT/HTF_BEAR_BIAS": {
+          "trades": 77,
+          "net_pnl_usdt": -192.1888374,
+          "net_R": -9.44375986,
+          "wins": 30,
+          "win_rate": 0.38961039
+        }
+      },
+      "by_utc_month": {
+        "2024-10": {
+          "trades": 4,
+          "net_pnl_usdt": 8.88617289,
+          "net_R": 0.4834058
+        },
+        "2024-11": {
+          "trades": 16,
+          "net_pnl_usdt": -4.65342941,
+          "net_R": -0.31623879
+        },
+        "2024-12": {
+          "trades": 9,
+          "net_pnl_usdt": -49.7593781,
+          "net_R": -2.43766647
+        },
+        "2025-01": {
+          "trades": 6,
+          "net_pnl_usdt": 13.78787833,
+          "net_R": 0.79408971
+        },
+        "2025-02": {
+          "trades": 5,
+          "net_pnl_usdt": -63.05341205,
+          "net_R": -2.88839827
+        },
+        "2025-03": {
+          "trades": 13,
+          "net_pnl_usdt": 17.1917397,
+          "net_R": 0.69790125
+        },
+        "2025-04": {
+          "trades": 8,
+          "net_pnl_usdt": -23.50709904,
+          "net_R": -1.23501343
+        },
+        "2025-05": {
+          "trades": 1,
+          "net_pnl_usdt": 28.11481231,
+          "net_R": 1.37108404
+        },
+        "2025-06": {
+          "trades": 1,
+          "net_pnl_usdt": -22.66665106,
+          "net_R": -1.10203933
+        },
+        "2025-07": {
+          "trades": 2,
+          "net_pnl_usdt": -45.25435486,
+          "net_R": -2.25350465
+        },
+        "2025-08": {
+          "trades": 1,
+          "net_pnl_usdt": 28.43976642,
+          "net_R": 1.40448037
+        },
+        "2025-10": {
+          "trades": 4,
+          "net_pnl_usdt": -91.95383402,
+          "net_R": -4.4182084
+        },
+        "2025-11": {
+          "trades": 11,
+          "net_pnl_usdt": -91.69445011,
+          "net_R": -4.56034779
+        },
+        "2025-12": {
+          "trades": 3,
+          "net_pnl_usdt": -16.29883016,
+          "net_R": -0.8491975
+        },
+        "2026-01": {
+          "trades": 3,
+          "net_pnl_usdt": -15.6060203,
+          "net_R": -0.85100797
+        },
+        "2026-02": {
+          "trades": 15,
+          "net_pnl_usdt": 128.89966891,
+          "net_R": 6.24100346
+        },
+        "2026-03": {
+          "trades": 13,
+          "net_pnl_usdt": -143.73728331,
+          "net_R": -6.92272096
+        },
+        "2026-04": {
+          "trades": 3,
+          "net_pnl_usdt": -16.98839528,
+          "net_R": -0.82441693
+        },
+        "2026-05": {
+          "trades": 1,
+          "net_pnl_usdt": 29.43713385,
+          "net_R": 1.40359477
+        },
+        "2026-06": {
+          "trades": 11,
+          "net_pnl_usdt": 10.0197349,
+          "net_R": 0.4099985
+        },
+        "2026-08": {
+          "trades": 6,
+          "net_pnl_usdt": -35.30362303,
+          "net_R": -1.57952154
+        }
+      },
+      "confidence": {
+        "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+        "closed_fill_count": 136,
+        "eligible_daily_observations": 701,
+        "block_days": 7,
+        "replicates": 5000,
+        "mean_daily_net_R_ci95": [
+          -0.06260193,
+          0.01416906
+        ]
+      },
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "15m/60m",
+      "scenario": "base_15bp",
+      "signals": 1483,
+      "risk_pass_signals": 171,
+      "modeled_orders": 136,
+      "modeled_fills": 136,
+      "observed_fills": 0,
+      "order_blockers": {
+        "RISK_REJECT:COST_TO_R_OVER_CAP": 1085,
+        "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 227,
+        "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 136,
+        "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 33,
+        "BLOCKED_EXIT_COOLDOWN": 2
+      },
+      "closed_modeled_fills": 136,
+      "open_at_data_end": 0,
+      "eligible_days": 701,
+      "net_expectancy_usdt_per_closed_fill": -3.67193899,
+      "net_expectancy_initial_R": -0.17883739,
+      "net_R_per_eligible_day": -0.03469599,
+      "total_net_closed_pnl_usdt": -499.38370225,
+      "profit_factor_net": 0.75138777,
+      "closed_trade_win_rate": 0.38970588,
+      "open_equity_max_drawdown_usdt": 531.13150485,
+      "open_equity_max_drawdown_pct": 5.29450615,
+      "final_cash_usdt": 9500.61629764,
+      "open_position_marked_net_pnl_usdt": [],
+      "holding_minutes": {
+        "mean": 300.375,
+        "median": 162.5,
+        "p90": 621,
+        "max": 2668
+      },
+      "positive_net_pnl_top5_day_share": 0.22999242,
+      "net_pnl_excluding_top5_winning_days_usdt": -762.92508515,
+      "top5_winning_days": [
+        {
+          "date_utc": "2026-06-05",
+          "net_pnl_usdt": 87.65660941
+        },
+        {
+          "date_utc": "2026-02-04",
+          "net_pnl_usdt": 56.71640429
+        },
+        {
+          "date_utc": "2025-01-09",
+          "net_pnl_usdt": 53.75711502
+        },
+        {
+          "date_utc": "2025-03-04",
+          "net_pnl_usdt": 34.02522914
+        },
+        {
+          "date_utc": "2025-03-07",
+          "net_pnl_usdt": 31.38602504
+        }
+      ],
+      "by_side_and_regime": {
+        "LONG/HTF_BULL_BIAS": {
+          "trades": 59,
+          "net_pnl_usdt": -228.19411633,
+          "net_R": -11.09559278,
+          "wins": 23,
+          "win_rate": 0.38983051
+        },
+        "SHORT/HTF_BEAR_BIAS": {
+          "trades": 77,
+          "net_pnl_usdt": -271.18958592,
+          "net_R": -13.22629271,
+          "wins": 30,
+          "win_rate": 0.38961039
+        }
+      },
+      "by_utc_month": {
+        "2024-10": {
+          "trades": 4,
+          "net_pnl_usdt": 3.98708581,
+          "net_R": 0.24742036
+        },
+        "2024-11": {
+          "trades": 16,
+          "net_pnl_usdt": -22.62330509,
+          "net_R": -1.16915274
+        },
+        "2024-12": {
+          "trades": 9,
+          "net_pnl_usdt": -59.94976612,
+          "net_R": -2.92073689
+        },
+        "2025-01": {
+          "trades": 6,
+          "net_pnl_usdt": 6.63948441,
+          "net_R": 0.45011647
+        },
+        "2025-02": {
+          "trades": 5,
+          "net_pnl_usdt": -67.32052543,
+          "net_R": -3.08766162
+        },
+        "2025-03": {
+          "trades": 13,
+          "net_pnl_usdt": 3.29937215,
+          "net_R": 0.04094297
+        },
+        "2025-04": {
+          "trades": 8,
+          "net_pnl_usdt": -31.30383079,
+          "net_R": -1.60445042
+        },
+        "2025-05": {
+          "trades": 1,
+          "net_pnl_usdt": 26.89475156,
+          "net_R": 1.31158495
+        },
+        "2025-06": {
+          "trades": 1,
+          "net_pnl_usdt": -23.71601915,
+          "net_R": -1.15305899
+        },
+        "2025-07": {
+          "trades": 2,
+          "net_pnl_usdt": -47.93324258,
+          "net_R": -2.38690873
+        },
+        "2025-08": {
+          "trades": 1,
+          "net_pnl_usdt": 27.36369414,
+          "net_R": 1.3513392
+        },
+        "2025-10": {
+          "trades": 4,
+          "net_pnl_usdt": -96.00551975,
+          "net_R": -4.61496922
+        },
+        "2025-11": {
+          "trades": 11,
+          "net_pnl_usdt": -103.03436149,
+          "net_R": -5.11027114
+        },
+        "2025-12": {
+          "trades": 3,
+          "net_pnl_usdt": -19.79447857,
+          "net_R": -1.02049261
+        },
+        "2026-01": {
+          "trades": 3,
+          "net_pnl_usdt": -19.02614571,
+          "net_R": -1.018862
+        },
+        "2026-02": {
+          "trades": 15,
+          "net_pnl_usdt": 115.52241153,
+          "net_R": 5.60645216
+        },
+        "2026-03": {
+          "trades": 13,
+          "net_pnl_usdt": -158.17280492,
+          "net_R": -7.62312982
+        },
+        "2026-04": {
+          "trades": 3,
+          "net_pnl_usdt": -20.32740781,
+          "net_R": -0.98913807
+        },
+        "2026-05": {
+          "trades": 1,
+          "net_pnl_usdt": 28.38936536,
+          "net_R": 1.35363602
+        },
+        "2026-06": {
+          "trades": 11,
+          "net_pnl_usdt": -1.41101494,
+          "net_R": -0.13806976
+        },
+        "2026-08": {
+          "trades": 6,
+          "net_pnl_usdt": -40.86144486,
+          "net_R": -1.84647561
+        }
+      },
+      "confidence": {
+        "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+        "closed_fill_count": 136,
+        "eligible_daily_observations": 701,
+        "block_days": 7,
+        "replicates": 5000,
+        "mean_daily_net_R_ci95": [
+          -0.07338868,
+          0.00449682
+        ]
+      },
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "15m/60m",
+      "scenario": "stress_1_5x_17_5bp",
+      "signals": 1483,
+      "risk_pass_signals": 171,
+      "modeled_orders": 136,
+      "modeled_fills": 136,
+      "observed_fills": 0,
+      "order_blockers": {
+        "RISK_REJECT:COST_TO_R_OVER_CAP": 1085,
+        "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 227,
+        "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 136,
+        "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 33,
+        "BLOCKED_EXIT_COOLDOWN": 2
+      },
+      "closed_modeled_fills": 136,
+      "open_at_data_end": 0,
+      "eligible_days": 701,
+      "net_expectancy_usdt_per_closed_fill": -4.20018843,
+      "net_expectancy_initial_R": -0.20416519,
+      "net_R_per_eligible_day": -0.03960979,
+      "total_net_closed_pnl_usdt": -571.22562681,
+      "profit_factor_net": 0.72183529,
+      "closed_trade_win_rate": 0.38970588,
+      "open_equity_max_drawdown_usdt": 600.52044403,
+      "open_equity_max_drawdown_pct": 5.98766369,
+      "final_cash_usdt": 9428.77437316,
+      "open_position_marked_net_pnl_usdt": [],
+      "holding_minutes": {
+        "mean": 300.375,
+        "median": 162.5,
+        "p90": 621,
+        "max": 2668
+      },
+      "positive_net_pnl_top5_day_share": 0.23248858,
+      "net_pnl_excluding_top5_winning_days_usdt": -829.54310496,
+      "top5_winning_days": [
+        {
+          "date_utc": "2026-06-05",
+          "net_pnl_usdt": 86.35550542
+        },
+        {
+          "date_utc": "2026-02-04",
+          "net_pnl_usdt": 55.71461837
+        },
+        {
+          "date_utc": "2025-01-09",
+          "net_pnl_usdt": 52.47989883
+        },
+        {
+          "date_utc": "2025-03-04",
+          "net_pnl_usdt": 32.72707168
+        },
+        {
+          "date_utc": "2025-03-07",
+          "net_pnl_usdt": 31.04038385
+        }
+      ],
+      "by_side_and_regime": {
+        "LONG/HTF_BULL_BIAS": {
+          "trades": 59,
+          "net_pnl_usdt": -260.53566661,
+          "net_R": -12.64890708,
+          "wins": 23,
+          "win_rate": 0.38983051
+        },
+        "SHORT/HTF_BEAR_BIAS": {
+          "trades": 77,
+          "net_pnl_usdt": -310.6899602,
+          "net_R": -15.11755916,
+          "wins": 30,
+          "win_rate": 0.38961039
+        }
+      },
+      "by_utc_month": {
+        "2024-10": {
+          "trades": 4,
+          "net_pnl_usdt": 1.53754227,
+          "net_R": 0.12942764
+        },
+        "2024-11": {
+          "trades": 16,
+          "net_pnl_usdt": -31.60824297,
+          "net_R": -1.59560973
+        },
+        "2024-12": {
+          "trades": 9,
+          "net_pnl_usdt": -65.0449601,
+          "net_R": -3.16227214
+        },
+        "2025-01": {
+          "trades": 6,
+          "net_pnl_usdt": 3.06528745,
+          "net_R": 0.27812986
+        },
+        "2025-02": {
+          "trades": 5,
+          "net_pnl_usdt": -69.45408214,
+          "net_R": -3.18729328
+        },
+        "2025-03": {
+          "trades": 13,
+          "net_pnl_usdt": -3.64681165,
+          "net_R": -0.28753615
+        },
+        "2025-04": {
+          "trades": 8,
+          "net_pnl_usdt": -35.20219667,
+          "net_R": -1.78916893
+        },
+        "2025-05": {
+          "trades": 1,
+          "net_pnl_usdt": 26.28472118,
+          "net_R": 1.2818354
+        },
+        "2025-06": {
+          "trades": 1,
+          "net_pnl_usdt": -24.24070319,
+          "net_R": -1.17856882
+        },
+        "2025-07": {
+          "trades": 2,
+          "net_pnl_usdt": -49.27268645,
+          "net_R": -2.45361077
+        },
+        "2025-08": {
+          "trades": 1,
+          "net_pnl_usdt": 26.825658,
+          "net_R": 1.32476862
+        },
+        "2025-10": {
+          "trades": 4,
+          "net_pnl_usdt": -98.03136261,
+          "net_R": -4.71334963
+        },
+        "2025-11": {
+          "trades": 11,
+          "net_pnl_usdt": -108.70431715,
+          "net_R": -5.38523281
+        },
+        "2025-12": {
+          "trades": 3,
+          "net_pnl_usdt": -21.54230279,
+          "net_R": -1.10614016
+        },
+        "2026-01": {
+          "trades": 3,
+          "net_pnl_usdt": -20.73620844,
+          "net_R": -1.10278901
+        },
+        "2026-02": {
+          "trades": 15,
+          "net_pnl_usdt": 108.83378284,
+          "net_R": 5.28917648
+        },
+        "2026-03": {
+          "trades": 13,
+          "net_pnl_usdt": -165.39056574,
+          "net_R": -7.97333428
+        },
+        "2026-04": {
+          "trades": 3,
+          "net_pnl_usdt": -21.99691408,
+          "net_R": -1.07149865
+        },
+        "2026-05": {
+          "trades": 1,
+          "net_pnl_usdt": 27.86548111,
+          "net_R": 1.32865665
+        },
+        "2026-06": {
+          "trades": 11,
+          "net_pnl_usdt": -7.12638987,
+          "net_R": -0.41210389
+        },
+        "2026-08": {
+          "trades": 6,
+          "net_pnl_usdt": -43.64035581,
+          "net_R": -1.97995264
+        }
+      },
+      "confidence": {
+        "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+        "closed_fill_count": 136,
+        "eligible_daily_observations": 701,
+        "block_days": 7,
+        "replicates": 5000,
+        "mean_daily_net_R_ci95": [
+          -0.07870318,
+          -0.00025373
+        ]
+      },
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    },
+    {
+      "profile": "15m/60m",
+      "scenario": "stress_2x_20bp",
+      "signals": 1483,
+      "risk_pass_signals": 171,
+      "modeled_orders": 136,
+      "modeled_fills": 136,
+      "observed_fills": 0,
+      "order_blockers": {
+        "RISK_REJECT:COST_TO_R_OVER_CAP": 1085,
+        "RISK_REJECT:STOP_DISTANCE_OVER_ATR_CAP": 227,
+        "MODELED_SUBMISSION_ASSUMED_FULL_FILL": 136,
+        "BLOCKED_POSITION_OR_EXIT_UNOBSERVED": 33,
+        "BLOCKED_EXIT_COOLDOWN": 2
+      },
+      "closed_modeled_fills": 136,
+      "open_at_data_end": 0,
+      "eligible_days": 701,
+      "net_expectancy_usdt_per_closed_fill": -4.72843788,
+      "net_expectancy_initial_R": -0.22949299,
+      "net_R_per_eligible_day": -0.0445236,
+      "total_net_closed_pnl_usdt": -643.06755137,
+      "profit_factor_net": 0.69354653,
+      "closed_trade_win_rate": 0.38970588,
+      "open_equity_max_drawdown_usdt": 669.90938321,
+      "open_equity_max_drawdown_pct": 6.68116037,
+      "final_cash_usdt": 9356.93244869,
+      "open_position_marked_net_pnl_usdt": [],
+      "holding_minutes": {
+        "mean": 300.375,
+        "median": 162.5,
+        "p90": 621,
+        "max": 2668
+      },
+      "positive_net_pnl_top5_day_share": 0.23498688,
+      "net_pnl_excluding_top5_winning_days_usdt": -896.16112478,
+      "top5_winning_days": [
+        {
+          "date_utc": "2026-06-05",
+          "net_pnl_usdt": 85.05440144
+        },
+        {
+          "date_utc": "2026-02-04",
+          "net_pnl_usdt": 54.71283245
+        },
+        {
+          "date_utc": "2025-01-09",
+          "net_pnl_usdt": 51.20268263
+        },
+        {
+          "date_utc": "2025-03-04",
+          "net_pnl_usdt": 31.42891422
+        },
+        {
+          "date_utc": "2025-03-07",
+          "net_pnl_usdt": 30.69474267
+        }
+      ],
+      "by_side_and_regime": {
+        "LONG/HTF_BULL_BIAS": {
+          "trades": 59,
+          "net_pnl_usdt": -292.87721684,
+          "net_R": -14.20222133,
+          "wins": 23,
+          "win_rate": 0.38983051
+        },
+        "SHORT/HTF_BEAR_BIAS": {
+          "trades": 77,
+          "net_pnl_usdt": -350.19033453,
+          "net_R": -17.00882559,
+          "wins": 30,
+          "win_rate": 0.38961039
+        }
+      },
+      "by_utc_month": {
+        "2024-10": {
+          "trades": 4,
+          "net_pnl_usdt": -0.91200129,
+          "net_R": 0.01143492
+        },
+        "2024-11": {
+          "trades": 16,
+          "net_pnl_usdt": -40.59318083,
+          "net_R": -2.02206672
+        },
+        "2024-12": {
+          "trades": 9,
+          "net_pnl_usdt": -70.14015412,
+          "net_R": -3.40380735
+        },
+        "2025-01": {
+          "trades": 6,
+          "net_pnl_usdt": -0.50890953,
+          "net_R": 0.10614323
+        },
+        "2025-02": {
+          "trades": 5,
+          "net_pnl_usdt": -71.58763882,
+          "net_R": -3.28692497
+        },
+        "2025-03": {
+          "trades": 13,
+          "net_pnl_usdt": -10.59299544,
+          "net_R": -0.61601523
+        },
+        "2025-04": {
+          "trades": 8,
+          "net_pnl_usdt": -39.10056254,
+          "net_R": -1.97388743
+        },
+        "2025-05": {
+          "trades": 1,
+          "net_pnl_usdt": 25.6746908,
+          "net_R": 1.25208586
+        },
+        "2025-06": {
+          "trades": 1,
+          "net_pnl_usdt": -24.76538724,
+          "net_R": -1.20407865
+        },
+        "2025-07": {
+          "trades": 2,
+          "net_pnl_usdt": -50.61213031,
+          "net_R": -2.52031282
+        },
+        "2025-08": {
+          "trades": 1,
+          "net_pnl_usdt": 26.28762186,
+          "net_R": 1.29819803
+        },
+        "2025-10": {
+          "trades": 4,
+          "net_pnl_usdt": -100.05720547,
+          "net_R": -4.81173003
+        },
+        "2025-11": {
+          "trades": 11,
+          "net_pnl_usdt": -114.37427286,
+          "net_R": -5.6601945
+        },
+        "2025-12": {
+          "trades": 3,
+          "net_pnl_usdt": -23.29012699,
+          "net_R": -1.19178772
+        },
+        "2026-01": {
+          "trades": 3,
+          "net_pnl_usdt": -22.44627114,
+          "net_R": -1.18671604
+        },
+        "2026-02": {
+          "trades": 15,
+          "net_pnl_usdt": 102.14515411,
+          "net_R": 4.97190089
+        },
+        "2026-03": {
+          "trades": 13,
+          "net_pnl_usdt": -172.60832657,
+          "net_R": -8.32353872
+        },
+        "2026-04": {
+          "trades": 3,
+          "net_pnl_usdt": -23.66642035,
+          "net_R": -1.15385923
+        },
+        "2026-05": {
+          "trades": 1,
+          "net_pnl_usdt": 27.34159687,
+          "net_R": 1.30367727
+        },
+        "2026-06": {
+          "trades": 11,
+          "net_pnl_usdt": -12.84176478,
+          "net_R": -0.68613803
+        },
+        "2026-08": {
+          "trades": 6,
+          "net_pnl_usdt": -46.41926673,
+          "net_R": -2.11342968
+        }
+      },
+      "confidence": {
+        "status": "MODEL_CONDITIONAL_7_DAY_CIRCULAR_BLOCK_BOOTSTRAP",
+        "closed_fill_count": 136,
+        "eligible_daily_observations": 701,
+        "block_days": 7,
+        "replicates": 5000,
+        "mean_daily_net_R_ci95": [
+          -0.08413304,
+          -0.00536233
+        ]
+      },
+      "inference": "CONDITIONAL_ON_ASSUMED_FILLS_AND_UNMEASURED_COSTS"
+    }
+  ],
+  "known_limits": [
+    "No historical best bid/ask or user's account fee rate was provided; 5 bp per side plus an unmeasured impact proxy are assumptions.",
+    "Every submitted model order assumes immediate full fill at the bounded quote. Queue position, partial fills, order rejections, and cancel/fill races are unknown.",
+    "Exchange tick size, minimum quantity, and minimum notional filters are not verified; model sizes below the known 0.001 BTC step are rejected, but platform eligibility remains unknown.",
+    "Funding is event-specific but mark-price notional uses the open of the event minute as a proxy, not an exchange settlement snapshot.",
+    "The evaluation window was previously inspected and is not an untouched holdout.",
+    "The local strategy and indicator hashes match the frozen manifest after UTF-8 LF normalization; raw Windows CRLF hashes are recorded separately in the evaluation policy.",
+    "User's personal risk limits are not used to size this 10,000 USDT research baseline. Account-level daily loss and drawdown limits remain unset."
+  ],
+  "reproducibility": {
+    "command": "node research/b0_costed_baseline.mjs",
+    "evaluator_path": "research/b0_costed_baseline.mjs",
+    "evaluator_sha256": "5c0248010e8dfa66f4323152c7c5e793088689a87ce02d7659ee7bf50736abbc",
+    "frozen_policy_path": "research/specs/baseline_evaluation_p0.json",
+    "frozen_policy_sha256": "536cbf1f21faf91d31dafaa949ab5ef6e14b0e8718e5b71452321100b3b9c76d",
+    "run_manifest_path": "research/reports/b0_costed_baseline_manifest.json"
+  }
+}
