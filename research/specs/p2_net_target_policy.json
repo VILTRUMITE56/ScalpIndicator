@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "policy_id": "BTC-PERP-P2-NET-TARGET-5-01",
+  "status": "feasibility_study_not_promoted",
+  "parent_signal_contract": "BTC-PERP-PULLBACK-P1",
+  "parent_execution_policy": "BTC-PERP-EXEC-1",
+  "execution_policy_version": "BTC-PERP-EXEC-2",
+  "strategy_source": "indie/btc_pullback_strategy_p2.indie",
+  "platform_validation": {
+    "evidence": "research/reports/p2_strategy_platform_validation.json",
+    "source_sha256_raw_bytes": "568a9c1b9b1db3a97bc8309314a2b67d7007090f736dc0faa491e07bb08b7b60",
+    "working_copy": "ephemeral; not saved to TakeProfit",
+    "compile": "PASSED",
+    "runtime_quick": "PASSED",
+    "runtime_quick_bars": 5000,
+    "native_backtest": "NOT_RUN_PLAN_BAR_LIMIT"
+  },
+  "native_backtest_limit": {
+    "requested_instrument": "BTC/USDT.P on Binance (CXBNF8)",
+    "requested_timeframe": "5 minutes",
+    "requested_period_utc": ["2024-10-01T00:00:00Z", "2026-09-30T23:59:59Z"],
+    "requested_bars": 210240,
+    "available_bars": 5060,
+    "result": "The connected TakeProfit plan rejected the request; no native backtest result was produced."
+  },
+  "candidate_outputs": {
+    "target_quote_plot_id": "execution_candidate_target_quote",
+    "target_quote_semantics": "The rounded theoretical P2 target after size calculation; it may be present even if a subsequent notional or risk check rejects the order.",
+    "reason_code_30": "NET_TARGET_UNREACHABLE_AFTER_TICK_ROUNDING"
+  },
+  "objective": {
+    "minimum_net_profit_quote_per_closed_trade": 5.01,
+    "quote_asset": "USDT",
+    "basis": "After the modeled 15 bp non-funding round-trip cost at the strategy limit fill and after tick rounding. This is an experimental interpretation of the recorded greater-than-$5 objective.",
+    "funding": "Excluded; actual target after funding cannot be guaranteed by this policy."
+  },
+  "unchanged_from_p1": [
+    "P1 completed-bar entry signal and higher-timeframe bias",
+    "2.5 ATR maximum stop distance",
+    "0.20 maximum cost-to-initial-risk gate at the 15 bp scenario",
+    "$1 modeled all-in stop-loss cap",
+    "one position at a time and existing three-bar entry/exit cooldown",
+    "captured tick, quantity, and minimum-notional research proxy"
+  ],
+  "target_formula": {
+    "linear_contract": true,
+    "long_exact_before_tick": "(target_net_quote / quantity + entry_limit * (1 + c/2)) / (1 - c/2)",
+    "short_exact_before_tick": "(entry_limit * (1 - c/2) - target_net_quote / quantity) / (1 + c/2)",
+    "c": 0.0015,
+    "rounding": "Round the long target up and the short target down to the captured $0.10 tick, then verify projected net profit is strictly above $5.00.",
+    "entry_price_basis": "Rounded strategy limit price, assumed to fill completely. Actual fills can differ.",
+    "quantity_basis": "Post-rounding quantity from the existing 15 bp risk-size formula and account settings.",
+    "known_limit": "The target is account-size and execution-policy dependent; a standalone signal indicator cannot promise this net dollar result without matching sizing and fill assumptions."
+  },
+  "historical_feasibility_result": {
+    "study": "research/reports/p2_net5_target_feasibility_report.md",
+    "period": "2024-10-01 through 2026-09-30 UTC, fully inspected development history",
+    "cost_scenario_bps": [10, 15, 20],
+    "model_assumed_fills": true,
+    "actual_orders": "NOT_OBSERVED",
+    "actual_fills": "UNKNOWN",
+    "promotion": "Not promoted: both profiles lose at 15 bp; the 15m profile is materially negative and the combined scenario loses at each tested cost."
+  },
+  "signal_configurations_consumed": 0
+}

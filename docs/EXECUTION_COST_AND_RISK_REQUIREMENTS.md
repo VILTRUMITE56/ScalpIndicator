@@ -1,6 +1,6 @@
 # BTC perpetual venue, cost and risk record
 
-Record version 1.0.5, reviewed 30 October 2026. This defines a provisional research setup and records the user's reported trade size, variable leverage range, per-trade loss cap, target and exit preference. It does not confirm an execution venue, account fee rate, full account risk policy, or profitable strategy.
+Record version 1.0.6, reviewed 31 October 2026. This defines a provisional research setup and records the user's reported trade size, variable leverage range, per-trade loss cap, target and exit preference. It does not confirm an execution venue, account fee rate, full account risk policy, or profitable strategy.
 
 The machine-readable record is [`research/specs/execution_cost_risk.json`](../research/specs/execution_cost_risk.json). GitHub checkpoint: [issue #3](https://github.com/VILTRUMITE56/ScalpIndicator/issues/3).
 
@@ -26,11 +26,11 @@ No API key or secret is needed for this checkpoint. If the user shares fee rates
 
 | Round-trip case | Current meaning | Evidence status |
 | ---: | --- | --- |
-| 10 bp | Low/fee-only sensitivity; matches the backtest placeholder of 5 bp each side | Hypothetical; excludes measured spread, slippage and funding |
-| 15 bp | Existing B0 eligibility/sizing gate | Hypothetical; it is not fully deducted in native P&L |
-| 20 bp | Adverse sensitivity | Hypothetical; not a measured venue cost |
+| 10 bp | Two assumed 5 bp commission legs | Hypothetical; excludes measured spread, slippage and funding |
+| 15 bp | The same two assumed commission legs plus 5 bp non-fee execution drag | Hypothetical; not measured from the user's venue |
+| 20 bp | The same two assumed commission legs plus 10 bp non-fee execution drag | Hypothetical adverse case; not a measured venue cost |
 
-Keep funding separate from these non-funding execution-cost scenarios. For a native TakeProfit ledger that already charges commission, add only missing spread/slippage; for a gross external ledger, deduct the complete chosen execution scenario once. Add actual signed funding cash flows once in either ledger. Do not reduce a cost case to generate more trades.
+Keep funding separate from these non-funding execution-cost scenarios. For a native TakeProfit ledger that already charges commission, add only missing spread/slippage; for a gross external ledger, deduct the complete chosen execution scenario once. P1's 15 bp strategy risk sizing reserves the complete scenario once; it does not add a second pair of commission legs. The simulator still debits its own commission cashflows from P&L; the remaining 5 bp at the base case is a modeled safety reserve, not a cash debit. Add actual signed funding cash flows once in either ledger. Do not reduce a cost case to generate more trades.
 
 The components remain distinct:
 

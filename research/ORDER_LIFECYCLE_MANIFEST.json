@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "manifest_id": "btc-perp-order-lifecycle-p1-2026-10-30",
-  "generated_at_utc": "2026-10-31T03:11:15.572Z",
+  "manifest_id": "btc-perp-order-lifecycle-p1-2026-10-31",
+  "generated_at_utc": "2026-10-31T07:06:17.276Z",
   "contract_version": "BTC-PERP-ORDER-LIFECYCLE-P1",
   "status": "local_fixtures_and_emulator_contract_verified_live_exchange_execution_unconfirmed",
   "hash_normalization": "Text artifacts use SHA-256 after UTF-8 BOM stripping and CRLF/CR to LF normalization.",
@@ -12,6 +12,17 @@
     "Handle documented active and terminal order statuses explicitly; unknown states fail closed.",
     "Keep an active parent as an entry guard until cancellation acknowledgment; no timed exits are enabled."
   ],
+  "strategy_execution_policy_version": "BTC-PERP-EXEC-1",
+  "current_local_source_validation": {
+    "script_id": "92254833-5b23-4439-a9c2-8f46975debd9",
+    "script_version": 1,
+    "source_path": "indie/btc_pullback_strategy_p1.indie",
+    "source_sha256": "ad87c6b7bd6a12d999913087995333b7e26af6049aa5952c1621e4a2f2019d54",
+    "compile": "PASS",
+    "runtime_quick": "PASS",
+    "series_items": 5000,
+    "saved_to_platform": false
+  },
   "fixture_run": {
     "command": "node research/order_lifecycle_check.mjs",
     "fixtures": 12,
@@ -78,39 +89,43 @@
     "boundary_rule": "1m OHLC determines ordering across minutes; if one 1m bar touches both barriers, outcome stays ambiguous and is not reported as observed stop-first."
   },
   "takeprofit_working_copies": {
-    "strategy": {
-      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
-      "working_copy_version": 21,
-      "saved": false,
-      "local_source_matches_working_copy": true,
-      "compile": "PASS",
-      "runtime_quick": {
-        "result": "PASS",
-        "series_items": 5000,
-        "orders_emitted": 0
+    "report_generation_snapshot": {
+      "strategy": {
+        "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+        "working_copy_version": 21,
+        "saved": false,
+        "local_source_matches_working_copy": true,
+        "compile": "PASS",
+        "runtime_quick": {
+          "result": "PASS",
+          "series_items": 5000,
+          "orders_emitted": 0
+        },
+        "runtime_full": {
+          "result": "PASS",
+          "series_items": 5000,
+          "orders_emitted": 0
+        }
       },
-      "runtime_full": {
-        "result": "PASS",
-        "series_items": 5000,
-        "orders_emitted": 0
+      "indicator": {
+        "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+        "working_copy_version": 28,
+        "saved": false,
+        "local_source_matches_working_copy": true,
+        "compile": "PASS",
+        "runtime_quick": {
+          "result": "PASS",
+          "series_items": 5000,
+          "markers": 3
+        },
+        "runtime_full": {
+          "result": "UNCONFIRMED_INFRASTRUCTURE_ERROR",
+          "error": "[wasm] Compilation is not finished yet, retry later"
+        }
       }
     },
-    "indicator": {
-      "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
-      "working_copy_version": 28,
-      "saved": false,
-      "local_source_matches_working_copy": true,
-      "compile": "PASS",
-      "runtime_quick": {
-        "result": "PASS",
-        "series_items": 5000,
-        "markers": 3
-      },
-      "runtime_full": {
-        "result": "UNCONFIRMED_INFRASTRUCTURE_ERROR",
-        "error": "[wasm] Compilation is not finished yet, retry later"
-      }
-    }
+    "current_source_match": false,
+    "current_note": "TakeProfit indicator working copy v29 exactly matches the current local source and compiled, but remains unsaved because it is based on v16 while v19 is latest. Strategy working copy v21 still differs from local; the lifecycle validation above used earlier source copies."
   },
   "takeprofit_backtest": {
     "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
@@ -146,11 +161,11 @@
   "artifacts": [
     {
       "path": "indie/btc_pullback_indicator_p1.indie",
-      "sha256": "7507a3f87e78fc17c78b841ff5af64997f4b750c460105c652d1a72c15d11564"
+      "sha256": "5b26a8fae30c73ffaeec8201387d5fdbac999211f771db047bd8071a68fb66b7"
     },
     {
       "path": "indie/btc_pullback_strategy_p1.indie",
-      "sha256": "c64b9499efa3c36b06aa2b453b571b809ad0944da3f7346151d2cb3390082258"
+      "sha256": "ad87c6b7bd6a12d999913087995333b7e26af6049aa5952c1621e4a2f2019d54"
     },
     {
       "path": "research/specs/order_lifecycle_p1.json",
@@ -162,7 +177,7 @@
     },
     {
       "path": "research/build_order_lifecycle_manifest.mjs",
-      "sha256": "587746179f3189b926cdc7ce2603986ee95568afb7ea37bda0a3130e90cf348e"
+      "sha256": "c2c6c618128edabfa6c23293bdf02342b6decd7f9fe9511d3c5acef07a933e05"
     },
     {
       "path": "research/reports/order_lifecycle_report.json",

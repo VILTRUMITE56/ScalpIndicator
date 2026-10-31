@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "model_id": "BTC-PERP-P1-PORTFOLIO-SHADOW-2026-10",
+  "status": "conditional_historical_portfolio_scenario_not_profitability_evidence",
+  "parent_signal_contract": "BTC-PERP-PULLBACK-P1",
+  "execution_policy_version": "BTC-PERP-EXEC-1",
+  "purpose": "Replay unchanged P1 signals chronologically under a single-position, rounded-sizing, hypothetical full-fill policy so candidate-independent statistics can be compared with portfolio-constrained outcomes.",
+  "history": {
+    "start_utc_inclusive": "2024-10-01T00:00:00.000Z",
+    "end_utc_exclusive": "2026-10-01T00:00:00.000Z",
+    "primary_price_data": "Binance BTCUSDT trade OHLC, 1m; retained research proxy only",
+    "execution_profiles_minutes": [5, 15],
+    "period_grouping": "UTC calendar day and month",
+    "holdout_status": "The complete inspected period is development material, not an untouched holdout."
+  },
+  "portfolio_policy": {
+    "initial_research_cash_quote": 10000,
+    "initial_cash_basis": "Matches the existing B0 research account convention; it is not the user's account balance or a recommended allocation.",
+    "position_limit": 1,
+    "pyramiding": false,
+    "candidate_policy": "Only unchanged candidates passing the existing 15 bp cost/R and 2.5 ATR stop gates can be considered. Evaluate candidates in chronological decision-time order. A candidate while a position is open, during the existing three-bar post-exit or post-submit cooldown, or failing post-rounding contract/risk checks is skipped and recorded.",
+    "same_time_conflicts": "If multiple candidate events occur at the same profile decision timestamp, mark all as conflict-blocked rather than choose a side by row order.",
+    "pending_orders": "No pending period is simulated. Accepted submissions receive an immediate complete hypothetical fill; unfilled limits, partial fills, queue position, rejection, and cancel/fill races are unknown.",
+    "entry_fill": "Assume a full fill at the rounded strategy limit, which is offset 2 bp from the planned next-execution-bar open. This is a conditional model price, not an observed fill.",
+    "barrier_data": "Start at the candidate decision minute and scan trade 1m OHLC. A stop gap exits at that minute's open; a target gap receives that open; if both barriers occur in a minute, use stop-first. No time exit is imposed.",
+    "data_end": "Do not force-close an open position. Keep it open and report end mark-to-market plus a hypothetical round-trip liquidation cost separately.",
+    "funding": "Excluded; it is a separate signed cashflow and target treatment remains unresolved.",
+    "intraday_equity": "Report daily close marked equity; do not characterize it as intraday maximum drawdown.",
+    "venue_filter_limit": "Use the captured static tick, quantity, and notional filter values; do not model the dynamic mark-price-based PERCENT_PRICE rejection filter. The venue is unconfirmed."
+  },
+  "contract_grid_and_sizing": {
+    "tick_size": 0.1,
+    "quantity_step": 0.001,
+    "minimum_quantity": 0.001,
+    "maximum_market_quantity": 120,
+    "minimum_entry_and_protective_notional_quote": 50,
+    "source": "Captured Binance BTCUSDT USD-M contract snapshot, used as a historical research proxy; venue remains unconfirmed.",
+    "limit_offset_fraction": 0.0002,
+    "entry_rounding": "Long floor to tick; short ceil to tick.",
+    "stop_rounding": "Long ceil toward entry; short floor toward entry.",
+    "target_rounding": "Long ceil to preserve reward; short floor to preserve reward.",
+    "risk_fraction": 0.0025,
+    "maximum_modeled_loss_quote": 1,
+    "sizing_cost_fraction": 0.0015,
+    "cash_reserve_fraction": 0.001,
+    "size_formula": "floor_to_step(min(min(strategy_cash*risk_fraction, maximum_modeled_loss)/(abs(rounded_entry_limit-rounded_stop)+rounded_entry_limit*sizing_cost_fraction), strategy_cash/(rounded_entry_limit*(1+cash_reserve_fraction)), maximum_market_quantity))",
+    "post_rounding_gate": "Require directional entry/stop/target geometry, quantity minimum/maximum, entry and protective minimum notional, and quantity*(rounded_entry_stop_distance + rounded_entry_limit*sizing_cost_fraction) <= risk budget. The source's min(protective levels)*quantity check is used.",
+    "strategy_cash": "Initial cash plus realized gross PnL minus the simulator's modeled 5 bp commission on each executed side. Hypothetical non-fee execution drag is not included in strategy cash sizing, matching the strategy adapter's separation of simulator cash fees from the risk reserve."
+  },
+  "cost_scenarios": {
+    "round_trip_basis_points": [10, 15, 20],
+    "sizing_basis_points": 15,
+    "pnl_formula": "directional quote PnL minus round_trip_fraction * average(entry_notional, exit_notional); charge scenario once.",
+    "components": "10 bp represents two reference 5 bp commissions. 15 bp adds hypothetical 5 bp non-fee drag; 20 bp adds hypothetical 10 bp non-fee drag. Actual account fees, spread, slippage, funding, and fills are unknown.",
+    "notional": "Linear BTC quantity; quote PnL is quantity * signed price change."
+  },
+  "risk_and_result_reporting": {
+    "trade_initial_risk_quote": "rounded quantity * (abs(entry_limit-stop) + entry_limit*0.0015)",
+    "daily_equity": "Initial research cash + cumulative closed net PnL under a cost scenario + any open position's theoretical liquidation net PnL at that UTC day's final trade close.",
+    "profit_factor": "Sum of positive closed net PnL divided by absolute sum of negative closed net PnL; undefined when there are no losses.",
+    "open_trade": "Excluded from closed trade win rate, expectancy, and profit factor; reported separately with gross mark PnL and estimated cost to liquidate.",
+    "activity": "Report triggers, 15 bp gate passes, order eligibility, assumed fills, cooldown/position/rounding rejections, and closed trades separately. Actual order/fill counts remain NOT_OBSERVED/UNKNOWN."
+  },
+  "signal_configurations_consumed": 0
+}

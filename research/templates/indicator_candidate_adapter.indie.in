@@ -1,4 +1,13 @@
         # BEGIN GENERATED INDICATOR CANDIDATE ADAPTER
+        candidate_entry_extension_atr = nan
+        if candidate_side != 0 and atr[1] > 0.0:
+            candidate_entry_extension_atr = candidate_side * (self.close[1] - entry_fast[1]) / atr[1]
+        if self.is_new_bar:
+            self._b4_reject_event = False
+        if (candidate_side != 0 and self._b4_avoid_extended_entries and candidate_blocker == 'NONE' and
+                candidate_entry_extension_atr > 1.0):
+            candidate_blocker = 'B4 EXTENSION > 1.0 ATR'
+            self._b4_reject_event = True
         if self.is_new_bar:
             self._stop_reject_event = False
             self._invalid_stop_event = False
@@ -21,6 +30,8 @@
                     self._wide_stop_event = True
                 elif candidate_blocker == 'COST > {{cost_r_cap}}R':
                     self._cost_reject_event = True
+                elif candidate_blocker == 'B4 EXTENSION > 1.0 ATR':
+                    self._b4_reject_event = True
                 if candidate_blocker == 'INVALID STOP' or candidate_blocker == 'INVALID ENTRY OR ATR' or candidate_blocker == 'STOP > {{stop_cap_atr}} ATR':
                     self._stop_reject_event = True
                 status_text = 'BLOCKED | ' + candidate_blocker

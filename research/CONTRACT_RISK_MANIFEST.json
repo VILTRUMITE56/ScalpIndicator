@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "manifest_id": "btc-perp-contract-risk-p1-2026-10-30",
-  "generated_at_utc": "2026-10-31T04:35:11.376Z",
+  "generated_at_utc": "2026-10-31T06:20:40.241Z",
   "policy_id": "BTC-PERP-RISK-OPS-P1",
   "parent_commit": "f7d324abe8e3ea7483c1ceecd4d98fd496335fcd",
   "status": "paper_reference_fixtures_verified_binance_proxy_snapshot_captured_actual_execution_filters_fills_and_user_locks_unconfirmed_or_disabled",
@@ -130,7 +130,7 @@
     "native_account_equity_locks": "NOT_AVAILABLE_IN_DOCUMENTED_STRATEGY_FIELDS",
     "risk_lock_fixtures": "PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_PER_TRADE_GAP_BREACH_AND_EXPLICIT_RESET",
     "hold_policy_registration": "PASS_TP_SL_ONLY_VERSIONED_NO_TIME_EXIT_ADDED",
-    "native_strategy_grid_integration": "SOURCE_COMPILED_RUNTIME_QUICK_PASS_AND_TAKEPROFIT_BACKTESTED; 5m had zero trades, 15m one simulated short loss; dynamic PERCENT_PRICE and real fill behavior remain unverified",
+    "native_strategy_grid_integration": "CURRENT_LOCAL_SOURCE_COMPILE_AND_RUNTIME_QUICK_PASS_ON_EPHEMERAL_COPY; retained bounded 5m/15m simulator diagnostic belongs to the preceding source revision, remains history-insufficient, and is not profitability evidence; dynamic PERCENT_PRICE and real fill behavior remain unverified",
     "issue_8_close": "BLOCKED_DYNAMIC_PERCENT_PRICE_ACTUAL_FILL_COST_AND_EXECUTION_VENUE_RECONCILIATION",
     "profitability": "NOT_EVALUATED; no claim"
   },
@@ -172,15 +172,15 @@
     },
     {
       "path": "research/README_CANDIDATE_P1.md",
-      "sha256": "98705b78e73258d3f66855a9b4dc0010d66856528250a25d39764092cfa852c1"
+      "sha256": "6ee7314f9f89f22527fed3349de812e034307b2bbd442982e713f20b8ceabfc3"
     },
     {
       "path": "research/reports/contract_risk_report.json",
-      "sha256": "02b48f416bf4899729bcb60d2f4499db9c940fec3a4fc034c0888ce6db8b6d42"
+      "sha256": "947878390b369e8fc2e1b9b8a0eeea634c9c36b4c2dd51a12d7fd8c49c10e8f9"
     },
     {
       "path": "research/reports/contract_risk_report.md",
-      "sha256": "2e3aedc13de29178de353464f50d3ee3e912fe274098de563b883a78316fdb80"
+      "sha256": "42dba8eb6504349134ddceb9849acec14cd9fb063d91294ab4af653d26ce8a74"
     },
     {
       "path": "research/reports/contract_risk_fixtures.csv",
@@ -188,11 +188,11 @@
     },
     {
       "path": "research/reports/p1_native_risk_backtest_summary.json",
-      "sha256": "f65d6b18ebb47b8f632ef0057c8e868228bf9cd394e468a14771982c5df9d63b"
+      "sha256": "3f2e874b056ccd6a794fafc4e80f9f608ca0133e9244d91edbf61719fb216552"
     },
     {
       "path": "indie/btc_pullback_strategy_p1.indie",
-      "sha256": "14ea0b0bbdc2e2e421618e4b91bb1f01218a69fd695554af40237bd24861ee99"
+      "sha256": "ad87c6b7bd6a12d999913087995333b7e26af6049aa5952c1621e4a2f2019d54"
     },
     {
       "path": "docs/EXCHANGE_FILTER_EVIDENCE.md",

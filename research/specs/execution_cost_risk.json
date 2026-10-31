@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "spec_version": "1.0.5",
-  "recorded_at_utc": "2026-10-30T13:01:30Z",
+  "spec_version": "1.0.6",
+  "recorded_at_utc": "2026-10-31T00:00:00Z",
   "status": "research_checkpoint_complete_deployment_requirements_pending",
   "purpose": "Record the current BTC perpetual research proxy, cost model, risk defaults, source trail, and decisions that remain open. This is not a live trading configuration.",
   "checkpoint_resolution": "GitHub issue #3 is complete as a research-only input/specification checkpoint. The user explicitly kept Binance as a proxy, personal daily-loss/drawdown limits unset, and account fee rates unknown; isolated margin and an all-in $1 loss cap for fees/slippage are confirmed. No execution venue is selected and closure does not authorize live trading.",
@@ -57,7 +57,7 @@
         "fraction": 0.0015,
         "classification": "current research cost gate/sizing placeholder",
         "measured": false,
-        "note": "Existing B0 setting; not a verified realized round-trip cost and not fully debited from native strategy P&L."
+        "note": "Existing P1 candidate gate and order-risk reserve; total 15 bp scenario includes both 5 bp per-side commission assumptions plus 5 bp hypothetical non-fee execution drag. It is not a verified realized cost and is not fully debited from native simulator P&L."
       },
       {
         "bps": 20,
@@ -67,7 +67,7 @@
         "note": "Stress case only; no evidence says this equals the venue's actual cost."
       }
     ],
-    "scenario_convention": "10/15/20 bp are non-funding round-trip execution-cost sensitivities, not venue quotes. The 15 bp value remains frozen; do not lower any case to create more trades. Funding is a separate signed position cash flow.",
+    "scenario_convention": "10/15/20 bp are total non-funding round-trip execution-cost sensitivities, including the simulator's two 5 bp commission charges in each case. The 15 bp value remains frozen and is reserved once for P1 strategy risk sizing; do not add its two commission legs to the reserve again or lower any case to create more trades. In TakeProfit simulated P&L, the two commission legs are actually charged and only missing non-fee execution drag should be added for a 15/20 bp net result. Funding is a separate signed position cash flow.",
     "commission": {
       "measured": false,
       "value_used_by_native_backtest": "5 bp per execution",

@@ -6,7 +6,10 @@
     "takeprofit_script_id": "5113f0ea-0801-47d3-81dd-c4f970af8753",
     "script_version": 3,
     "validation": "compile and runtime_quick passed on exact local P1 strategy source; 5,000 bars, 1/1 runtime ok",
-    "source_scope": "ephemeral disposable script; protected linked platform copy was not modified"
+    "source_scope": "ephemeral disposable script; protected linked platform copy was not modified",
+    "validated_source_sha256": "14ea0b0bbdc2e2e421618e4b91bb1f01218a69fd695554af40237bd24861ee99",
+    "matches_current_local_source": false,
+    "note": "Historical bounded simulator diagnostic for the preceding P1 strategy source. It is not a backtest of BTC-PERP-EXEC-1 and has insufficient history."
   },
   "instrument": {
     "ticker": "BTC/USDT.P",

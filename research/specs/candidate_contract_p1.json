@@ -32,6 +32,16 @@
     "invalidation": "Completed close through EMA50 or any completed candle wick touching/crossing the frozen structural invalidation clears the setup. Bias loss, data gaps, and incomplete HTF boundaries clear/re-arm through recovery.",
     "one_shot": "Consume every triggered candidate once before operational/execution gates, including candidates later blocked by risk or order-state gates."
   },
+  "indicator_only_research_filters": {
+    "B4": {
+      "setting": "b4_avoid_extended_entries",
+      "enabled_by_default": false,
+      "rule": "When enabled, reject an otherwise eligible trigger only if side * (completed_trigger_close - EMA20) / trigger_ATR14 > 1.0.",
+      "scope": "Indicator adapter only; shared P1 candidate core and P1/P2 strategy sources remain unchanged.",
+      "candidate_reason_code": 14,
+      "status": "Implemented locally and compiled on TakeProfit working copy v29; runtime validation not run, saved platform version unchanged, profitability unproven."
+    }
+  },
   "planned_entry_risk_contract": {
     "immutable_fields": ["candidate_id", "touch_time_utc", "trigger_time_utc", "touch_anchor", "setup_atr", "structural_invalidation", "planned_entry_quote", "planned_stop", "planned_target", "round_trip_cost_fraction", "cost_to_risk", "risk_blocker"],
     "planned_entry_quote": "Open of the execution bar immediately following the completed trigger candle. This is a reference quote, not a fill.",
@@ -48,7 +58,9 @@
     "risk_gate": "round_trip_cost_fraction * planned_entry_quote / stop_distance <= 0.20",
     "target_formula": "Long: planned_entry_quote + 1.5 * stop_distance. Short: planned_entry_quote - 1.5 * stop_distance.",
     "round_trip_cost_fraction": 0.0015,
-    "cost_status": "Unverified research gate, not a fully deducted realized cost or venue fee quote."
+    "cost_components": "The frozen 10/15/20 bp non-funding scenarios include both modeled 5 bp per-side simulator commissions. The 15 bp base case also includes an assumed 5 bp round-trip non-fee execution reserve; account commission, actual spread, and slippage remain unverified.",
+    "candidate_cost_to_risk": "For candidate screening only, approximate modeled round-trip cost as planned_entry_quote times round_trip_cost_fraction divided by planned_stop_distance. This is a scenario, not a measured fill or fee.",
+    "cost_status": "Frozen hypothetical research scenario. It is reserved once in modeled order-risk sizing. Funding, adverse gaps, and venue execution remain separate."
   },
   "candidate_id": {
     "format": "{venue_code}|{takeprofit_symbol}|{execution_minutes}m|{LONG_OR_SHORT}|{touch_unix_utc_seconds}|{trigger_unix_utc_seconds}|BTC-PERP-PULLBACK-P1",
@@ -56,10 +68,37 @@
     "stable_across_history_windows": true
   },
   "execution_separation": {
+    "execution_policy_version": "BTC-PERP-EXEC-1",
     "strategy_limit_offset_fraction": 0.0002,
     "long_limit_quote": "planned_entry_quote * (1 + strategy_limit_offset_fraction)",
     "short_limit_quote": "planned_entry_quote * (1 - strategy_limit_offset_fraction)",
     "protective_levels": "Attach the immutable planned_stop and planned_target. Do not recalculate them from the strategy limit quote.",
+    "sizing_cost_reserve": "For the rounded strategy limit and stop, reserve cost_fraction once per unit notional alongside stop distance. Do not add another pair of 5 bp commissions to this reserve. This is a risk-sizing reserve, not an additional simulator P&L debit.",
+    "simulator_cash_costs": "TakeProfit simulator P&L separately debits the configured 5 bp commission on each executed side. The 15 bp scenario already includes that 10 bp commission reference; the remaining 5 bp is a hypothetical non-fee risk reserve and is not automatically debited from simulator P&L.",
+    "non_funding_scenarios_bps": [10, 15, 20],
+    "funding": "Excluded from round-trip execution-cost fractions. Record and apply signed funding separately when an open position crosses settlement.",
+    "execution_candidate_outputs": {
+      "event_code": "0 no candidate on the current calculation; 1 a candidate was evaluated. It does not mean an order was accepted or filled.",
+      "reason_code": {
+        "0": "reserved/unknown",
+        "2": "submit request issued",
+        "10": "invalid entry or setup ATR",
+        "11": "invalid stop",
+        "12": "stop exceeds ATR cap",
+        "13": "candidate cost/R gate",
+        "20": "position already open",
+        "21": "entry pending or resolved during this calculation",
+        "22": "entry/exit cooldown",
+        "23": "no available strategy cash",
+        "24": "invalid contract filter grid",
+        "25": "rounded entry/stop/target geometry invalid",
+        "26": "rounded size or protective notional below minimum",
+        "27": "quantity exceeds configured maximum",
+        "28": "rounded all-in stop risk exceeds modeled budget",
+        "29": "computed size is not positive"
+      },
+      "candidate_trigger_utc_s": "Unix UTC seconds at the trigger candle open; identifies the candidate event for diagnostics."
+    },
     "fills": "Actual fill price, queue position, partial fills, cancel/fill races, commissions, spread, slippage, and funding are execution outcomes and remain distinct from the candidate contract."
   },
   "method_change_notes": [

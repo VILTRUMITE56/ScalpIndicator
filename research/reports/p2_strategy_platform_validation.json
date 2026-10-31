@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "evidence_id": "BTC-PERP-P2-NET-TARGET-5-01-TAKEPROFIT-VALIDATION-2026-10-31",
+  "validated_at_utc": "2026-10-31T06:17:05Z",
+  "strategy_source": "indie/btc_pullback_strategy_p2.indie",
+  "strategy_source_sha256_raw_bytes": "568a9c1b9b1db3a97bc8309314a2b67d7007090f736dc0faa491e07bb08b7b60",
+  "working_copy": {
+    "script_id": "04097f66-dda1-42d2-a0f2-9151fd8598b5",
+    "script_version": 1,
+    "ephemeral": true,
+    "saved_to_platform": false
+  },
+  "compile": {
+    "valid": true,
+    "message": "Script compile validation passed."
+  },
+  "runtime_quick": {
+    "valid": true,
+    "bars": 5000,
+    "runs": 1,
+    "successful_runs": 1,
+    "calculation_time_ms": 6915.1,
+    "scope": "Runtime validation only; not a historical strategy performance test."
+  },
+  "native_backtest": {
+    "status": "NOT_RUN_PLAN_BAR_LIMIT",
+    "requested_ticker": "BTC/USDT.P",
+    "exchange_code": "CXBNF8",
+    "timeframe": "5 minutes",
+    "date_from": "2024-10-01T00:00:00Z",
+    "date_to": "2026-09-30T23:59:59Z",
+    "requested_bars": 210240,
+    "available_bars": 5060,
+    "error": "Connected plan does not support the requested bar count; no native backtest result was produced."
+  },
+  "bounded_probe": {
+    "status": "COMPLETED_ZERO_TRADES_IN_INSUFFICIENT_WINDOW",
+    "indicator_instance_id": "13ff4480-dc92-48e6-8f47-02b0232a9a52",
+    "source_script_id": "04097f66-dda1-42d2-a0f2-9151fd8598b5",
+    "source_script_version": 1,
+    "captured_at_utc": "2026-10-31T06:44:57.035373Z",
+    "expires_at_utc": "2026-10-31T06:59:57Z",
+    "requested_period_utc": ["2026-09-15T00:00:00Z", "2026-09-30T23:59:59Z"],
+    "requested_timeframe": "5 minutes",
+    "requested_ticker": "BTC/USDT.P",
+    "exchange_code": "CXBNF8",
+    "reported_last_bar_at_utc": "2026-10-27T19:25:00Z",
+    "reported_last_bar_outside_requested_period": true,
+    "history_sufficient": false,
+    "has_more_items_on_left": true,
+    "has_more_items_on_right": false,
+    "reported_trade_count": 0,
+    "reported_realized_pnl_quote": 0.0,
+    "reported_commissions_quote": 0.0,
+    "assumptions": {
+      "initial_capital_quote": 10000.0,
+      "simulator_commission_fraction": 0.0005,
+      "simulator_commission_type": "Percent",
+      "modeled_round_trip_cost_fraction": 0.0015,
+      "risk_fraction": 0.0025,
+      "minimum_net_target_quote": 5.01,
+      "fills": "TakeProfit strategy simulator only; no exchange fills observed"
+    },
+    "interpretation": "Platform execution probe only. Zero trades do not estimate strategy profitability. The returned last-bar timestamp falls outside the requested interval and the history is explicitly insufficient, so the period boundary must be resolved before treating this as a dated performance sample."
+  }
+}

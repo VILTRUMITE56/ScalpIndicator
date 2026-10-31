@@ -9,6 +9,7 @@ from math import nan
 @param.float('cost_fraction', default=0.0015, min=0.0001, max=0.01)
 @param.bool('research_mode', default=False, title='Research diagnostics')
 @param.bool('show_htf_emas', default=False, title='Show higher-timeframe EMAs')
+@param.bool('b4_avoid_extended_entries', default=False, title='B4 research: reject entries >1.0 ATR from EMA20')
 @plot.line('Entry EMA 20', color=color.AQUA)
 @plot.line('Entry EMA 50', color=color.ORANGE)
 @plot.line('HTF EMA 20', color=color.BLUE)
@@ -29,13 +30,16 @@ from math import nan
 @plot.line(id='candidate_entry_quote', title='Candidate Entry Quote', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
 @plot.line(id='candidate_stop', title='Candidate Stop', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
 @plot.line(id='candidate_target', title='Candidate Target', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='candidate_reason_code', title='Candidate Reason Code', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='candidate_entry_extension_atr', title='Candidate Entry Extension ATR', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
 @plot.line(id='model_outcome_event_code', title='Model Outcome Event Code', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
 @plot.line(id='model_outcome_utc_s', title='Model Outcome Candle UTC Seconds', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
 class Main(MainContext):
-    def __init__(self, cost_fraction, research_mode, show_htf_emas):
+    def __init__(self, cost_fraction, research_mode, show_htf_emas, b4_avoid_extended_entries):
         self._cost_fraction = cost_fraction
         self._research_mode = research_mode
         self._show_htf_emas = show_htf_emas
+        self._b4_avoid_extended_entries = b4_avoid_extended_entries
         self._last_signal_bar = -100
         self._last_exit_bar = -100
         self._signal_bar = -1
@@ -71,6 +75,7 @@ class Main(MainContext):
         self._invalid_stop_event = False
         self._wide_stop_event = False
         self._cost_reject_event = False
+        self._b4_reject_event = False
         self._model_signal_event = False
         self._invalidated_event = False
         self._expired_event = False
@@ -100,6 +105,8 @@ class Main(MainContext):
         self._last_candidate_entry = nan
         self._last_candidate_stop = nan
         self._last_candidate_target = nan
+        self._last_candidate_extension_atr = nan
+        self._last_candidate_reason_code = 0
         self._eligible_hours = 0.0
         self._table = Table(position=RelativePosition(va.TOP, ha.RIGHT, 0.05, 0.95))
 
@@ -122,6 +129,7 @@ class Main(MainContext):
         invalid_stop_bars = MutSeries[int].new(init=0)
         wide_stop_bars = MutSeries[int].new(init=0)
         cost_reject_bars = MutSeries[int].new(init=0)
+        b4_reject_bars = MutSeries[int].new(init=0)
         model_signal_bars = MutSeries[int].new(init=0)
         invalidated_bars = MutSeries[int].new(init=0)
         expired_bars = MutSeries[int].new(init=0)
@@ -208,6 +216,8 @@ class Main(MainContext):
         candidate_entry_output = nan
         candidate_stop_output = nan
         candidate_target_output = nan
+        candidate_reason_code_output = 0.0
+        candidate_entry_extension_atr_output = nan
         outcome_event_code_output = 0.0
         outcome_utc_output = nan
         if self.is_new_bar:
@@ -579,6 +589,15 @@ class Main(MainContext):
                     self._short_recovery_bar = -1
         # END GENERATED SHARED CANDIDATE CORE
         # BEGIN GENERATED INDICATOR CANDIDATE ADAPTER
+        candidate_entry_extension_atr = nan
+        if candidate_side != 0 and atr[1] > 0.0:
+            candidate_entry_extension_atr = candidate_side * (self.close[1] - entry_fast[1]) / atr[1]
+        if self.is_new_bar:
+            self._b4_reject_event = False
+        if (candidate_side != 0 and self._b4_avoid_extended_entries and candidate_blocker == 'NONE' and
+                candidate_entry_extension_atr > 1.0):
+            candidate_blocker = 'B4 EXTENSION > 1.0 ATR'
+            self._b4_reject_event = True
         if self.is_new_bar:
             self._stop_reject_event = False
             self._invalid_stop_event = False
@@ -601,6 +620,8 @@ class Main(MainContext):
                     self._wide_stop_event = True
                 elif candidate_blocker == 'COST > 0.2R':
                     self._cost_reject_event = True
+                elif candidate_blocker == 'B4 EXTENSION > 1.0 ATR':
+                    self._b4_reject_event = True
                 if candidate_blocker == 'INVALID STOP' or candidate_blocker == 'INVALID ENTRY OR ATR' or candidate_blocker == 'STOP > 2.5 ATR':
                     self._stop_reject_event = True
                 status_text = 'BLOCKED | ' + candidate_blocker
@@ -643,6 +664,23 @@ class Main(MainContext):
             self._last_candidate_entry = candidate_planned_entry
             self._last_candidate_stop = candidate_stop
             self._last_candidate_target = candidate_target
+            self._last_candidate_extension_atr = candidate_entry_extension_atr
+            candidate_reason_code_output = 1.0
+            if self._active_reject_event:
+                candidate_reason_code_output = 20.0
+            elif self._cooldown_reject_event:
+                candidate_reason_code_output = 22.0
+            elif candidate_blocker == 'INVALID ENTRY OR ATR':
+                candidate_reason_code_output = 10.0
+            elif candidate_blocker == 'INVALID STOP':
+                candidate_reason_code_output = 11.0
+            elif candidate_blocker == 'STOP > 2.5 ATR':
+                candidate_reason_code_output = 12.0
+            elif candidate_blocker == 'COST > 0.2R':
+                candidate_reason_code_output = 13.0
+            elif candidate_blocker == 'B4 EXTENSION > 1.0 ATR':
+                candidate_reason_code_output = 14.0
+            self._last_candidate_reason_code = int(candidate_reason_code_output)
             if self._active_reject_event:
                 self._candidate_event_code = 2
             elif self._cooldown_reject_event:
@@ -661,7 +699,9 @@ class Main(MainContext):
             candidate_entry_output = candidate_planned_entry
             candidate_stop_output = candidate_stop
             candidate_target_output = candidate_target
+            candidate_entry_extension_atr_output = candidate_entry_extension_atr
             candidate_event_code_output = float(self._candidate_event_code)
+            candidate_reason_code_output = float(self._last_candidate_reason_code)
 
         pullback_bars[0] = pullback_bars[1]
         trigger_bars[0] = trigger_bars[1]
@@ -674,6 +714,7 @@ class Main(MainContext):
         expired_bars[0] = expired_bars[1]
         active_reject_bars[0] = active_reject_bars[1]
         cooldown_reject_bars[0] = cooldown_reject_bars[1]
+        b4_reject_bars[0] = b4_reject_bars[1]
         if self._trend_event:
             trend_bars[0] = trend_bars[1] + 1
         if self._pullback_event:
@@ -698,6 +739,8 @@ class Main(MainContext):
             active_reject_bars[0] = active_reject_bars[1] + 1
         if self._cooldown_reject_event:
             cooldown_reject_bars[0] = cooldown_reject_bars[1] + 1
+        if self._b4_reject_event:
+            b4_reject_bars[0] = b4_reject_bars[1] + 1
 
         if self._outcome_bar == self.bar_index:
             outcome_marker = self._outcome_price
@@ -721,6 +764,10 @@ class Main(MainContext):
             self._last_status_bar = self.bar_index
 
         if self.is_last_bar:
+            b4_setting_text = 'ON | >1.0 ATR blocked' if self._b4_avoid_extended_entries else 'OFF | baseline signals'
+            last_extension_text = '--'
+            if self._last_candidate_side != 0 and self._last_candidate_extension_atr > -9999.0:
+                last_extension_text = str(round(self._last_candidate_extension_atr, 2)) + ' ATR | reason ' + str(self._last_candidate_reason_code)
             setup_text = 'NONE'
             if self._long_pullback_armed:
                 setup_text = ('L#' + str(self._long_pullback_source_bar) + ' | age ' +
@@ -784,6 +831,8 @@ class Main(MainContext):
                 self._table.add_row(['Stop distance | target gross', model_stop_percent + ' | 1.50R'])
                 self._table.add_row(['Cost / target net / break-even', model_cost_r + ' / ' + model_target_net_r + ' / ' + model_break_even])
                 self._table.add_row(['Assumed cost | execution', str(round(self._cost_fraction * 10000.0, 1)) + ' bp RT | planned quote; fill unknown'])
+                self._table.add_row(['B4 anti-chase | rejects', b4_setting_text + ' | ' + str(b4_reject_bars[0])])
+                self._table.add_row(['Last trigger extension', last_extension_text])
                 self._table.add_row(['Latest candidate ID', self._last_candidate_id if self._last_candidate_id != '' else '--'])
                 last_decision_text = '--'
                 if self._last_candidate_decision_utc_s > 0:
@@ -809,6 +858,7 @@ class Main(MainContext):
                     last_boundary_text = str(self.bar_index - self._last_htf_boundary_bar) + ' bars ago | ' + ('complete' if self._last_htf_boundary_complete else 'gap')
                 self._table.add_row(['Bar interval | HTF count / rollover', str(round(time_delta, 1)) + 's | ' + str(htf_count[0]) + ' / ' + last_boundary_text])
                 self._table.add_row(['Event code map', '+1/-1 qualified L/S; 2 active; 3 cooldown; 4 risk reject'])
+                self._table.add_row(['Reason codes', '1 pass; 10 invalid; 11 stop; 12 wide; 13 cost; 14 B4; 20 active; 22 cooldown'])
                 self._table.add_row(['Outcome code map', '+1 TP; -1 SL; 2 ambiguous stop-bound; 0 no event'])
             else:
                 self._table.append(TableRow([TableCell('BTC PULLBACK | COMPACT P1')]))
@@ -818,6 +868,7 @@ class Main(MainContext):
                 self._table.add_row(['Entry quote / stop / target', model_entry + ' / ' + model_stop + ' / ' + model_target])
                 self._table.add_row(['Stop distance | target', model_stop_percent + ' | 1.50R gross'])
                 self._table.add_row(['Assumed cost / cost-to-risk', str(round(self._cost_fraction * 10000.0, 1)) + ' bp RT | ' + model_cost_r])
+                self._table.add_row(['B4 anti-chase | latest extension', b4_setting_text + ' | ' + last_extension_text])
                 self._table.add_row(['Last modeled outcome', self._last_outcome_text])
                 self._table.add_row(['Execution status', 'Next-open quote model | fill unconfirmed'])
                 self._table.add_row(['Research diagnostics', 'Enable Research diagnostics in settings'])
@@ -832,4 +883,5 @@ class Main(MainContext):
                 plot.Marker(outcome_marker, text=self._outcome_text, offset=-1),
                 candidate_event_code_output, candidate_side_output, candidate_touch_utc_output,
                 candidate_trigger_utc_output, candidate_decision_utc_output, candidate_entry_output,
-                candidate_stop_output, candidate_target_output, outcome_event_code_output, outcome_utc_output)
+                candidate_stop_output, candidate_target_output, candidate_reason_code_output,
+                candidate_entry_extension_atr_output, outcome_event_code_output, outcome_utc_output)

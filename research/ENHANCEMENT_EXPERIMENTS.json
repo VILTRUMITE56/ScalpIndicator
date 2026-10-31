@@ -181,7 +181,14 @@
       "id": "B4",
       "family": "ema_pullback",
       "addition": "entry_extension",
-      "max_signed_close_to_ema20_atr": 1
+      "max_signed_close_to_ema20_atr": 1,
+      "implementation": {
+        "status": "INDICATOR_ONLY_OPTIONAL_UNVALIDATED",
+        "setting": "b4_avoid_extended_entries",
+        "default_enabled": false,
+        "profitability_status": "UNPROVEN_NOT_PROMOTED",
+        "strategy_parity": "not implemented in P1/P2 strategy sources; leave off when parity is required"
+      }
     },
     {
       "id": "B5",

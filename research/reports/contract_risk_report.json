@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "policy_id": "BTC-PERP-RISK-OPS-P1",
-  "generated_at_utc": "2026-10-31T04:35:11.097Z",
+  "generated_at_utc": "2026-10-31T05:39:03.540Z",
   "status": "PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_UNCONFIRMED_PERSONAL_LOCKS_DISABLED_BY_USER_CHOICE",
   "venue_proxy": "Binance USD-M BTCUSDT perpetual; research-only",
   "live_filter_snapshot": "FRESH_OFFICIAL_METADATA_RESEARCH_PROXY: captured -0.295 seconds from the official /time reference; research proxy only",
@@ -15,14 +15,15 @@
   "native_platform_limit": "TakeProfit documents context.info.tick_size and price_precision plus strategy min order size/value; it does not document exact Binance quantity steps, account fees, or account-level marked equity/day PnL/high-water equity.",
   "native_platform_validation": {
     "status": "PASS_COMPILE_AND_RUNTIME_QUICK_ON_EPHEMERAL_COPY",
-    "script_id": "5113f0ea-0801-47d3-81dd-c4f970af8753",
-    "script_version": 3,
+    "script_id": "92254833-5b23-4439-a9c2-8f46975debd9",
+    "script_version": 1,
     "validation_mode": "runtime_quick",
-    "source_sha256": "14ea0b0bbdc2e2e421618e4b91bb1f01218a69fd695554af40237bd24861ee99",
+    "source_sha256": "ad87c6b7bd6a12d999913087995333b7e26af6049aa5952c1621e4a2f2019d54",
     "bars_executed": 5000,
     "run_status": "1/1 ok",
     "orders_emitted": 0,
-    "scope": "Disposable script only; the protected linked platform copy was not modified. This validates compilation and runtime safety, not trade performance or order execution parity."
+    "scope": "Exact current local P1 strategy source on a disposable ephemeral copy; the connected working copies were not modified. Runtime validation does not establish profitability or exchange execution parity.",
+    "execution_policy_version": "BTC-PERP-EXEC-1"
   },
   "native_platform_backtest_summary": {
     "schema_version": 1,
@@ -102,7 +103,10 @@
       "The configured reward target remains 1.5R, so a $1 risk cap cannot produce the user's desired $5 or more gross target without a separate reward/risk hypothesis; this run does not test such a change.",
       "The dynamic Binance PERCENT_PRICE filter is captured in the evidence snapshot but is not checked by the native strategy adapter.",
       "Do not infer profitability from zero trades or one losing simulated trade."
-    ]
+    ],
+    "tested_source_sha256": "14ea0b0bbdc2e2e421618e4b91bb1f01218a69fd695554af40237bd24861ee99",
+    "matches_current_local_source": false,
+    "interpretation": "Historical bounded backtest on the preceding strategy source; not performance evidence for BTC-PERP-EXEC-1. Insufficient history, zero 5m trades and one losing 15m simulated trade."
   },
   "fixture_count": 24,
   "all_fixtures_pass": true,
@@ -237,7 +241,7 @@
     "native_account_equity_locks": "NOT_AVAILABLE_IN_DOCUMENTED_STRATEGY_FIELDS",
     "risk_lock_fixtures": "PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_PER_TRADE_GAP_BREACH_AND_EXPLICIT_RESET",
     "hold_policy_registration": "PASS_TP_SL_ONLY_VERSIONED_NO_TIME_EXIT_ADDED",
-    "native_strategy_grid_integration": "SOURCE_COMPILED_RUNTIME_QUICK_PASS_AND_TAKEPROFIT_BACKTESTED; 5m had zero trades, 15m one simulated short loss; dynamic PERCENT_PRICE and real fill behavior remain unverified",
+    "native_strategy_grid_integration": "CURRENT_LOCAL_SOURCE_COMPILE_AND_RUNTIME_QUICK_PASS_ON_EPHEMERAL_COPY; retained bounded 5m/15m simulator diagnostic belongs to the preceding source revision, remains history-insufficient, and is not profitability evidence; dynamic PERCENT_PRICE and real fill behavior remain unverified",
     "issue_8_close": "BLOCKED_DYNAMIC_PERCENT_PRICE_ACTUAL_FILL_COST_AND_EXECUTION_VENUE_RECONCILIATION",
     "profitability": "NOT_EVALUATED; no claim"
   }
