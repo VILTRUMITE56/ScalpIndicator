@@ -1,6 +1,6 @@
 # Contract rounding, fill risk and loss-control reference
 
-Generated: 2026-10-30T17:04:29.629Z
+Generated: 2026-10-31T04:35:11.097Z
 
 Status: PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_UNCONFIRMED_PERSONAL_LOCKS_DISABLED_BY_USER_CHOICE. This is an offline paper/reference model; it is not connected to a trading account.
 
@@ -18,17 +18,18 @@ Status: PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_UNCONFIRMED_PERSONAL_LOCKS_DISA
 ## Results and unresolved inputs
 
 - Synthetic deterministic fixtures: 24/24 pass. Fixture filter values are test data only.
-- Live Binance BTCUSDT filter snapshot: not captured. The official public exchangeInfo endpoint returned HTTP 451 from this environment. The capture script is included and writes a snapshot only after validating a successful live response.
+- Binance BTCUSDT metadata was captured from the official public exchangeInfo endpoint at 2026-10-31T04:33:14.976Z. The exchangeInfo response and subsequent /time reference were -0.295 seconds apart, within the 300-second gate. The snapshot records the dynamic PERCENT_PRICE filter; the native adapter does not enforce that reference-price-based filter. This is the Binance research proxy only.
+- TakeProfit diagnostic backtest: 5m produced 0 trades; 15m produced 1 simulated short, stopped for -$0.3649 net with $0.0803 commission. Both bounded windows are flagged history-insufficient. The single 15m entry and stop share a timestamp, so intrabar execution is unresolved. See `research/reports/p1_native_risk_backtest_summary.json`; these are simulator fills, not exchange fills or profitability evidence.
 - Account maker/taker fees, user fills, historical slippage/spread and funding reserve remain unavailable. Sizing is blocked unless fees, slippage and funding reserve are explicitly supplied. Reconciliation fixtures use synthetic fills and costs only.
 - Personal daily-loss/drawdown limits remain intentionally disabled by the user. Generic fixture thresholds test control behavior only; they are not personal limits, and no personal lock is active.
 - The $1 stop budget is an intended model cap. A gap, liquidation, exchange failure or fill race can exceed it; existing protection is kept and no unverified flatten order is invented.
-- TakeProfit documents `self.info.tick_size` and `self.info.price_precision` through `Context.info` (inherited by `MainStrategyContext`) and exposes strategy min order size/value. This permits platform-context price tick handling but is not a captured Binance filter snapshot. Exact quantity steps/maxima, account fees, marked account equity, daily PnL, peak equity and user margin tier remain unavailable as documented script fields.
+- TakeProfit documents `self.info.tick_size` and `self.info.price_precision` through `Context.info` (inherited by `MainStrategyContext`) and exposes strategy min order size/value. The native adapter uses chart tick data plus configured Binance research-proxy quantity filters; the chart context does not expose Binance LOT_SIZE or MARKET_LOT_SIZE automatically. Account fees, marked account equity, daily PnL, peak equity and user margin tier remain unavailable as documented script fields.
 
 ## Issue #8 acceptance state
 
-- Reference rounding and post-rounding risk eligibility: fixture-verified with synthetic venue filters; current venue rules are still unverified.
+- Reference rounding and post-rounding risk eligibility: fixture-verified with synthetic filters; current Binance research-proxy filters were captured, but actual execution venue rules remain unconfirmed.
 - Supplied-fill reconciliation: fixture-verified for partial fills, fees, funding, marked equity, stressed stop loss, planned size and protective coverage; user/exchange fill records remain absent.
-- Native execution integration: not complete. The strategy still relies on a user-entered quantity step and has not been switched to verified venue filters; keep it research-only.
+- Native execution adapter: source now uses the chart tick size, conservative directional price rounding, a configurable common quantity step, captured minimum quantity/notional and market maximum defaults, and post-rounding risk sizing capped at the user-confirmed $1 research budget. The exact local source compiled and passed runtime_quick on a disposable TakeProfit copy (5,000 bars). The 5m/15m bounded backtest emitted no 5m trades and one losing 15m simulator trade; both history windows are insufficient. The dynamic PERCENT_PRICE filter is not implemented by the native adapter. Keep it research-only.
 - Daily/drawdown policy: the user-approved choice to leave personal thresholds unset is recorded; generic lock and reset behavior is fixture-verified, while personal account locks remain disabled.
 - Holding policy: TP/SL-only with no maximum hold is recorded as BTC-PERP-EXIT-TP-SL-ONLY-1; changes require a separate experiment.
 - Profitability: not evaluated by these engineering fixtures.
@@ -73,4 +74,4 @@ The capture command requires access to the public Binance USD-M exchangeInfo end
 
 ## Decision
 
-The reference rounding, supplied-fill reconciliation, equity and lock behavior is fixture-verified. Issue #8 cannot be fully closed yet: current Binance filters, native strategy use of a verified quantity grid, and observed account fill/cost data are absent. The user-approved choice to keep personal daily/drawdown locks disabled is recorded; do not present those controls as active protection. Do not enable live sizing from these fixtures.
+The reference rounding, supplied-fill reconciliation, equity and lock behavior is fixture-verified. A fresh Binance research-proxy snapshot is captured, and the native grid adapter compiles, runs and places a simulated 15m order on an ephemeral copy. Issue #8 cannot be fully closed yet: the adapter does not check the dynamic PERCENT_PRICE filter, the only bounded 15m sample is one loss with same-bar ambiguity, and account fills, fees, spread, slippage and funding remain unobserved. The execution venue is not confirmed. The user-approved choice to keep personal daily/drawdown locks disabled is recorded; do not present those controls as active protection. Do not enable live sizing from simulator fills or unconfirmed account settings.
