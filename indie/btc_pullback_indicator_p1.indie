@@ -2,10 +2,13 @@
 from indie import indicator, MainContext, param, plot, color, MutSeries, MutSeriesF
 from indie.algorithms import Ema, Atr
 from indie.drawings import Table, TableCell, TableRow, RelativePosition, vertical_anchor as va, horizontal_anchor as ha
+from datetime import datetime
 from math import nan
 
 @indicator('BTC Perp Pullback Signals P1 - Research', overlay_main_pane=True)
 @param.float('cost_fraction', default=0.0015, min=0.0001, max=0.01)
+@param.bool('research_mode', default=False, title='Research diagnostics')
+@param.bool('show_htf_emas', default=False, title='Show higher-timeframe EMAs')
 @plot.line('Entry EMA 20', color=color.AQUA)
 @plot.line('Entry EMA 50', color=color.ORANGE)
 @plot.line('HTF EMA 20', color=color.BLUE)
@@ -18,9 +21,21 @@ from math import nan
 @plot.marker('LONG candidate', style=plot.marker_style.LABEL, position=plot.marker_position.BELOW, color=color.GREEN)
 @plot.marker('SHORT candidate', style=plot.marker_style.LABEL, position=plot.marker_position.ABOVE, color=color.RED)
 @plot.marker('Modeled outcome', style=plot.marker_style.LABEL, position=plot.marker_position.CENTER, color=color.YELLOW)
+@plot.line(id='candidate_event_code', title='Candidate Event Code', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='candidate_side', title='Candidate Side', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='candidate_touch_utc_s', title='Candidate Touch UTC Seconds', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='candidate_trigger_utc_s', title='Candidate Trigger UTC Seconds', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='candidate_decision_utc_s', title='Candidate Decision UTC Seconds', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='candidate_entry_quote', title='Candidate Entry Quote', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='candidate_stop', title='Candidate Stop', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='candidate_target', title='Candidate Target', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='model_outcome_event_code', title='Model Outcome Event Code', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='model_outcome_utc_s', title='Model Outcome Candle UTC Seconds', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
 class Main(MainContext):
-    def __init__(self, cost_fraction):
+    def __init__(self, cost_fraction, research_mode, show_htf_emas):
         self._cost_fraction = cost_fraction
+        self._research_mode = research_mode
+        self._show_htf_emas = show_htf_emas
         self._last_signal_bar = -100
         self._last_exit_bar = -100
         self._signal_bar = -1
@@ -68,9 +83,24 @@ class Main(MainContext):
         self._outcome_bar = -1
         self._outcome_text = ''
         self._outcome_price = nan
+        self._last_outcome_text = '--'
+        self._last_outcome_price = nan
+        self._last_outcome_side = 0
+        self._last_outcome_utc_s = -1
+        self._model_outcome_event_code = 0
         self._last_htf_boundary_bar = -1
         self._last_htf_boundary_complete = False
         self._last_candidate_id = ''
+        self._candidate_event_code = 0
+        self._last_candidate_event_code = 0
+        self._last_candidate_side = 0
+        self._last_candidate_touch_utc_s = -1
+        self._last_candidate_trigger_utc_s = -1
+        self._last_candidate_decision_utc_s = -1
+        self._last_candidate_entry = nan
+        self._last_candidate_stop = nan
+        self._last_candidate_target = nan
+        self._eligible_hours = 0.0
         self._table = Table(position=RelativePosition(va.TOP, ha.RIGHT, 0.05, 0.95))
 
     def calc(self):
@@ -170,7 +200,22 @@ class Main(MainContext):
         model_entry_line = nan
         status_text = 'WARMUP'
         bias_text = 'WARMUP'
+        candidate_event_code_output = 0.0
+        candidate_side_output = nan
+        candidate_touch_utc_output = nan
+        candidate_trigger_utc_output = nan
+        candidate_decision_utc_output = nan
+        candidate_entry_output = nan
+        candidate_stop_output = nan
+        candidate_target_output = nan
+        outcome_event_code_output = 0.0
+        outcome_utc_output = nan
+        if self.is_new_bar:
+            self._candidate_event_code = 0
+            self._model_outcome_event_code = 0
         htf_ready = profile_valid and htf_count[0] >= 250
+        if self.is_new_bar and htf_ready and self.bar_index > 55 and not data_gap and (not at_higher_boundary or complete_higher_bar):
+            self._eligible_hours += execution_seconds / 3600.0
         profile_text = 'UNSUPPORTED'
         if execution_seconds == 300:
             profile_text = '5m to 15m'
@@ -200,36 +245,56 @@ class Main(MainContext):
         if self.is_new_bar and self._active_side != 0:
             if self._active_side == 1:
                 if self.low[1] <= self._long_stop and self.high[1] >= self._long_target:
-                    self._outcome_text = 'AMBIG | SL BOUND'
+                    self._outcome_text = 'AMBIGUOUS | STOP-BOUND OHLC'
                     self._outcome_price = self._long_stop
                 elif self.low[1] <= self._long_stop:
-                    self._outcome_text = 'SIM STOP'
+                    self._outcome_text = 'MODEL SL | OHLC'
                     self._outcome_price = self._long_stop
                 elif self.high[1] >= self._long_target:
-                    self._outcome_text = 'SIM TARGET'
+                    self._outcome_text = 'MODEL TP | OHLC'
                     self._outcome_price = self._long_target
                 else:
                     self._outcome_text = ''
                 if self._outcome_text != '':
                     self._outcome_bar = self.bar_index
+                    self._last_outcome_text = self._outcome_text
+                    self._last_outcome_price = self._outcome_price
+                    self._last_outcome_side = self._active_side
+                    self._last_outcome_utc_s = int(self.time[1])
+                    if self._outcome_text == 'MODEL TP | OHLC':
+                        self._model_outcome_event_code = 1
+                    elif self._outcome_text == 'MODEL SL | OHLC':
+                        self._model_outcome_event_code = -1
+                    else:
+                        self._model_outcome_event_code = 2
                     self._active_side = 0
                     self._long_stop = nan
                     self._long_target = nan
                     self._last_exit_bar = self.bar_index
             elif self._active_side == -1:
                 if self.high[1] >= self._short_stop and self.low[1] <= self._short_target:
-                    self._outcome_text = 'AMBIG | SL BOUND'
+                    self._outcome_text = 'AMBIGUOUS | STOP-BOUND OHLC'
                     self._outcome_price = self._short_stop
                 elif self.high[1] >= self._short_stop:
-                    self._outcome_text = 'SIM STOP'
+                    self._outcome_text = 'MODEL SL | OHLC'
                     self._outcome_price = self._short_stop
                 elif self.low[1] <= self._short_target:
-                    self._outcome_text = 'SIM TARGET'
+                    self._outcome_text = 'MODEL TP | OHLC'
                     self._outcome_price = self._short_target
                 else:
                     self._outcome_text = ''
                 if self._outcome_text != '':
                     self._outcome_bar = self.bar_index
+                    self._last_outcome_text = self._outcome_text
+                    self._last_outcome_price = self._outcome_price
+                    self._last_outcome_side = self._active_side
+                    self._last_outcome_utc_s = int(self.time[1])
+                    if self._outcome_text == 'MODEL TP | OHLC':
+                        self._model_outcome_event_code = 1
+                    elif self._outcome_text == 'MODEL SL | OHLC':
+                        self._model_outcome_event_code = -1
+                    else:
+                        self._model_outcome_event_code = 2
                     self._active_side = 0
                     self._short_stop = nan
                     self._short_target = nan
@@ -570,6 +635,33 @@ class Main(MainContext):
                 status_text = 'WAIT TRIGGER'
         # END GENERATED INDICATOR CANDIDATE ADAPTER
 
+        if candidate_side != 0:
+            self._last_candidate_side = candidate_side
+            self._last_candidate_touch_utc_s = candidate_touch_utc
+            self._last_candidate_trigger_utc_s = candidate_trigger_utc
+            self._last_candidate_decision_utc_s = int(self.time[0])
+            self._last_candidate_entry = candidate_planned_entry
+            self._last_candidate_stop = candidate_stop
+            self._last_candidate_target = candidate_target
+            if self._active_reject_event:
+                self._candidate_event_code = 2
+            elif self._cooldown_reject_event:
+                self._candidate_event_code = 3
+            elif candidate_blocker != 'NONE':
+                self._candidate_event_code = 4
+            else:
+                self._candidate_event_code = candidate_side
+            self._last_candidate_event_code = self._candidate_event_code
+            if self._model_signal_event:
+                status_text = 'QUALIFIED | LONG | NEXT-OPEN QUOTE' if candidate_side == 1 else 'QUALIFIED | SHORT | NEXT-OPEN QUOTE'
+            candidate_side_output = float(candidate_side)
+            candidate_touch_utc_output = float(candidate_touch_utc)
+            candidate_trigger_utc_output = float(candidate_trigger_utc)
+            candidate_decision_utc_output = float(int(self.time[0]))
+            candidate_entry_output = candidate_planned_entry
+            candidate_stop_output = candidate_stop
+            candidate_target_output = candidate_target
+            candidate_event_code_output = float(self._candidate_event_code)
 
         pullback_bars[0] = pullback_bars[1]
         trigger_bars[0] = trigger_bars[1]
@@ -610,10 +702,14 @@ class Main(MainContext):
         if self._outcome_bar == self.bar_index:
             outcome_marker = self._outcome_price
             status_text = self._outcome_text
+            outcome_event_code_output = float(self._model_outcome_event_code)
+            outcome_utc_output = float(self._last_outcome_utc_s)
+        elif candidate_side != 0 and self._model_signal_event:
+            status_text = 'QUALIFIED | LONG | NEXT-OPEN QUOTE' if candidate_side == 1 else 'QUALIFIED | SHORT | NEXT-OPEN QUOTE'
         elif self._active_side == 1:
-            status_text = 'MODEL | LONG | ASSUMED FILL'
+            status_text = 'ASSUMED ENTRY | LONG | FILL UNKNOWN'
         elif self._active_side == -1:
-            status_text = 'MODEL | SHORT | ASSUMED FILL'
+            status_text = 'ASSUMED ENTRY | SHORT | FILL UNKNOWN'
 
         if self._active_side != 0:
             model_entry_line = self._signal_price
@@ -642,6 +738,8 @@ class Main(MainContext):
             model_cost_r = '--'
             model_target_net_r = '--'
             model_break_even = '--'
+            model_stop_percent = '--'
+            plan_source = '--'
             if self._active_side == 1:
                 model_entry = str(round(self._signal_price, 2))
                 model_stop = str(round(self._long_stop, 2))
@@ -650,6 +748,8 @@ class Main(MainContext):
                 model_cost_r = str(round(cost_r, 3)) + 'R'
                 model_target_net_r = str(round(1.5 - cost_r, 2)) + 'R net'
                 model_break_even = str(round((1.0 + cost_r) / 2.5 * 100.0, 1)) + '%'
+                model_stop_percent = str(round((self._signal_price - self._long_stop) / self._signal_price * 100.0, 3)) + '%'
+                plan_source = 'ACTIVE ASSUMED ENTRY'
             elif self._active_side == -1:
                 model_entry = str(round(self._signal_price, 2))
                 model_stop = str(round(self._short_stop, 2))
@@ -658,33 +758,78 @@ class Main(MainContext):
                 model_cost_r = str(round(cost_r, 3)) + 'R'
                 model_target_net_r = str(round(1.5 - cost_r, 2)) + 'R net'
                 model_break_even = str(round((1.0 + cost_r) / 2.5 * 100.0, 1)) + '%'
+                model_stop_percent = str(round((self._short_stop - self._signal_price) / self._signal_price * 100.0, 3)) + '%'
+                plan_source = 'ACTIVE ASSUMED ENTRY'
+            elif self._last_candidate_side != 0:
+                if self._last_candidate_entry > 0.0:
+                    model_entry = str(round(self._last_candidate_entry, 2))
+                if self._last_candidate_stop > 0.0:
+                    model_stop = str(round(self._last_candidate_stop, 2))
+                    model_stop_percent = str(round(abs(self._last_candidate_entry - self._last_candidate_stop) / self._last_candidate_entry * 100.0, 3)) + '%'
+                if self._last_candidate_target > 0.0:
+                    model_target = str(round(self._last_candidate_target, 2))
+                plan_source = 'LATEST QUALIFIED PLAN' if self._last_candidate_event_code == 1 or self._last_candidate_event_code == -1 else 'LATEST BLOCKED CANDIDATE'
+                if self._last_candidate_entry > 0.0 and self._last_candidate_stop > 0.0 and self._last_candidate_entry != self._last_candidate_stop:
+                    cost_r = self._last_candidate_entry * self._cost_fraction / abs(self._last_candidate_entry - self._last_candidate_stop)
+                    model_cost_r = str(round(cost_r, 3)) + 'R'
+                    model_target_net_r = str(round(1.5 - cost_r, 2)) + 'R net'
+                    model_break_even = str(round((1.0 + cost_r) / 2.5 * 100.0, 1)) + '%'
             self._table.clear()
-            self._table.append(TableRow([TableCell('BTC SCALP | RESEARCH P1')]))
-            self._table.add_row(['Instrument', self.info.ticker + ' | ' + self.info.exchange_code])
-            self._table.add_row(['State', status_text])
-            self._table.add_row(['Latest candidate ID', self._last_candidate_id if self._last_candidate_id != '' else '--'])
-            self._table.add_row(['Armed setup', setup_text])
-            self._table.add_row(['Outcome model', 'OHLC only | ambiguous = stop-first bound'])
-            self._table.add_row(['Mode', 'RESEARCH | planned next-open quote; fill unknown'])
-            self._table.add_row(['Bias | profile', bias_text + ' | ' + profile_text])
-            self._table.add_row(['Bar interval | HTF bars', str(round(time_delta, 1)) + 's | ' + str(htf_count[0])])
-            last_boundary_text = 'none'
-            if self._last_htf_boundary_bar >= 0:
-                last_boundary_text = str(self.bar_index - self._last_htf_boundary_bar) + ' bars ago | ' + ('complete' if self._last_htf_boundary_complete else 'gap')
-            self._table.add_row(['Last HTF rollover', last_boundary_text])
-            self._table.add_row(['Events: trend / touch / trigger', str(trend_bars[0]) + ' / ' + str(pullback_bars[0]) + ' / ' + str(trigger_bars[0])])
-            self._table.add_row(['Setup invalidated / expired', str(invalidated_bars[0]) + ' / ' + str(expired_bars[0])])
-            self._table.add_row(['Candidates: accepted / active / cooldown', str(model_signal_bars[0]) + ' / ' + str(active_reject_bars[0]) + ' / ' + str(cooldown_reject_bars[0])])
-            self._table.add_row(['Candidate rejects: stop / cost', str(stop_reject_bars[0]) + ' / ' + str(cost_reject_bars[0])])
-            self._table.add_row(['Stop reject detail: invalid / >2.5 ATR', str(invalid_stop_bars[0]) + ' / ' + str(wide_stop_bars[0])])
-            self._table.add_row(['Planned entry / stop / target', model_entry + ' / ' + model_stop + ' / ' + model_target])
-            self._table.add_row(['Target gross / net after cost', '1.50R / ' + model_target_net_r])
-            self._table.add_row(['Cost / estimated break-even win rate', model_cost_r + ' / ' + model_break_even])
-            self._table.add_row(['Cost gate / fill model', str(round(self._cost_fraction * 10000.0, 1)) + ' bps RT gate | actual fill unknown'])
+            if self._research_mode:
+                self._table.append(TableRow([TableCell('BTC PULLBACK | RESEARCH P1')]))
+                self._table.add_row(['Instrument | profile', self.info.ticker + ' | ' + self.info.exchange_code + ' | ' + profile_text])
+                self._table.add_row(['Readiness | state', status_text])
+                self._table.add_row(['HTF bias | armed setup', bias_text + ' | ' + setup_text])
+                self._table.add_row(['Plan source | entry / SL / TP', plan_source + ' | ' + model_entry + ' / ' + model_stop + ' / ' + model_target])
+                self._table.add_row(['Stop distance | target gross', model_stop_percent + ' | 1.50R'])
+                self._table.add_row(['Cost / target net / break-even', model_cost_r + ' / ' + model_target_net_r + ' / ' + model_break_even])
+                self._table.add_row(['Assumed cost | execution', str(round(self._cost_fraction * 10000.0, 1)) + ' bp RT | planned quote; fill unknown'])
+                self._table.add_row(['Latest candidate ID', self._last_candidate_id if self._last_candidate_id != '' else '--'])
+                last_decision_text = '--'
+                if self._last_candidate_decision_utc_s > 0:
+                    last_decision_datetime = datetime.utcfromtimestamp(self._last_candidate_decision_utc_s)
+                    last_decision_text = (str(last_decision_datetime.year) + '-' + str(last_decision_datetime.month) + '-' +
+                                          str(last_decision_datetime.day) + ' ' + str(last_decision_datetime.hour) + ':' +
+                                          str(last_decision_datetime.minute) + ':' + str(last_decision_datetime.second) + ' UTC')
+                self._table.add_row(['Last decision UTC', last_decision_text])
+                self._table.add_row(['Last modeled outcome', self._last_outcome_text + (' | ' + str(round(self._last_outcome_price, 2)) if self._last_outcome_price > 0.0 else '')])
+                self._table.add_row(['Eligible history hours', str(round(self._eligible_hours, 1))])
+                self._table.add_row(['Events: trend / touch / trigger', str(trend_bars[0]) + ' / ' + str(pullback_bars[0]) + ' / ' + str(trigger_bars[0])])
+                self._table.add_row(['Invalidated / expired setups', str(invalidated_bars[0]) + ' / ' + str(expired_bars[0])])
+                rejected_count = trigger_bars[0] - model_signal_bars[0]
+                rejection_text = 'n/a'
+                if trigger_bars[0] > 0:
+                    rejection_text = str(round(rejected_count / trigger_bars[0] * 100.0, 1)) + '% (' + str(rejected_count) + '/' + str(trigger_bars[0]) + ')'
+                self._table.add_row(['Candidate accepts / rejects', str(model_signal_bars[0]) + ' / ' + rejection_text])
+                self._table.add_row(['Rejects: active / cooldown', str(active_reject_bars[0]) + ' / ' + str(cooldown_reject_bars[0])])
+                self._table.add_row(['Rejects: stop / cost', str(stop_reject_bars[0]) + ' / ' + str(cost_reject_bars[0])])
+                self._table.add_row(['Stop details: invalid / >2.5 ATR', str(invalid_stop_bars[0]) + ' / ' + str(wide_stop_bars[0])])
+                last_boundary_text = 'none'
+                if self._last_htf_boundary_bar >= 0:
+                    last_boundary_text = str(self.bar_index - self._last_htf_boundary_bar) + ' bars ago | ' + ('complete' if self._last_htf_boundary_complete else 'gap')
+                self._table.add_row(['Bar interval | HTF count / rollover', str(round(time_delta, 1)) + 's | ' + str(htf_count[0]) + ' / ' + last_boundary_text])
+                self._table.add_row(['Event code map', '+1/-1 qualified L/S; 2 active; 3 cooldown; 4 risk reject'])
+                self._table.add_row(['Outcome code map', '+1 TP; -1 SL; 2 ambiguous stop-bound; 0 no event'])
+            else:
+                self._table.append(TableRow([TableCell('BTC PULLBACK | COMPACT P1')]))
+                self._table.add_row(['Instrument | profile', self.info.ticker + ' | ' + self.info.exchange_code + ' | ' + profile_text])
+                self._table.add_row(['State | HTF bias', status_text + ' | ' + bias_text])
+                self._table.add_row(['Plan source', plan_source])
+                self._table.add_row(['Entry quote / stop / target', model_entry + ' / ' + model_stop + ' / ' + model_target])
+                self._table.add_row(['Stop distance | target', model_stop_percent + ' | 1.50R gross'])
+                self._table.add_row(['Assumed cost / cost-to-risk', str(round(self._cost_fraction * 10000.0, 1)) + ' bp RT | ' + model_cost_r])
+                self._table.add_row(['Last modeled outcome', self._last_outcome_text])
+                self._table.add_row(['Execution status', 'Next-open quote model | fill unconfirmed'])
+                self._table.add_row(['Research diagnostics', 'Enable Research diagnostics in settings'])
             self.chart.draw(self._table)
 
-        return (entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0], self._long_stop, self._long_target,
+        htf_fast_line = htf_fast[0] if self._show_htf_emas else nan
+        htf_slow_line = htf_slow[0] if self._show_htf_emas else nan
+        return (entry_fast[0], entry_slow[0], htf_fast_line, htf_slow_line, self._long_stop, self._long_target,
                 self._short_stop, self._short_target, model_entry_line,
                 plot.Marker(long_marker, text='LONG'),
                 plot.Marker(short_marker, text='SHORT'),
-                plot.Marker(outcome_marker, text=self._outcome_text))
+                plot.Marker(outcome_marker, text=self._outcome_text, offset=-1),
+                candidate_event_code_output, candidate_side_output, candidate_touch_utc_output,
+                candidate_trigger_utc_output, candidate_decision_utc_output, candidate_entry_output,
+                candidate_stop_output, candidate_target_output, outcome_event_code_output, outcome_utc_output)

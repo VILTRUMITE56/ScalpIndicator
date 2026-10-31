@@ -18,6 +18,8 @@ The planned entry quote is the next execution bar open after the completed trigg
 
 Candidate IDs include the TakeProfit venue code and symbol, execution timeframe, side, touch and trigger UTC open times, and rule version.
 
+The P1 indicator defaults to a compact chart panel and can show the detailed research panel through the `Research diagnostics` setting. It exposes hidden numeric event outputs for candidate decisions, planned quote/SL/TP and modeled outcomes. State labels intentionally distinguish a qualified plan from the OHLC model's assumed entry and exit; no order or observed fill is reported. See [the event-output guide](../docs/CANDIDATE_EVENT_OUTPUTS_P1.md) for stable plot IDs, code meanings, timestamp fields and remaining platform reload checks.
+
 ## Reproduce and verify
 
 Requires Node.js 20 or newer, plus the local #4 audited/resampled data under `research/data/btcusdt_2024-10_2026-09/`.

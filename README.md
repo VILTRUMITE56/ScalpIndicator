@@ -21,6 +21,8 @@ This repository contains a frozen B0 reference and a versioned P1 candidate impl
 - [research/specs/order_lifecycle_p1.json](research/specs/order_lifecycle_p1.json), [order lifecycle check](research/order_lifecycle_check.mjs), and [lifecycle report](research/reports/order_lifecycle_report.md): deterministic cancel/fill/bracket fixtures and separate 1m trade/mark barrier-path sensitivity; not actual fills or a profitability backtest.
 - [research/ORDER_LIFECYCLE_MANIFEST.json](research/ORDER_LIFECYCLE_MANIFEST.json): source/report hashes, fixture counts, and TakeProfit validation/backtest limits for issue #6.
 - [research/README_CANDIDATE_P1.md](research/README_CANDIDATE_P1.md): source-of-truth map and reproduction commands for P1.
+- [docs/CANDIDATE_EVENT_OUTPUTS_P1.md](docs/CANDIDATE_EVENT_OUTPUTS_P1.md): compact/research panel meanings, state labels, stable numeric output IDs, and validation boundary.
+- [docs/EXCHANGE_FILTER_EVIDENCE.md](docs/EXCHANGE_FILTER_EVIDENCE.md): last located Binance BTCUSDT tick/notional notices, the unavailable current filter snapshot, and the remaining issue #8 gate.
 - [docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md](docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md): provisional Binance research proxy, cost-component status, research risk defaults, and user decisions still needed for GitHub issue #3.
 - [research/specs/execution_cost_risk.json](research/specs/execution_cost_risk.json): versioned machine-readable venue/cost/risk assumptions with official source links and checked timestamps.
 - [PROJECT_PLAN.md](PROJECT_PLAN.md): objective, original rules, validation gates, and recorded platform-driven changes.
