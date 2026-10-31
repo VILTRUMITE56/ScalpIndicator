@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "report_id": "BTC-PERP-P1-PRECOST-FEASIBILITY-2026-10",
-  "generated_at_utc": "2026-10-31T03:08:57.990Z",
+  "generated_at_utc": "2026-10-31T03:10:33.116Z",
   "status": "conditional_shadow_diagnostic_no_actual_orders_or_fills_no_profitability_claim",
   "candidate_contract": "BTC-PERP-PULLBACK-P1",
   "frozen_b0": {

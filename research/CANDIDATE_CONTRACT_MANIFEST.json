@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "manifest_id": "btc-perp-candidate-contract-p1-2026-10-30",
-  "generated_at_utc": "2026-10-30T15:39:46.067Z",
+  "generated_at_utc": "2026-10-31T03:11:15.805Z",
   "contract_version": "BTC-PERP-PULLBACK-P1",
   "parent_frozen_baseline": "BTC-PERP-B0-2026-10-30-v16-v24",
   "status": "candidate-parity-checkpoint-complete_profitability-unproven",
@@ -26,27 +26,27 @@
       "role": "indicator",
       "path": "indie/btc_pullback_indicator_p1.indie",
       "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
-      "takeprofit_working_copy_version": 27,
+      "takeprofit_working_copy_version": 28,
       "platform_saved": false,
       "local_platform_source_match": true,
       "compile": "PASS",
       "runtime_quick": "PASS",
-      "runtime_full": "PASS",
+      "runtime_full": "UNCONFIRMED_INFRASTRUCTURE_ERROR",
       "runtime_series_items": 5000,
-      "sha256": "0447509c6a126819cb2e371c0d8ab349d7d06fbfc6d67ee0056be065fb4e6a61"
+      "sha256": "7507a3f87e78fc17c78b841ff5af64997f4b750c460105c652d1a72c15d11564"
     },
     {
       "role": "strategy",
       "path": "indie/btc_pullback_strategy_p1.indie",
       "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
-      "takeprofit_working_copy_version": 20,
+      "takeprofit_working_copy_version": 21,
       "platform_saved": false,
       "local_platform_source_match": true,
       "compile": "PASS",
       "runtime_quick": "PASS",
       "runtime_full": "PASS",
       "runtime_series_items": 5000,
-      "sha256": "1532f92ecc3a2522164b3d3e6c062b62e5c79d242a941eb5319147e5d56dc262"
+      "sha256": "c64b9499efa3c36b06aa2b453b571b809ad0944da3f7346151d2cb3390082258"
     }
   ],
   "generated_shared_core": {
@@ -107,7 +107,7 @@
   "artifacts": [
     {
       "path": "research/README_CANDIDATE_P1.md",
-      "sha256": "f6199e99f23700578f11d6b51e9e549360a5106e20b07844f01c8c34cdc9b0d3"
+      "sha256": "e68c26c9f0c670573b60a334628c341a978245cc380ebcfb8ee23e73092f42de"
     },
     {
       "path": "research/specs/candidate_contract_p1.json",
@@ -135,15 +135,15 @@
     },
     {
       "path": "research/build_candidate_manifest.mjs",
-      "sha256": "4ecc212d842a80573f411f5b4dd6db9b4618c3673d30eafaf238be2f67cd1544"
+      "sha256": "407b5a65d62becce22606c5794f463b91c7c87d86102fbab9bce9f26ee621432"
     },
     {
       "path": "research/reports/candidate_parity_report.json",
-      "sha256": "e3fba76713f26ea3a1939e901e7fb17c39ff3ad57e6caadae167b6645ba4286f"
+      "sha256": "325f1ce90fd641a28d0e03d5cc30ed88faad54f2cc9a0a75e177c145a7ae3abc"
     },
     {
       "path": "research/reports/candidate_parity_report.md",
-      "sha256": "6006a8b0404670bcc2b4abfad4ead8f8a6507b5ba12c036137f99aaa707e1fb9"
+      "sha256": "67f8cf6675130fda8b1f4838ef87f1be8aa918346e8f1d166b67d9aedd2f21a5"
     },
     {
       "path": "research/reports/candidate_event_ledger.csv",
@@ -152,6 +152,34 @@
     {
       "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
       "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418"
+    },
+    {
+      "path": "research/specs/order_lifecycle_p1.json",
+      "sha256": "f512a31c155c0bf40828b154ae34328f4e6a3e5484d0b9b1b97805d5d97db151"
+    },
+    {
+      "path": "research/order_lifecycle_check.mjs",
+      "sha256": "71b24befbe3576c9c1093445475e0b6d3329d0c4e32278f44c9558bc948ba7d2"
+    },
+    {
+      "path": "research/build_order_lifecycle_manifest.mjs",
+      "sha256": "587746179f3189b926cdc7ce2603986ee95568afb7ea37bda0a3130e90cf348e"
+    },
+    {
+      "path": "research/reports/order_lifecycle_report.md",
+      "sha256": "7f170f226ce8a7b31581d9ad86d8b87b4b98f3593809938be8206a306af42f46"
+    },
+    {
+      "path": "research/reports/order_lifecycle_report.json",
+      "sha256": "2d4cde0d64d83b89a7d1d87fd86baf5d41a934d39f70ec09b48bf33753b207e6"
+    },
+    {
+      "path": "research/reports/order_lifecycle_fixtures.csv",
+      "sha256": "ea863ee16b4d843b5c643b1c24cea0a4aa97acd90c996271c167ee57bfedd9ef"
+    },
+    {
+      "path": "research/reports/order_lifecycle_barrier_paths.csv",
+      "sha256": "3d59e8f7089b63beea9b7b365802a993a8cc45f17de84aa87f649eec384025ff"
     }
   ]
 }

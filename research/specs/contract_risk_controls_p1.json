@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "policy_id": "BTC-PERP-RISK-OPS-P1",
+  "status": "paper_reference_only_live_venue_unconfirmed_personal_locks_disabled_by_user_choice",
+  "parent_contract": "BTC-PERP-PULLBACK-P1",
+  "signal_configurations_consumed": 0,
+  "research_proxy": {
+    "venue": "Binance",
+    "product": "USD-M Futures",
+    "symbol": "BTCUSDT",
+    "contract_type": "PERPETUAL",
+    "execution_venue_confirmed": false
+  },
+  "live_contract_snapshot": {
+    "status": "NOT_CAPTURED_HTTP_451",
+    "checked_utc_date": "2026-10-30",
+    "endpoint": "https://fapi.binance.com/fapi/v1/exchangeInfo?symbol=BTCUSDT",
+    "http_status": 451,
+    "contract_status": null,
+    "base_asset": null,
+    "quote_asset": null,
+    "margin_asset": null,
+    "price_tick": null,
+    "price_min": null,
+    "price_max": null,
+    "limit_quantity_step": null,
+    "limit_quantity_min": null,
+    "limit_quantity_max": null,
+    "market_quantity_step": null,
+    "market_quantity_min": null,
+    "market_quantity_max": null,
+    "minimum_notional": null,
+    "linear_multiplier_base_per_quantity": null,
+    "capture_note": "The official public endpoint could not be retrieved from this environment. The capture script is provided; synthetic fixture filters are test data, not Binance filter values."
+  },
+  "contract_models": {
+    "LINEAR_BASE_QUANTITY": {
+      "quantity_unit": "base-asset units per order quantity",
+      "quote_pnl": "side_sign * quantity * multiplier_base_per_quantity * (exit_price - entry_price)",
+      "quote_notional": "quantity * multiplier_base_per_quantity * price",
+      "required_multiplier": "positive base units per exchange quantity unit; must be explicit"
+    },
+    "INVERSE_FIXED_QUOTE_FACE": {
+      "quantity_unit": "contracts",
+      "quote_pnl_at_exit": "side_sign * contracts * quote_face_per_contract * (exit_price / entry_price - 1)",
+      "quote_notional": "contracts * quote_face_per_contract",
+      "required_multiplier": "positive quote face value per contract; must be explicit"
+    }
+  },
+  "rounding": {
+    "filter_grid_anchor": "Binance PRICE_FILTER uses minPrice + integer*tickSize; LOT_SIZE and MARKET_LOT_SIZE use minQty + integer*stepSize.",
+    "entry_limit": { "LONG": "floor_to_tick", "SHORT": "ceil_to_tick" },
+    "stop_trigger": { "LONG": "ceil_to_tick_toward_entry", "SHORT": "floor_to_tick_toward_entry" },
+    "target": { "LONG": "ceil_to_tick_preserve_reward", "SHORT": "floor_to_tick_preserve_reward" },
+    "quantity": "floor_to_lot_step; never round up",
+    "post_rounding": "Recheck directional geometry, price bounds, limit and market quantity grids/bounds, entry and protective-exit minimum notionals, margin notional cap and all-in stop loss. Reject any invalid plan.",
+    "protective_exit_order_assumption": "Validate both SL and TP against market lot and configured minimum exit notional; actual venue exit order types must be verified before deployment."
+  },
+  "per_trade_risk": {
+    "user_loss_budget_quote": 1.0,
+    "basis": "user-confirmed maximum total trade loss including fees and slippage; not a guaranteed maximum during gaps, liquidation or venue failure",
+    "actual_fill_reconciliation": "recompute projected all-in PnL at a stressed stop from supplied average fills, realized partial exits, recorded fees and funding, current mark/equity, planned quantity and protective coverage; entry locking is explicit",
+    "account_fee_rate": null,
+    "historical_spread_slippage": null,
+    "funding_reserve_quote": null,
+    "live_sizing_policy": "BLOCK unless venue filters, account fee rates, adverse-slippage reserve and funding treatment are supplied. Paper fixtures may pass explicit synthetic assumptions."
+  },
+  "user_account_locks": {
+    "daily_loss_limit_quote": null,
+    "maximum_drawdown_fraction": null,
+    "personal_locks_enabled": false,
+    "status": "DISABLED_BY_USER_REQUEST; do not substitute project research values or imply a personal lock is active",
+    "user_choice": "The user explicitly chose to leave personal daily-loss and drawdown thresholds unset.",
+    "daily_reset": "UTC day boundary; establish the new day baseline from current marked equity including open unrealized PnL, then measure subsequent equity changes",
+    "drawdown_reset": "latched until explicit operator reset while flat with no pending entry; never silently reset at a date boundary",
+    "lock_actions": "block new entries; request cancellation of a pending entry but retain its identity through terminal status; preserve every active protective exit; do not automatically flatten by an unverified primitive"
+  },
+  "paper_ledger": {
+    "equity_quote": "initial equity + realized gross PnL - commissions + signed funding cashflows + unrealized marked PnL",
+    "fill_accounting": "process each partial fill at its own price, quantity and fee; update average entry and protected quantity from the remaining position; reject over-close/reversal without mutating the ledger; expose any position protection-coverage gap",
+    "open_risk_reconciliation": "compare supplied actual fills, partial exits, fees and funding with planned quantity and stressed-stop all-in loss using current mark and protection coverage; fixtures are synthetic until real exchange fills are supplied",
+    "per_trade_loss_lock": "optional; latch on marked or realized trade loss at or beyond the configured cap; preserve protection and require an explicit flat/no-pending reset; does not set a daily or drawdown limit",
+    "funding_accounting": "record signed quote-denominated funding events supplied by a source ledger; do not assume a fixed interval or synthesize a zero rate",
+    "gaps": "stop slippage/gap loss can exceed the $1 intended budget; report the breach, latch the optional per-trade loss lock, block entries and preserve protection; no hard cap is guaranteed",
+    "utc_reset": "apply the first observed mark at the UTC boundary before establishing the new daily-equity baseline, avoiding double-counting an overnight gap",
+    "pending_entry": "block new pending orders while any configured lock is latched; retain identity of existing entry through cancel request and terminal resolution",
+    "portfolio_scope": "deterministic paper/reference ledger only; no live account, liquidation tier, margin availability or exchange fills"
+  },
+  "holding_time": {
+    "user_policy": "TP/SL only; no maximum hold time",
+    "exit_policy_version": "BTC-PERP-EXIT-TP-SL-ONLY-1",
+    "timed_exit_added": false,
+    "future_exit_changes": "register as a separately versioned exit-policy experiment; do not change entry logic silently"
+  },
+  "takeprofit_native_limits": {
+    "documented_strategy_fields": ["trading.cash", "trading.position.size", "trading.position.price", "context.info.tick_size", "context.info.price_precision", "trading.instrument_info.min_order_size", "trading.instrument_info.min_order_value"],
+    "tick_size_note": "Context.info.tick_size is documented and inherited by MainStrategyContext; the selected Binance BTCUSDT value has not been captured and is not a substitute for a verified exchange filter snapshot.",
+    "not_documented_as_available_to_strategy": ["account_equity", "daily_net_pnl", "peak_equity", "account_margin_tier", "Binance_LOT_SIZE_stepSize", "Binance_MARKET_LOT_SIZE_stepSize", "Binance_quantity_maxima"],
+    "policy": "Do not treat available simulator cash as marked account equity. Exact quantity-grid integration and personalized daily/drawdown locks require verified metadata and documented account fields."
+  },
+  "deployment_blockers": [
+    "Live Binance BTCUSDT exchangeInfo snapshot and verified current filters are missing.",
+    "The user selected Binance only as a research proxy; no execution venue is confirmed.",
+    "Native P1 strategy execution still uses a manually entered quantity step and raw unrounded price levels; filter-grid parity is not implemented.",
+    "Account fee rates and measured spread/slippage are unavailable.",
+    "Funding inclusion in the per-trade $1 cap is unspecified.",
+    "Personal daily-loss and drawdown locks are intentionally disabled by user choice; do not present them as active account protection.",
+    "TakeProfit strategy API documents available cash/position/instrument minimums, not account-level marked equity or daily PnL controls.",
+    "A stop-market order cannot guarantee the $1 cap through price gaps, liquidation or exchange failure."
+  ]
+}

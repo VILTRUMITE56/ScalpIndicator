@@ -1,6 +1,6 @@
 # P1 Candidate Contract Parity Report
 
-Generated: 2026-10-31T03:08:51.797Z
+Generated: 2026-10-31T03:10:27.017Z
 
 Rule version: `BTC-PERP-PULLBACK-P1`. The P1 first-touch contract supersedes the B0 rolling [2]–[4] discovery rule for new experiments; the frozen B0 baseline was not edited.
 

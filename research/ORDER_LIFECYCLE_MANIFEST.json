@@ -1,0 +1,192 @@
+{
+  "schema_version": 1,
+  "manifest_id": "btc-perp-order-lifecycle-p1-2026-10-30",
+  "generated_at_utc": "2026-10-31T03:11:15.572Z",
+  "contract_version": "BTC-PERP-ORDER-LIFECYCLE-P1",
+  "status": "local_fixtures_and_emulator_contract_verified_live_exchange_execution_unconfirmed",
+  "hash_normalization": "Text artifacts use SHA-256 after UTF-8 BOM stripping and CRLF/CR to LF normalization.",
+  "parent_main_commit": "e7803e082535a23f75fb4d27982a9af19fcacd6e",
+  "strategy_changes": [
+    "Track observed signed position size and request cancellation of a partial parent remainder after any observed protective position reduction or close.",
+    "Record cooldown when a same-bar PARTIALLY_FILLED_CLOSED resolves with no exposure.",
+    "Handle documented active and terminal order statuses explicitly; unknown states fail closed.",
+    "Keep an active parent as an entry guard until cancellation acknowledgment; no timed exits are enabled."
+  ],
+  "fixture_run": {
+    "command": "node research/order_lifecycle_check.mjs",
+    "fixtures": 12,
+    "event_rows": 88,
+    "fixture_names": [
+      "repeated_updates_and_reload",
+      "delayed_ack_and_fill",
+      "partial_fill_cancel_race_and_protected_exit",
+      "rejection",
+      "same_bar_entry_and_take_profit",
+      "unfilled_expiry_and_cancel_ack",
+      "lower_interval_target_first",
+      "lower_interval_stop_first",
+      "lower_interval_same_minute_ambiguous",
+      "gap_through_stop",
+      "exit_cannot_reverse_or_increase",
+      "post_ack_late_fill_fails_closed"
+    ],
+    "reload_suffix_matches": true,
+    "accounting_invariants_pass": true
+  },
+  "lower_interval_replay": {
+    "source_files": [
+      "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+      "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv"
+    ],
+    "paired_1m_bars": 1051200,
+    "risk_pass_candidates": 304,
+    "fill_assumption": "assumed fill at the immutable planned quote; not an observed fill",
+    "trade_1m": {
+      "STOP": 186,
+      "TARGET": 118
+    },
+    "mark_1m": {
+      "STOP": 187,
+      "TARGET": 116,
+      "GAP_STOP": 1
+    },
+    "by_timeframe": {
+      "5m": {
+        "candidates": 117,
+        "trade_1m": {
+          "STOP": 73,
+          "TARGET": 44
+        },
+        "mark_1m": {
+          "STOP": 74,
+          "TARGET": 43
+        }
+      },
+      "15m": {
+        "candidates": 187,
+        "trade_1m": {
+          "TARGET": 74,
+          "STOP": 113
+        },
+        "mark_1m": {
+          "TARGET": 73,
+          "STOP": 113,
+          "GAP_STOP": 1
+        }
+      }
+    },
+    "boundary_rule": "1m OHLC determines ordering across minutes; if one 1m bar touches both barriers, outcome stays ambiguous and is not reported as observed stop-first."
+  },
+  "takeprofit_working_copies": {
+    "strategy": {
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "working_copy_version": 21,
+      "saved": false,
+      "local_source_matches_working_copy": true,
+      "compile": "PASS",
+      "runtime_quick": {
+        "result": "PASS",
+        "series_items": 5000,
+        "orders_emitted": 0
+      },
+      "runtime_full": {
+        "result": "PASS",
+        "series_items": 5000,
+        "orders_emitted": 0
+      }
+    },
+    "indicator": {
+      "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+      "working_copy_version": 28,
+      "saved": false,
+      "local_source_matches_working_copy": true,
+      "compile": "PASS",
+      "runtime_quick": {
+        "result": "PASS",
+        "series_items": 5000,
+        "markers": 3
+      },
+      "runtime_full": {
+        "result": "UNCONFIRMED_INFRASTRUCTURE_ERROR",
+        "error": "[wasm] Compilation is not finished yet, retry later"
+      }
+    }
+  },
+  "takeprofit_backtest": {
+    "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+    "working_copy_version": 21,
+    "ticker": "BTC/USDT.P",
+    "exchange_code": "CXBNF8",
+    "timeframe": "5m",
+    "requested_range_utc": {
+      "from": "2026-09-14T00:00:00Z",
+      "to": "2026-09-30T23:59:59Z"
+    },
+    "returned_last_bar_utc": "2026-10-27T03:45:00Z",
+    "plan_bar_limit": 5060,
+    "history_sufficient": false,
+    "has_more_items_on_left": true,
+    "has_more_items_on_right": false,
+    "total_trades": 0,
+    "recent_orders": 0,
+    "recent_trades": 0,
+    "interpretation": "The bounded platform run emitted no orders or trades and its returned last bar fell outside the requested range. It does not validate order fill/exit transitions; fixture coverage is local and deterministic."
+  },
+  "docs_basis": [
+    "https://takeprofit.com/docs/indie/Strategies/Orders#statuses-and-lifecycle",
+    "https://takeprofit.com/docs/indie/Strategies/Orders#take-profit-and-stop-loss-orders",
+    "https://takeprofit.com/docs/indie/Strategies/Strategy-mechanics#order-execution"
+  ],
+  "limitations": [
+    "Historical 1m path replay is conditional on a hypothetical fill at the planned quote and is not a trade or profitability backtest.",
+    "OHLC cannot resolve event ordering inside one minute; ambiguous bars retain the ambiguity and expose a stop-first conservative bound.",
+    "The TakeProfit emulator bracket model is not a Binance live-exchange execution guarantee.",
+    "Fee, queue position, actual partial-fill quantity, slippage, and funding are not inferred from OHLC."
+  ],
+  "artifacts": [
+    {
+      "path": "indie/btc_pullback_indicator_p1.indie",
+      "sha256": "7507a3f87e78fc17c78b841ff5af64997f4b750c460105c652d1a72c15d11564"
+    },
+    {
+      "path": "indie/btc_pullback_strategy_p1.indie",
+      "sha256": "c64b9499efa3c36b06aa2b453b571b809ad0944da3f7346151d2cb3390082258"
+    },
+    {
+      "path": "research/specs/order_lifecycle_p1.json",
+      "sha256": "f512a31c155c0bf40828b154ae34328f4e6a3e5484d0b9b1b97805d5d97db151"
+    },
+    {
+      "path": "research/order_lifecycle_check.mjs",
+      "sha256": "71b24befbe3576c9c1093445475e0b6d3329d0c4e32278f44c9558bc948ba7d2"
+    },
+    {
+      "path": "research/build_order_lifecycle_manifest.mjs",
+      "sha256": "587746179f3189b926cdc7ce2603986ee95568afb7ea37bda0a3130e90cf348e"
+    },
+    {
+      "path": "research/reports/order_lifecycle_report.json",
+      "sha256": "2d4cde0d64d83b89a7d1d87fd86baf5d41a934d39f70ec09b48bf33753b207e6"
+    },
+    {
+      "path": "research/reports/order_lifecycle_report.md",
+      "sha256": "7f170f226ce8a7b31581d9ad86d8b87b4b98f3593809938be8206a306af42f46"
+    },
+    {
+      "path": "research/reports/order_lifecycle_fixtures.csv",
+      "sha256": "ea863ee16b4d843b5c643b1c24cea0a4aa97acd90c996271c167ee57bfedd9ef"
+    },
+    {
+      "path": "research/reports/order_lifecycle_barrier_paths.csv",
+      "sha256": "3d59e8f7089b63beea9b7b365802a993a8cc45f17de84aa87f649eec384025ff"
+    },
+    {
+      "path": "research/reports/candidate_event_ledger.csv",
+      "sha256": "a6b0fd1295af193e91c1951db44810e0761b67f08e5fc83eec3afd4941945e40"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418"
+    }
+  ]
+}
