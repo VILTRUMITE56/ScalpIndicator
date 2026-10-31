@@ -8,6 +8,7 @@ from math import nan
 @indicator('BTC Perp Pullback Signals P1 - Research', overlay_main_pane=True)
 @param.float('cost_fraction', default=0.0015, min=0.0001, max=0.01)
 @param.bool('research_mode', default=False, title='Research diagnostics')
+@param.bool('show_htf_emas', default=False, title='Show higher-timeframe EMAs')
 @plot.line('Entry EMA 20', color=color.AQUA)
 @plot.line('Entry EMA 50', color=color.ORANGE)
 @plot.line('HTF EMA 20', color=color.BLUE)
@@ -31,9 +32,10 @@ from math import nan
 @plot.line(id='model_outcome_event_code', title='Model Outcome Event Code', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
 @plot.line(id='model_outcome_utc_s', title='Model Outcome Candle UTC Seconds', color=color.WHITE, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
 class Main(MainContext):
-    def __init__(self, cost_fraction, research_mode):
+    def __init__(self, cost_fraction, research_mode, show_htf_emas):
         self._cost_fraction = cost_fraction
         self._research_mode = research_mode
+        self._show_htf_emas = show_htf_emas
         self._last_signal_bar = -100
         self._last_exit_bar = -100
         self._signal_bar = -1
@@ -821,7 +823,9 @@ class Main(MainContext):
                 self._table.add_row(['Research diagnostics', 'Enable Research diagnostics in settings'])
             self.chart.draw(self._table)
 
-        return (entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0], self._long_stop, self._long_target,
+        htf_fast_line = htf_fast[0] if self._show_htf_emas else nan
+        htf_slow_line = htf_slow[0] if self._show_htf_emas else nan
+        return (entry_fast[0], entry_slow[0], htf_fast_line, htf_slow_line, self._long_stop, self._long_target,
                 self._short_stop, self._short_target, model_entry_line,
                 plot.Marker(long_marker, text='LONG'),
                 plot.Marker(short_marker, text='SHORT'),

@@ -68,7 +68,7 @@ const scripts = [
     working_copy_compile: 'PASS', working_copy_runtime_quick: 'PASS', working_copy_runtime_full: 'UNCONFIRMED_INFRASTRUCTURE_ERROR',
     working_copy_runtime_series_items: 5000,
     current_source_ephemeral_validation: {
-      script_id: '5aa8ccb2-c2c7-4276-8eff-0699fb166f0a', version: 3, ephemeral: true, platform_saved: false,
+      script_id: '5aa8ccb2-c2c7-4276-8eff-0699fb166f0a', version: 4, ephemeral: true, platform_saved: false,
       compile: 'PASS', runtime_quick: 'PASS', runtime_series_items: 5000,
     },
   },

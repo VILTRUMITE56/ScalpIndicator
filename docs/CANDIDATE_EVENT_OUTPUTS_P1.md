@@ -4,7 +4,7 @@ This guide describes the display and telemetry added to `indie/btc_pullback_indi
 
 ## Chart display
 
-The default is **Compact**. In indicator settings, turn on **Research diagnostics** to show the larger diagnostics panel.
+The default is **Compact**. In indicator settings, turn on **Research diagnostics** to show the larger diagnostics panel. Higher-timeframe EMA lines are hidden by default; enable **Show higher-timeframe EMAs** to display them. This setting changes only plotting; the higher-timeframe bias calculation always runs.
 
 Compact mode shows the ticker and supported profile (`5m to 15m` or `15m to 1h`), current readiness and higher-timeframe bias, the source of the most recent plan, entry quote/stop/target, stop distance, gross target R, assumed cost per initial risk, the last modeled outcome, and an execution-status reminder.
 
