@@ -19,6 +19,9 @@ from math import nan, floor, ceil
 @plot.line('Entry EMA 50', color=color.ORANGE)
 @plot.line('HTF EMA 20', color=color.BLUE)
 @plot.line('HTF EMA 50', color=color.YELLOW)
+@plot.line(id='execution_candidate_event_code', title='Execution Candidate Event Code', color=color.TRANSPARENT, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='execution_candidate_reason_code', title='Execution Candidate Reason Code', color=color.TRANSPARENT, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='execution_candidate_trigger_utc_s', title='Execution Candidate Trigger UTC Seconds', color=color.TRANSPARENT, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
 class Main(MainStrategyContext):
     def __init__(self, risk_fraction, cost_fraction, maximum_loss_quote, quantity_step, minimum_quantity, maximum_market_quantity, minimum_notional_quote):
         self._risk_fraction = risk_fraction
@@ -202,6 +205,9 @@ class Main(MainStrategyContext):
         self._last_observed_position_size = position_size
 
         htf_ready = profile_valid and htf_count[0] >= 250
+        execution_candidate_event_code = 0.0
+        execution_candidate_reason_code = 0.0
+        execution_candidate_trigger_utc_s = nan
         # BEGIN GENERATED SHARED CANDIDATE CORE
         candidate_side = 0
         candidate_id = ''
@@ -474,19 +480,30 @@ class Main(MainStrategyContext):
                     self._short_recovery_bar = -1
         # END GENERATED SHARED CANDIDATE CORE
         # BEGIN GENERATED STRATEGY EXECUTION ADAPTER
-        if candidate_side != 0 and candidate_blocker == 'NONE':
-            execution_blocker = 'NONE'
-            if position_size != 0:
-                execution_blocker = 'POSITION OPEN'
+        if candidate_side != 0:
+            execution_candidate_event_code = 1.0
+            execution_candidate_trigger_utc_s = float(candidate_trigger_utc)
+            execution_candidate_reason_code = 0.0
+            if candidate_blocker == 'INVALID ENTRY OR ATR':
+                execution_candidate_reason_code = 10.0
+            elif candidate_blocker == 'INVALID STOP':
+                execution_candidate_reason_code = 11.0
+            elif candidate_blocker == 'STOP > 2.5 ATR':
+                execution_candidate_reason_code = 12.0
+            elif candidate_blocker == 'COST > 0.2R':
+                execution_candidate_reason_code = 13.0
+            elif position_size != 0:
+                execution_candidate_reason_code = 20.0
             elif self._pending is not None or pending_was_resolved:
-                execution_blocker = 'ORDER PENDING OR RESOLVED THIS BAR'
+                execution_candidate_reason_code = 21.0
             elif self.bar_index - self._last_exit_bar <= 3 or self.bar_index - self._last_signal_bar <= 3:
-                execution_blocker = 'COOLDOWN'
-
-            if execution_blocker == 'NONE' and self.trading.cash > 0.0:
+                execution_candidate_reason_code = 22.0
+            elif self.trading.cash <= 0.0:
+                execution_candidate_reason_code = 23.0
+            else:
                 tick_size = self.info.tick_size
                 if tick_size <= 0.0 or self._quantity_step <= 0.0 or self._minimum_quantity <= 0.0 or self._maximum_market_quantity <= 0.0 or self._minimum_notional_quote <= 0.0:
-                    execution_blocker = 'INVALID CONTRACT FILTER GRID'
+                    execution_candidate_reason_code = 24.0
                 else:
                     planned_entry = candidate_planned_entry
                     raw_limit_quote = planned_entry * (1.0 + 0.0002) if candidate_side == 1 else planned_entry * (1.0 - 0.0002)
@@ -508,10 +525,13 @@ class Main(MainStrategyContext):
                     else:
                         valid_levels = valid_levels and execution_stop > order_limit_quote and execution_target < order_limit_quote
 
-                    if valid_levels:
-                        # cost_fraction is the round-trip execution proxy; add the strategy's
-                        # modeled 5 bp entry and exit commission before applying the risk cap.
-                        execution_cost_per_btc = order_limit_quote * (self._cost_fraction + 0.001)
+                    if not valid_levels:
+                        execution_candidate_reason_code = 25.0
+                    else:
+                        # cost_fraction is the complete non-funding cost scenario, including
+                        # the simulator's entry/exit commissions. It is reserved once against
+                        # loss sizing; the simulator separately debits its commission cashflows.
+                        execution_cost_per_btc = order_limit_quote * self._cost_fraction
                         execution_stop_distance = abs(order_limit_quote - execution_stop)
                         risk_budget = min(self.trading.cash * self._risk_fraction, self._maximum_loss_quote)
                         risk_size = risk_budget / (execution_stop_distance + execution_cost_per_btc)
@@ -524,7 +544,13 @@ class Main(MainStrategyContext):
                             minimum_notional = max(instrument_info.min_order_value, self._minimum_notional_quote)
                             protective_notional = size * min(order_limit_quote, execution_stop, execution_target)
                             modeled_all_in_loss = size * (execution_stop_distance + execution_cost_per_btc)
-                            if size >= minimum_quantity and size <= self._maximum_market_quantity and protective_notional >= minimum_notional and modeled_all_in_loss <= risk_budget:
+                            if size < minimum_quantity or protective_notional < minimum_notional:
+                                execution_candidate_reason_code = 26.0
+                            elif size > self._maximum_market_quantity:
+                                execution_candidate_reason_code = 27.0
+                            elif modeled_all_in_loss > risk_budget:
+                                execution_candidate_reason_code = 28.0
+                            else:
                                 if candidate_side == 1:
                                     self._pending = (self.trading.place_order(order_side.BUY, size=size)
                                                      .limit(price=order_limit_quote)
@@ -540,6 +566,11 @@ class Main(MainStrategyContext):
                                 self._pending_bar = self.bar_index
                                 self._cancel_requested = False
                                 self._last_signal_bar = self.bar_index
+                                execution_candidate_reason_code = 2.0
+                        else:
+                            execution_candidate_reason_code = 29.0
         # END GENERATED STRATEGY EXECUTION ADAPTER
 
-        return entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0]
+        return (entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0],
+                execution_candidate_event_code, execution_candidate_reason_code,
+                execution_candidate_trigger_utc_s)

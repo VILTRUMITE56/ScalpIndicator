@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "report_id": "BTC-PERP-SOURCE-RECONCILIATION-2026-10-31",
+  "checked_at_utc": "2026-10-31T06:34:00Z",
+  "updated_at_utc": "2026-10-31T07:04:00Z",
+  "comparison_method": "Current TakeProfit_ReadScript output had its line-number/tab prefixes removed and line endings normalized before direct full-text comparison with the local source.",
+  "local_sources": [
+    {
+      "role": "P1 indicator",
+      "path": "indie/btc_pullback_indicator_p1.indie",
+      "sha256_lf_utf8": "5b26a8fae30c73ffaeec8201387d5fdbac999211f771db047bd8071a68fb66b7",
+      "line_count": 887,
+      "local_update": "B4 anti-chase filter is off by default. Exact source was written to TakeProfit working copy v29 and compile passed; the working copy remains unsaved because its base v16 is stale against saved v19."
+    },
+    {
+      "role": "P1 strategy",
+      "path": "indie/btc_pullback_strategy_p1.indie",
+      "sha256_lf_utf8": "ad87c6b7bd6a12d999913087995333b7e26af6049aa5952c1621e4a2f2019d54",
+      "line_count": 576
+    },
+    {
+      "role": "P2 experimental strategy",
+      "path": "indie/btc_pullback_strategy_p2.indie",
+      "sha256_lf_utf8": "568a9c1b9b1db3a97bc8309314a2b67d7007090f736dc0faa491e07bb08b7b60",
+      "line_count": 596,
+      "takeprofit_validation": "Compile and runtime_quick passed on an ephemeral copy; not saved."
+    }
+  ],
+  "takeprofit_working_copies": [
+    {
+      "role": "P1 indicator draft",
+      "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
+      "working_copy_version": 29,
+      "working_copy_line_count": 887,
+      "saved": false,
+      "platform_uid": "b0WWgU3721kqgpvBweE24",
+      "loaded_platform_version_major": 16,
+      "latest_saved_platform_version_major": 19,
+      "outdated": true,
+      "matches_local_source": true,
+      "compile": "PASS",
+      "runtime_quick": "NOT_RUN_AFTER_B4_CHANGE",
+      "save_status": "BLOCKED_STALE_BASE_16_LATEST_19"
+    },
+    {
+      "role": "P1 strategy draft",
+      "script_id": "6daa5166-bfc5-4960-8f84-e714a3b2aff2",
+      "working_copy_version": 21,
+      "working_copy_line_count": 507,
+      "saved": false,
+      "platform_uid": null,
+      "loaded_platform_version_major": null,
+      "latest_saved_platform_version_major": null,
+      "outdated": false,
+      "matches_local_source": false
+    },
+    {
+      "role": "P2 experimental strategy validation copy",
+      "script_id": "04097f66-dda1-42d2-a0f2-9151fd8598b5",
+      "working_copy_version": 1,
+      "ephemeral": true,
+      "saved": false,
+      "active_platform_version": false
+    }
+  ],
+  "active_chart_binding": "UNKNOWN; TakeProfit script listing and source reads do not establish which source, if any, is attached to a chart or alert.",
+  "event_feed": {
+    "alerts_listed": 0,
+    "recent_alert_log_items": 0,
+    "automatic_paper_capture_configured": false
+  },
+  "decision": "The P1 indicator working copy v29 now exactly matches the local source and compiles, but is unsaved because it is based on saved v16 while v19 is latest. The P1 strategy remains a separate mismatch. The saved platform indicator was not changed; active chart binding remains unknown."
+}

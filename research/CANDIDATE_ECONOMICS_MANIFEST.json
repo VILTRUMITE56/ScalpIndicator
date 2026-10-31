@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "manifest_id": "btc-perp-p1-precost-feasibility-2026-10-30",
-  "generated_at_utc": "2026-10-31T04:59:05.893Z",
+  "manifest_id": "btc-perp-p1-precost-feasibility-2026-10-31",
+  "generated_at_utc": "2026-10-31T06:20:41.939Z",
   "status": "conditional_shadow_diagnostic_no_actual_orders_or_fills_no_profitability_claim",
   "experiment_spec": "research/specs/candidate_economics_p1.json",
   "experiment_spec_sha256": "a0e959afca89044549e893b1c737a6705a82f1badc7195de07495cc477bd2ddc",
@@ -9,7 +9,7 @@
   "candidate_contract": "BTC-PERP-PULLBACK-P1",
   "parent_frozen_baseline": "BTC-PERP-B0-2026-10-30-v16-v24",
   "frozen_b0_sources_unchanged": true,
-  "candidate_contract_manifest_id": "btc-perp-candidate-contract-p1-2026-10-30",
+  "candidate_contract_manifest_id": "btc-perp-candidate-contract-p1-2026-10-31",
   "window": {
     "start_utc": "2024-10-01T00:00:00.000Z",
     "end_utc_exclusive": "2026-10-01T00:00:00.000Z",
@@ -24,7 +24,7 @@
     },
     {
       "path": "research/specs/candidate_contract_p1.json",
-      "sha256": "bb1fa68f69d01d461f48d6effa3ce5637faf20997c5ce5b2ee82c4a065820588",
+      "sha256": "a046277ae5e2f7f53e9f573be207005519d41fac1e83fe75fb1f6b4f51b0bd32",
       "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
@@ -34,7 +34,7 @@
     },
     {
       "path": "research/specs/execution_cost_risk.json",
-      "sha256": "fbaa2ab9621199340cb91ad88fa19399f2d717464b59dd7a8afcb98620d4e94e",
+      "sha256": "e960d737de503afd058eeb68622af0690e72697cebccb8fb04ffe6ac5c7f4710",
       "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
@@ -98,7 +98,7 @@
     },
     {
       "path": "research/build_candidate_economics_manifest.mjs",
-      "sha256": "e023e35aed33fdb3c7d2307af5cd0cd045e69f38f45f5809228d0de7c2fe7602",
+      "sha256": "8a8b413d527288d357d31c3cc76dff85e60c084550801f0a731d711aa939dbf6",
       "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
@@ -113,17 +113,17 @@
     },
     {
       "path": "research/specs/candidate_contract_p1.json",
-      "sha256": "bb1fa68f69d01d461f48d6effa3ce5637faf20997c5ce5b2ee82c4a065820588",
+      "sha256": "a046277ae5e2f7f53e9f573be207005519d41fac1e83fe75fb1f6b4f51b0bd32",
       "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/specs/execution_cost_risk.json",
-      "sha256": "fbaa2ab9621199340cb91ad88fa19399f2d717464b59dd7a8afcb98620d4e94e",
+      "sha256": "e960d737de503afd058eeb68622af0690e72697cebccb8fb04ffe6ac5c7f4710",
       "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/CANDIDATE_CONTRACT_MANIFEST.json",
-      "sha256": "80664065fcf4bc4d3ec24a75fa3313d0843b5bd40a8ec8f47c268cebd4b6aed7",
+      "sha256": "664f623a2432673c4fda41291ac39dec291582c511af2eb0e5a3a4dd23881cce",
       "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
@@ -188,12 +188,12 @@
     },
     {
       "path": "research/reports/candidate_economics_report.json",
-      "sha256": "0f902341c80efa14ba8aefbd8610f741f251fad13d44bb5969368e367cdf06b1",
+      "sha256": "7a9a183561aa1355c179fbdd728fab621c365aa1c007e7df35e9c4f33e7ae144",
       "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/reports/candidate_economics_report.md",
-      "sha256": "15f2a2c58eb25787a4b0da1823e6b0b5786440e93a5dea52c575b8f2b48b65ca",
+      "sha256": "effcd4a4dbe2df9a0ceadadcc98e71ac25b3ec2e7de38f40345d03aecde19672",
       "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     }
   ]

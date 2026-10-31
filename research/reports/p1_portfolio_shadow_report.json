@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "report_id": "BTC-PERP-P1-PORTFOLIO-SHADOW-2026-10",
+  "generated_at_utc": "2026-10-31T06:18:48.232Z",
+  "status": "conditional_portfolio_replay_complete_profitability_unproven",
+  "scope": "Replay unchanged P1 signals chronologically under a single-position, rounded-sizing, hypothetical full-fill policy so candidate-independent statistics can be compared with portfolio-constrained outcomes.",
+  "assumptions": {
+    "schema_version": 1,
+    "model_id": "BTC-PERP-P1-PORTFOLIO-SHADOW-2026-10",
+    "status": "conditional_historical_portfolio_scenario_not_profitability_evidence",
+    "parent_signal_contract": "BTC-PERP-PULLBACK-P1",
+    "execution_policy_version": "BTC-PERP-EXEC-1",
+    "purpose": "Replay unchanged P1 signals chronologically under a single-position, rounded-sizing, hypothetical full-fill policy so candidate-independent statistics can be compared with portfolio-constrained outcomes.",
+    "history": {
+      "start_utc_inclusive": "2024-10-01T00:00:00.000Z",
+      "end_utc_exclusive": "2026-10-01T00:00:00.000Z",
+      "primary_price_data": "Binance BTCUSDT trade OHLC, 1m; retained research proxy only",
+      "execution_profiles_minutes": [
+        5,
+        15
+      ],
+      "period_grouping": "UTC calendar day and month",
+      "holdout_status": "The complete inspected period is development material, not an untouched holdout."
+    },
+    "portfolio_policy": {
+      "initial_research_cash_quote": 10000,
+      "initial_cash_basis": "Matches the existing B0 research account convention; it is not the user's account balance or a recommended allocation.",
+      "position_limit": 1,
+      "pyramiding": false,
+      "candidate_policy": "Only unchanged candidates passing the existing 15 bp cost/R and 2.5 ATR stop gates can be considered. Evaluate candidates in chronological decision-time order. A candidate while a position is open, during the existing three-bar post-exit or post-submit cooldown, or failing post-rounding contract/risk checks is skipped and recorded.",
+      "same_time_conflicts": "If multiple candidate events occur at the same profile decision timestamp, mark all as conflict-blocked rather than choose a side by row order.",
+      "pending_orders": "No pending period is simulated. Accepted submissions receive an immediate complete hypothetical fill; unfilled limits, partial fills, queue position, rejection, and cancel/fill races are unknown.",
+      "entry_fill": "Assume a full fill at the rounded strategy limit, which is offset 2 bp from the planned next-execution-bar open. This is a conditional model price, not an observed fill.",
+      "barrier_data": "Start at the candidate decision minute and scan trade 1m OHLC. A stop gap exits at that minute's open; a target gap receives that open; if both barriers occur in a minute, use stop-first. No time exit is imposed.",
+      "data_end": "Do not force-close an open position. Keep it open and report end mark-to-market plus a hypothetical round-trip liquidation cost separately.",
+      "funding": "Excluded; it is a separate signed cashflow and target treatment remains unresolved.",
+      "intraday_equity": "Report daily close marked equity; do not characterize it as intraday maximum drawdown.",
+      "venue_filter_limit": "Use the captured static tick, quantity, and notional filter values; do not model the dynamic mark-price-based PERCENT_PRICE rejection filter. The venue is unconfirmed."
+    },
+    "contract_grid_and_sizing": {
+      "tick_size": 0.1,
+      "quantity_step": 0.001,
+      "minimum_quantity": 0.001,
+      "maximum_market_quantity": 120,
+      "minimum_entry_and_protective_notional_quote": 50,
+      "source": "Captured Binance BTCUSDT USD-M contract snapshot, used as a historical research proxy; venue remains unconfirmed.",
+      "limit_offset_fraction": 0.0002,
+      "entry_rounding": "Long floor to tick; short ceil to tick.",
+      "stop_rounding": "Long ceil toward entry; short floor toward entry.",
+      "target_rounding": "Long ceil to preserve reward; short floor to preserve reward.",
+      "risk_fraction": 0.0025,
+      "maximum_modeled_loss_quote": 1,
+      "sizing_cost_fraction": 0.0015,
+      "cash_reserve_fraction": 0.001,
+      "size_formula": "floor_to_step(min(min(strategy_cash*risk_fraction, maximum_modeled_loss)/(abs(rounded_entry_limit-rounded_stop)+rounded_entry_limit*sizing_cost_fraction), strategy_cash/(rounded_entry_limit*(1+cash_reserve_fraction)), maximum_market_quantity))",
+      "post_rounding_gate": "Require directional entry/stop/target geometry, quantity minimum/maximum, entry and protective minimum notional, and quantity*(rounded_entry_stop_distance + rounded_entry_limit*sizing_cost_fraction) <= risk budget. The source's min(protective levels)*quantity check is used.",
+      "strategy_cash": "Initial cash plus realized gross PnL minus the simulator's modeled 5 bp commission on each executed side. Hypothetical non-fee execution drag is not included in strategy cash sizing, matching the strategy adapter's separation of simulator cash fees from the risk reserve."
+    },
+    "cost_scenarios": {
+      "round_trip_basis_points": [
+        10,
+        15,
+        20
+      ],
+      "sizing_basis_points": 15,
+      "pnl_formula": "directional quote PnL minus round_trip_fraction * average(entry_notional, exit_notional); charge scenario once.",
+      "components": "10 bp represents two reference 5 bp commissions. 15 bp adds hypothetical 5 bp non-fee drag; 20 bp adds hypothetical 10 bp non-fee drag. Actual account fees, spread, slippage, funding, and fills are unknown.",
+      "notional": "Linear BTC quantity; quote PnL is quantity * signed price change."
+    },
+    "risk_and_result_reporting": {
+      "trade_initial_risk_quote": "rounded quantity * (abs(entry_limit-stop) + entry_limit*0.0015)",
+      "daily_equity": "Initial research cash + cumulative closed net PnL under a cost scenario + any open position's theoretical liquidation net PnL at that UTC day's final trade close.",
+      "profit_factor": "Sum of positive closed net PnL divided by absolute sum of negative closed net PnL; undefined when there are no losses.",
+      "open_trade": "Excluded from closed trade win rate, expectancy, and profit factor; reported separately with gross mark PnL and estimated cost to liquidate.",
+      "activity": "Report triggers, 15 bp gate passes, order eligibility, assumed fills, cooldown/position/rounding rejections, and closed trades separately. Actual order/fill counts remain NOT_OBSERVED/UNKNOWN."
+    },
+    "signal_configurations_consumed": 0
+  },
+  "target_policy": {
+    "id": "BTC-PERP-P1-TARGET-1-5R",
+    "execution_policy_version": "BTC-PERP-EXEC-1",
+    "type": "FIXED_R",
+    "target_multiple": 1.5
+  },
+  "data": {
+    "source_candidate_ledger": "research/reports/pre_cost_shadow_ledger.csv",
+    "candidate_rows": 6815,
+    "trade_1m_path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+    "trade_1m_bars": 1051200,
+    "trade_1m_sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1",
+    "event_ledger_sha256": "bd70b1368660ffa1e55a29449ec7fadc407f900d64549435bf08183b0ccb6665",
+    "inspection_period_is_not_holdout": true
+  },
+  "result_semantics": {
+    "conditional_assumed_fills": true,
+    "actual_orders": "NOT_OBSERVED",
+    "actual_fills": "UNKNOWN",
+    "profitability": "unproven; hypothetical immediate fills and inspected history do not establish live or prospective profitability",
+    "no_signal_configurations_consumed": 0,
+    "funding_applied": false
+  },
+  "initial_cash_quote_per_profile": 10000,
+  "profiles": [
+    {
+      "profile": "5m",
+      "execution_minutes": 5,
+      "candidate_triggers": 5262,
+      "signal_gate_passes_15bp": 117,
+      "portfolio_conditional_entries": 76,
+      "closed_trades": 76,
+      "open_positions_at_data_end": 0,
+      "disposition_counts": {
+        "ASSUMED_FULL_FILL": 76,
+        "COST_TO_R_GATE": 4483,
+        "STOP_ATR_GATE": 662,
+        "MINIMUM_QUANTITY": 30,
+        "POSITION_OPEN": 11
+      },
+      "scenarios": [
+        {
+          "cost_scenario_bps": 10,
+          "closed_trades": 76,
+          "open_positions_at_data_end": 0,
+          "win_rate_pct": 39.473684210526315,
+          "mean_net_pnl_quote_per_closed_trade": -0.1090275473684212,
+          "cumulative_net_pnl_quote": -8.286093600000012,
+          "cumulative_gross_pnl_quote": -2.2042000000000113,
+          "net_return_on_initial_cash_pct": -0.08286093600000012,
+          "net_profit_factor": 0.7688933570861199,
+          "net_expectancy_modeled_all_in_R": -0.1294369329225197,
+          "median_holding_minutes_upper": 52,
+          "outcomes": {
+            "STOP": 46,
+            "TARGET": 30
+          },
+          "actual_orders": "NOT_OBSERVED",
+          "actual_fills": "UNKNOWN",
+          "max_daily_close_marked_drawdown_pct": 0.09108054970571926
+        },
+        {
+          "cost_scenario_bps": 15,
+          "closed_trades": 76,
+          "open_positions_at_data_end": 0,
+          "win_rate_pct": 39.473684210526315,
+          "mean_net_pnl_quote_per_closed_trade": -0.14904000526315803,
+          "cumulative_net_pnl_quote": -11.32704040000001,
+          "cumulative_gross_pnl_quote": -2.2042000000000113,
+          "net_return_on_initial_cash_pct": -0.11327040400000009,
+          "net_profit_factor": 0.6995613420265565,
+          "net_expectancy_modeled_all_in_R": -0.17863824088658303,
+          "median_holding_minutes_upper": 52,
+          "outcomes": {
+            "STOP": 46,
+            "TARGET": 30
+          },
+          "actual_orders": "NOT_OBSERVED",
+          "actual_fills": "UNKNOWN",
+          "max_daily_close_marked_drawdown_pct": 0.12049534827558828
+        },
+        {
+          "cost_scenario_bps": 20,
+          "closed_trades": 76,
+          "open_positions_at_data_end": 0,
+          "win_rate_pct": 39.473684210526315,
+          "mean_net_pnl_quote_per_closed_trade": -0.18905246315789492,
+          "cumulative_net_pnl_quote": -14.367987200000014,
+          "cumulative_gross_pnl_quote": -2.2042000000000113,
+          "net_return_on_initial_cash_pct": -0.14367987200000015,
+          "net_profit_factor": 0.6367075177559867,
+          "net_expectancy_modeled_all_in_R": -0.2278395488506464,
+          "median_holding_minutes_upper": 52,
+          "outcomes": {
+            "STOP": 46,
+            "TARGET": 30
+          },
+          "actual_orders": "NOT_OBSERVED",
+          "actual_fills": "UNKNOWN",
+          "max_daily_close_marked_drawdown_pct": 0.14991073124956295
+        }
+      ],
+      "monthly_rows": 24
+    },
+    {
+      "profile": "15m",
+      "execution_minutes": 15,
+      "candidate_triggers": 1553,
+      "signal_gate_passes_15bp": 174,
+      "portfolio_conditional_entries": 92,
+      "closed_trades": 92,
+      "open_positions_at_data_end": 0,
+      "disposition_counts": {
+        "COST_TO_R_GATE": 1159,
+        "MINIMUM_QUANTITY": 73,
+        "STOP_ATR_GATE": 220,
+        "ASSUMED_FULL_FILL": 92,
+        "COOLDOWN": 2,
+        "POSITION_OPEN": 7
+      },
+      "scenarios": [
+        {
+          "cost_scenario_bps": 10,
+          "closed_trades": 92,
+          "open_positions_at_data_end": 0,
+          "win_rate_pct": 36.95652173913043,
+          "mean_net_pnl_quote_per_closed_trade": -0.14895722228260835,
+          "cumulative_net_pnl_quote": -13.704064449999969,
+          "cumulative_gross_pnl_quote": -6.526499999999968,
+          "net_return_on_initial_cash_pct": -0.1370406444999997,
+          "net_profit_factor": 0.7003942120478572,
+          "net_expectancy_modeled_all_in_R": -0.1775672131064359,
+          "median_holding_minutes_upper": 107,
+          "outcomes": {
+            "STOP": 58,
+            "TARGET": 34
+          },
+          "actual_orders": "NOT_OBSERVED",
+          "actual_fills": "UNKNOWN",
+          "max_daily_close_marked_drawdown_pct": 0.14298404771316667
+        },
+        {
+          "cost_scenario_bps": 15,
+          "closed_trades": 92,
+          "open_positions_at_data_end": 0,
+          "win_rate_pct": 36.95652173913043,
+          "mean_net_pnl_quote_per_closed_trade": -0.1879657247282605,
+          "cumulative_net_pnl_quote": -17.292846674999968,
+          "cumulative_gross_pnl_quote": -6.526499999999968,
+          "net_return_on_initial_cash_pct": -0.17292846674999968,
+          "net_profit_factor": 0.6397843608791924,
+          "net_expectancy_modeled_all_in_R": -0.2249966686311972,
+          "median_holding_minutes_upper": 107,
+          "outcomes": {
+            "STOP": 58,
+            "TARGET": 34
+          },
+          "actual_orders": "NOT_OBSERVED",
+          "actual_fills": "UNKNOWN",
+          "max_daily_close_marked_drawdown_pct": 0.17746277598365964
+        },
+        {
+          "cost_scenario_bps": 20,
+          "closed_trades": 92,
+          "open_positions_at_data_end": 0,
+          "win_rate_pct": 36.95652173913043,
+          "mean_net_pnl_quote_per_closed_trade": -0.2269742271739126,
+          "cumulative_net_pnl_quote": -20.88162889999996,
+          "cumulative_gross_pnl_quote": -6.526499999999968,
+          "net_return_on_initial_cash_pct": -0.20881628899999963,
+          "net_profit_factor": 0.5846397656322542,
+          "net_expectancy_modeled_all_in_R": -0.27242612415595857,
+          "median_holding_minutes_upper": 107,
+          "outcomes": {
+            "STOP": 58,
+            "TARGET": 34
+          },
+          "actual_orders": "NOT_OBSERVED",
+          "actual_fills": "UNKNOWN",
+          "max_daily_close_marked_drawdown_pct": 0.21194247620889517
+        }
+      ],
+      "monthly_rows": 24
+    }
+  ],
+  "overall_cost_scenarios_across_both_independent_profiles": [
+    {
+      "cost_scenario_bps": 10,
+      "closed_trades": 168,
+      "open_positions_at_data_end": 0,
+      "win_rate_pct": 38.095238095238095,
+      "mean_net_pnl_quote_per_closed_trade": -0.13089379791666653,
+      "cumulative_net_pnl_quote": -21.990158049999977,
+      "cumulative_gross_pnl_quote": -8.73069999999998,
+      "net_return_on_initial_cash_pct": -0.10995079024999987,
+      "net_profit_factor": 0.7304939506361184,
+      "net_expectancy_modeled_all_in_R": -0.15579399111847372,
+      "median_holding_minutes_upper": 83,
+      "outcomes": {
+        "STOP": 104,
+        "TARGET": 64
+      },
+      "actual_orders": "NOT_OBSERVED",
+      "actual_fills": "UNKNOWN"
+    },
+    {
+      "cost_scenario_bps": 15,
+      "closed_trades": 168,
+      "open_positions_at_data_end": 0,
+      "win_rate_pct": 38.095238095238095,
+      "mean_net_pnl_quote_per_closed_trade": -0.17035647068452361,
+      "cumulative_net_pnl_quote": -28.61988707499997,
+      "cumulative_gross_pnl_quote": -8.73069999999998,
+      "net_return_on_initial_cash_pct": -0.14309943537499983,
+      "net_profit_factor": 0.6660791805254404,
+      "net_expectancy_modeled_all_in_R": -0.20402499893720508,
+      "median_holding_minutes_upper": 83,
+      "outcomes": {
+        "STOP": 104,
+        "TARGET": 64
+      },
+      "actual_orders": "NOT_OBSERVED",
+      "actual_fills": "UNKNOWN"
+    },
+    {
+      "cost_scenario_bps": 20,
+      "closed_trades": 168,
+      "open_positions_at_data_end": 0,
+      "win_rate_pct": 38.095238095238095,
+      "mean_net_pnl_quote_per_closed_trade": -0.2098191434523809,
+      "cumulative_net_pnl_quote": -35.24961609999999,
+      "cumulative_gross_pnl_quote": -8.73069999999998,
+      "net_return_on_initial_cash_pct": -0.17624808049999996,
+      "net_profit_factor": 0.6075653944145176,
+      "net_expectancy_modeled_all_in_R": -0.2522560067559364,
+      "median_holding_minutes_upper": 83,
+      "outcomes": {
+        "STOP": 104,
+        "TARGET": 64
+      },
+      "actual_orders": "NOT_OBSERVED",
+      "actual_fills": "UNKNOWN"
+    }
+  ],
+  "artifacts": {
+    "event_disposition_ledger": "research/reports/p1_portfolio_event_ledger.csv",
+    "conditional_trade_ledger": "research/reports/p1_portfolio_trade_ledger.csv",
+    "daily_close_marked_equity": "research/reports/p1_portfolio_daily_equity.csv",
+    "monthly_summary": "research/reports/p1_portfolio_monthly_summary.csv"
+  }
+}

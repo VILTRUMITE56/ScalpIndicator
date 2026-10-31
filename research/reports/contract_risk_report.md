@@ -1,6 +1,6 @@
 # Contract rounding, fill risk and loss-control reference
 
-Generated: 2026-10-31T04:35:11.097Z
+Generated: 2026-10-31T05:39:03.540Z
 
 Status: PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_UNCONFIRMED_PERSONAL_LOCKS_DISABLED_BY_USER_CHOICE. This is an offline paper/reference model; it is not connected to a trading account.
 
@@ -19,7 +19,7 @@ Status: PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_UNCONFIRMED_PERSONAL_LOCKS_DISA
 
 - Synthetic deterministic fixtures: 24/24 pass. Fixture filter values are test data only.
 - Binance BTCUSDT metadata was captured from the official public exchangeInfo endpoint at 2026-10-31T04:33:14.976Z. The exchangeInfo response and subsequent /time reference were -0.295 seconds apart, within the 300-second gate. The snapshot records the dynamic PERCENT_PRICE filter; the native adapter does not enforce that reference-price-based filter. This is the Binance research proxy only.
-- TakeProfit diagnostic backtest: 5m produced 0 trades; 15m produced 1 simulated short, stopped for -$0.3649 net with $0.0803 commission. Both bounded windows are flagged history-insufficient. The single 15m entry and stop share a timestamp, so intrabar execution is unresolved. See `research/reports/p1_native_risk_backtest_summary.json`; these are simulator fills, not exchange fills or profitability evidence.
+- The retained TakeProfit diagnostic backtest was run on the preceding strategy source: 5m produced 0 trades; 15m produced 1 simulated short, stopped for -$0.3649 net with $0.0803 commission. Both bounded windows are flagged history-insufficient. The single 15m entry and stop share a timestamp, so intrabar execution is unresolved. It is not a backtest of current `BTC-PERP-EXEC-1`. See `research/reports/p1_native_risk_backtest_summary.json`; these are simulator fills, not exchange fills or profitability evidence.
 - Account maker/taker fees, user fills, historical slippage/spread and funding reserve remain unavailable. Sizing is blocked unless fees, slippage and funding reserve are explicitly supplied. Reconciliation fixtures use synthetic fills and costs only.
 - Personal daily-loss/drawdown limits remain intentionally disabled by the user. Generic fixture thresholds test control behavior only; they are not personal limits, and no personal lock is active.
 - The $1 stop budget is an intended model cap. A gap, liquidation, exchange failure or fill race can exceed it; existing protection is kept and no unverified flatten order is invented.
@@ -29,7 +29,7 @@ Status: PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_UNCONFIRMED_PERSONAL_LOCKS_DISA
 
 - Reference rounding and post-rounding risk eligibility: fixture-verified with synthetic filters; current Binance research-proxy filters were captured, but actual execution venue rules remain unconfirmed.
 - Supplied-fill reconciliation: fixture-verified for partial fills, fees, funding, marked equity, stressed stop loss, planned size and protective coverage; user/exchange fill records remain absent.
-- Native execution adapter: source now uses the chart tick size, conservative directional price rounding, a configurable common quantity step, captured minimum quantity/notional and market maximum defaults, and post-rounding risk sizing capped at the user-confirmed $1 research budget. The exact local source compiled and passed runtime_quick on a disposable TakeProfit copy (5,000 bars). The 5m/15m bounded backtest emitted no 5m trades and one losing 15m simulator trade; both history windows are insufficient. The dynamic PERCENT_PRICE filter is not implemented by the native adapter. Keep it research-only.
+- Native execution adapter: current local source uses the chart tick size, conservative directional price rounding, configurable quantity/notional filters, and post-rounding sizing capped at the user's $1 research budget. Its 15 bp scenario is reserved once and the strategy exposes a hidden candidate event, reason code, and trigger timestamp. The current exact source compiled and passed runtime_quick on disposable TakeProfit copy `92254833-5b23-4439-a9c2-8f46975debd9` (5,000 bars). The retained 5m/15m bounded backtest belongs to the preceding source and remains history-insufficient. Dynamic `PERCENT_PRICE` validation and exchange behavior are unresolved. Keep it research-only.
 - Daily/drawdown policy: the user-approved choice to leave personal thresholds unset is recorded; generic lock and reset behavior is fixture-verified, while personal account locks remain disabled.
 - Holding policy: TP/SL-only with no maximum hold is recorded as BTC-PERP-EXIT-TP-SL-ONLY-1; changes require a separate experiment.
 - Profitability: not evaluated by these engineering fixtures.

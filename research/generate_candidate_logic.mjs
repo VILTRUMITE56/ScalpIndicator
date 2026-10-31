@@ -44,12 +44,12 @@ const generated = {
     markerEnd: '        # END GENERATED INDICATOR CANDIDATE ADAPTER',
   },
   'indie/btc_pullback_strategy_p1.indie': {
-    block: `${renderTemplate('shared_candidate_core.indie.in')}\n${renderTemplate('strategy_candidate_adapter.indie.in')}\n\n        return entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0]\n`,
+    block: `${renderTemplate('shared_candidate_core.indie.in')}\n${renderTemplate('strategy_candidate_adapter.indie.in')}\n\n        return (entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0],\n                execution_candidate_event_code, execution_candidate_reason_code,\n                execution_candidate_trigger_utc_s)\n`,
     legacyStart: '        if self.is_new_bar and (not profile_valid or data_gap or (at_higher_boundary and not complete_higher_bar)):',
     legacyEnd: '        return entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0]',
     markerStart: '        # BEGIN GENERATED SHARED CANDIDATE CORE',
     markerEnd: '        # END GENERATED STRATEGY EXECUTION ADAPTER',
-    trailing: '\n\n        return entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0]',
+    trailing: '\n\n        return (entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0],\n                execution_candidate_event_code, execution_candidate_reason_code,\n                execution_candidate_trigger_utc_s)',
   },
 };
 

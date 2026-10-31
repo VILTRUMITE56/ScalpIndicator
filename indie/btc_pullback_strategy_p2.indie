@@ -1,0 +1,596 @@
+# indie:lang_version = 5
+# Experimental execution variant BTC-PERP-EXEC-2: target is computed from rounded size for >$5.01 modeled net profit at the configured cost fraction.
+from indie import strategy, MainStrategyContext, param, plot, color, Optional, MutSeries, MutSeriesF
+from indie.algorithms import Ema, Atr
+from indie.strategies import Commission, commission_type, order_side, Order, order_status, intrabar_order_filter
+from math import nan, floor, ceil
+
+@strategy('BTC Perp Pullback Strategy P2 - Net Target Feasibility (Experimental)', overlay_main_pane=True,
+          initial_capital=10000.0,
+          commission=Commission(0.0005, commission_type.PERCENT),
+          intrabar_order_filter=intrabar_order_filter.NO_FILTER)
+@param.float('risk_fraction', default=0.0025, min=0.0001, max=0.01)
+@param.float('cost_fraction', default=0.0015, min=0.0001, max=0.01)
+@param.float('maximum_loss_quote', default=1.0, min=0.01, max=10000.0, title='Maximum modeled loss per trade (USDT; research cap)')
+@param.float('quantity_step', default=0.001, min=0.00001, max=10.0, title='Common entry and protective-exit quantity step (Binance proxy)')
+@param.float('minimum_quantity', default=0.001, min=0.00001, max=1000.0, title='Minimum quantity (last-observed Binance proxy)')
+@param.float('maximum_market_quantity', default=120.0, min=0.00001, max=10000.0, title='Maximum protective market quantity (last-observed Binance proxy)')
+@param.float('minimum_notional_quote', default=50.0, min=0.01, max=1000000.0, title='Minimum entry/protection notional (last-observed Binance proxy USDT)')
+@param.float('minimum_net_target_quote', default=5.01, min=5.01, max=100000.0, title='Minimum modeled net target (USDT; excludes funding)')
+@plot.line('Entry EMA 20', color=color.AQUA)
+@plot.line('Entry EMA 50', color=color.ORANGE)
+@plot.line('HTF EMA 20', color=color.BLUE)
+@plot.line('HTF EMA 50', color=color.YELLOW)
+@plot.line(id='execution_candidate_event_code', title='Execution Candidate Event Code', color=color.TRANSPARENT, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='execution_candidate_reason_code', title='Execution Candidate Reason Code', color=color.TRANSPARENT, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='execution_candidate_trigger_utc_s', title='Execution Candidate Trigger UTC Seconds', color=color.TRANSPARENT, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+@plot.line(id='execution_candidate_target_quote', title='P2 Modeled Net Target Quote', color=color.TRANSPARENT, display_options=plot.LineDisplayOptions(pane=False, status_line=False, price_label=False))
+class Main(MainStrategyContext):
+    def __init__(self, risk_fraction, cost_fraction, maximum_loss_quote, quantity_step, minimum_quantity, maximum_market_quantity, minimum_notional_quote, minimum_net_target_quote):
+        self._risk_fraction = risk_fraction
+        self._cost_fraction = cost_fraction
+        self._maximum_loss_quote = maximum_loss_quote
+        self._quantity_step = quantity_step
+        self._minimum_quantity = minimum_quantity
+        self._maximum_market_quantity = maximum_market_quantity
+        self._minimum_notional_quote = minimum_notional_quote
+        self._minimum_net_target_quote = minimum_net_target_quote
+        self._pending: Optional[Order] = None
+        self._pending_bar = -1
+        self._cancel_requested = False
+        self._last_exit_bar = -100
+        self._last_signal_bar = -100
+        self._long_pullback_armed = False
+        self._short_pullback_armed = False
+        self._long_pullback_bar = -1
+        self._short_pullback_bar = -1
+        self._long_pullback_source_bar = -1
+        self._short_pullback_source_bar = -1
+        self._long_used_touch_bar = -1
+        self._short_used_touch_bar = -1
+        self._long_pullback_extreme = nan
+        self._short_pullback_extreme = nan
+        self._long_setup_atr = nan
+        self._short_setup_atr = nan
+        self._long_invalidation = nan
+        self._short_invalidation = nan
+        self._long_stop_reference = nan
+        self._short_stop_reference = nan
+        self._long_wait_recovery = False
+        self._short_wait_recovery = False
+        self._long_recovery_bar = -1
+        self._short_recovery_bar = -1
+        self._was_in_position = False
+        self._last_observed_position_size = 0.0
+        self._last_htf_boundary_bar = -1
+        self._last_htf_boundary_complete = False
+        self._trend_event = False
+        self._pullback_event = False
+        self._trigger_event = False
+        self._invalidated_event = False
+        self._expired_event = False
+        self._last_candidate_id = ''
+
+    def calc(self):
+        entry_fast = Ema.new(self.close, 20)
+        entry_slow = Ema.new(self.close, 50)
+        atr = Atr.new(14)
+        htf_fast = MutSeriesF.new(init=nan)
+        htf_slow = MutSeriesF.new(init=nan)
+        htf_close = MutSeriesF.new(init=nan)
+        htf_slow_lag3 = MutSeriesF.new(init=nan)
+        htf_slow_hist1 = MutSeriesF.new(init=nan)
+        htf_slow_hist2 = MutSeriesF.new(init=nan)
+        htf_slow_hist3 = MutSeriesF.new(init=nan)
+        htf_count = MutSeries[int].new(init=0)
+
+        time_delta = 0.0
+        if self.bar_index > 0:
+            time_delta = self.time[0] - self.time[1]
+        execution_seconds = self.time_frame.to_seconds()
+        higher_seconds = 0
+        bars_per_higher = 0
+        if execution_seconds == 300:
+            higher_seconds = 900
+            bars_per_higher = 3
+        elif execution_seconds == 900:
+            higher_seconds = 3600
+            bars_per_higher = 4
+
+        profile_valid = execution_seconds == 300 or execution_seconds == 900
+        data_gap = profile_valid and self.bar_index > 0 and time_delta != execution_seconds
+        at_higher_boundary = False
+        complete_higher_bar = False
+        current_bucket = 0
+        previous_bucket = 0
+        if profile_valid and self.time[0] > 0.0 and self.time[1] > 0.0:
+            current_bucket = int(self.time[0] / higher_seconds)
+            previous_bucket = int(self.time[1] / higher_seconds)
+        if profile_valid and self.bar_index >= bars_per_higher:
+            at_higher_boundary = current_bucket != previous_bucket
+            if at_higher_boundary and current_bucket == previous_bucket + 1:
+                if execution_seconds == 300:
+                    complete_higher_bar = self.time[1] > 0.0 and self.time[2] > 0.0 and self.time[3] > 0.0 and int(self.time[2]) == int(self.time[1]) - 300 and int(self.time[3]) == int(self.time[2]) - 300
+                elif execution_seconds == 900:
+                    complete_higher_bar = (self.time[1] > 0.0 and self.time[2] > 0.0 and self.time[3] > 0.0 and self.time[4] > 0.0 and
+                                            int(self.time[2]) == int(self.time[1]) - 900 and
+                                            int(self.time[3]) == int(self.time[2]) - 900 and
+                                            int(self.time[4]) == int(self.time[3]) - 900)
+
+        boundary_event = at_higher_boundary and self.is_new_bar
+        if profile_valid and boundary_event:
+            self._last_htf_boundary_bar = self.bar_index
+            self._last_htf_boundary_complete = complete_higher_bar
+
+        if not profile_valid or data_gap or (at_higher_boundary and not complete_higher_bar):
+            htf_fast[0] = nan
+            htf_slow[0] = nan
+            htf_close[0] = nan
+            htf_slow_lag3[0] = nan
+            htf_slow_hist1[0] = nan
+            htf_slow_hist2[0] = nan
+            htf_slow_hist3[0] = nan
+            htf_count[0] = 0
+        elif at_higher_boundary:
+            if htf_count[1] == 0:
+                htf_fast[0] = self.close[1]
+                htf_slow[0] = self.close[1]
+                htf_close[0] = self.close[1]
+                htf_slow_lag3[0] = nan
+                htf_slow_hist1[0] = nan
+                htf_slow_hist2[0] = nan
+                htf_slow_hist3[0] = nan
+                htf_count[0] = 1
+            else:
+                htf_fast[0] = htf_fast[1] + (2.0 / 21.0) * (self.close[1] - htf_fast[1])
+                htf_slow[0] = htf_slow[1] + (2.0 / 51.0) * (self.close[1] - htf_slow[1])
+                htf_close[0] = self.close[1]
+                htf_slow_lag3[0] = htf_slow_hist2[1]
+                htf_slow_hist3[0] = htf_slow_hist2[1]
+                htf_slow_hist2[0] = htf_slow_hist1[1]
+                htf_slow_hist1[0] = htf_slow[1]
+                htf_count[0] = htf_count[1] + 1
+
+        position_size = self.trading.position.size
+        previous_position_size = self._last_observed_position_size
+        position_closed_this_calc = False
+        position_reduced_this_calc = False
+        if position_size != 0 and not self._was_in_position:
+            self._was_in_position = True
+        if previous_position_size != 0 and position_size != 0 and previous_position_size * position_size > 0 and abs(position_size) < abs(previous_position_size):
+            position_reduced_this_calc = True
+        if position_size == 0 and self._was_in_position:
+            self._was_in_position = False
+            self._last_exit_bar = self.bar_index
+            position_closed_this_calc = True
+
+        pending_was_resolved = False
+        if self._pending is not None:
+            pending_status = self._pending.value().status
+            if pending_status == order_status.FILLED:
+                if position_size == 0:
+                    self._last_exit_bar = self.bar_index
+                self._pending = None
+                self._pending_bar = -1
+                self._cancel_requested = False
+                pending_was_resolved = True
+            elif pending_status == order_status.PARTIALLY_FILLED_CLOSED:
+                # The parent can finish partially filled after its bracket exits in the
+                # same bar, before a calc call ever observes non-zero position size.
+                if position_size == 0:
+                    self._last_exit_bar = self.bar_index
+                self._pending = None
+                self._pending_bar = -1
+                self._cancel_requested = False
+                pending_was_resolved = True
+            elif pending_status == order_status.CANCELED or pending_status == order_status.REJECTED:
+                self._pending = None
+                self._pending_bar = -1
+                self._cancel_requested = False
+                pending_was_resolved = True
+            elif pending_status == order_status.CREATED or pending_status == order_status.PLACED or pending_status == order_status.PENDING_PLACED or pending_status == order_status.PARTIALLY_FILLED:
+                # A partial fill with no current exposure means a bracket may have
+                # closed the filled amount while the parent remainder is still live.
+                # Cancel that remainder immediately; keep it pending until ack so a
+                # late fill cannot race a replacement entry.
+                partial_fill_closed_position = pending_status == order_status.PARTIALLY_FILLED and position_size == 0
+                cancel_after_exit = position_closed_this_calc or position_reduced_this_calc or partial_fill_closed_position
+                cancel_after_expiry = self.bar_index > self._pending_bar
+                if (cancel_after_exit or cancel_after_expiry) and not self._cancel_requested:
+                    self.trading.cancel_order(self._pending.value().id)
+                    self._cancel_requested = True
+            else:
+                # Unknown statuses fail closed: request cancellation once and keep the
+                # pending-order guard until a documented terminal state is observed.
+                if not self._cancel_requested:
+                    self.trading.cancel_order(self._pending.value().id)
+                    self._cancel_requested = True
+
+        self._last_observed_position_size = position_size
+
+        htf_ready = profile_valid and htf_count[0] >= 250
+        execution_candidate_event_code = 0.0
+        execution_candidate_reason_code = 0.0
+        execution_candidate_trigger_utc_s = nan
+        execution_candidate_target_quote = nan
+        # BEGIN GENERATED SHARED CANDIDATE CORE
+        candidate_side = 0
+        candidate_id = ''
+        candidate_touch_utc = -1
+        candidate_trigger_utc = -1
+        candidate_touch_anchor = nan
+        candidate_setup_atr = nan
+        candidate_invalidation = nan
+        candidate_planned_entry = nan
+        candidate_stop = nan
+        candidate_target = nan
+        candidate_stop_distance = nan
+        candidate_cost_r = nan
+        candidate_stop_reference = nan
+        candidate_blocker = 'NO CANDIDATE'
+
+        long_bias = False
+        short_bias = False
+        if htf_ready:
+            long_bias = htf_close[0] > htf_slow[0] and htf_fast[0] > htf_slow[0] and htf_slow[0] > htf_slow_lag3[0]
+            short_bias = htf_close[0] < htf_slow[0] and htf_fast[0] < htf_slow[0] and htf_slow[0] < htf_slow_lag3[0]
+
+        if self.is_new_bar:
+            self._trend_event = False
+            self._pullback_event = False
+            self._trigger_event = False
+            self._invalidated_event = False
+            self._expired_event = False
+
+        if self.is_new_bar and (not profile_valid or data_gap or (at_higher_boundary and not complete_higher_bar)):
+            self._long_pullback_armed = False
+            self._short_pullback_armed = False
+            self._long_pullback_bar = -1
+            self._short_pullback_bar = -1
+            self._long_pullback_source_bar = -1
+            self._short_pullback_source_bar = -1
+            self._long_used_touch_bar = self.bar_index - 1
+            self._short_used_touch_bar = self.bar_index - 1
+            self._long_pullback_extreme = nan
+            self._short_pullback_extreme = nan
+            self._long_setup_atr = nan
+            self._short_setup_atr = nan
+            self._long_invalidation = nan
+            self._short_invalidation = nan
+            self._long_stop_reference = nan
+            self._short_stop_reference = nan
+            self._long_wait_recovery = True
+            self._short_wait_recovery = True
+            self._long_recovery_bar = -1
+            self._short_recovery_bar = -1
+
+        if self.is_new_bar and htf_ready and self.bar_index > 55:
+            if long_bias or short_bias:
+                self._trend_event = True
+
+            if not long_bias:
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if not short_bias:
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+
+            if self._long_pullback_armed and self.bar_index - 1 - self._long_pullback_source_bar > 6:
+                self._expired_event = True
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if self._short_pullback_armed and self.bar_index - 1 - self._short_pullback_source_bar > 6:
+                self._expired_event = True
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+
+            long_invalidated = self._long_pullback_armed and (self.close[1] <= entry_slow[1] or self.low[1] <= self._long_invalidation)
+            short_invalidated = self._short_pullback_armed and (self.close[1] >= entry_slow[1] or self.high[1] >= self._short_invalidation)
+            if long_invalidated:
+                self._invalidated_event = True
+                self._long_used_touch_bar = self.bar_index - 1
+                self._long_pullback_armed = False
+                self._long_pullback_bar = -1
+                self._long_pullback_source_bar = -1
+                self._long_pullback_extreme = nan
+                self._long_setup_atr = nan
+                self._long_invalidation = nan
+                self._long_stop_reference = nan
+                self._long_wait_recovery = True
+                self._long_recovery_bar = -1
+            if short_invalidated:
+                self._invalidated_event = True
+                self._short_used_touch_bar = self.bar_index - 1
+                self._short_pullback_armed = False
+                self._short_pullback_bar = -1
+                self._short_pullback_source_bar = -1
+                self._short_pullback_extreme = nan
+                self._short_setup_atr = nan
+                self._short_invalidation = nan
+                self._short_stop_reference = nan
+                self._short_wait_recovery = True
+                self._short_recovery_bar = -1
+
+            if self._long_wait_recovery and self.bar_index - 1 > self._long_used_touch_bar and self.close[1] > entry_fast[1]:
+                self._long_wait_recovery = False
+                self._long_recovery_bar = self.bar_index - 1
+            if self._short_wait_recovery and self.bar_index - 1 > self._short_used_touch_bar and self.close[1] < entry_fast[1]:
+                self._short_wait_recovery = False
+                self._short_recovery_bar = self.bar_index - 1
+
+            long_touch_eligible = long_bias and self.low[1] <= entry_fast[1] and self.high[1] >= entry_fast[1] and self.close[1] > entry_slow[1]
+            short_touch_eligible = short_bias and self.low[1] <= entry_fast[1] and self.high[1] >= entry_fast[1] and self.close[1] < entry_slow[1]
+            long_touch_source_bar = self.bar_index - 1
+            short_touch_source_bar = self.bar_index - 1
+            long_touch_index = 1
+            short_touch_index = 1
+            long_touch_atr = atr[1]
+            short_touch_atr = atr[1]
+            if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - 2:
+                if self.close[2] <= entry_slow[2]:
+                    long_touch_eligible = False
+            if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - 3:
+                if self.close[3] <= entry_slow[3]:
+                    long_touch_eligible = False
+            if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - 2:
+                if self.close[2] >= entry_slow[2]:
+                    short_touch_eligible = False
+            if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - 3:
+                if self.close[3] >= entry_slow[3]:
+                    short_touch_eligible = False
+
+            if long_touch_eligible and not self._long_wait_recovery and not self._long_pullback_armed and long_touch_source_bar > self._long_used_touch_bar and long_touch_source_bar > self._long_recovery_bar:
+                self._long_pullback_armed = True
+                self._long_pullback_bar = self.bar_index
+                self._long_pullback_source_bar = long_touch_source_bar
+                anchor = self.low[long_touch_index]
+                previous_index = long_touch_index + 1
+                if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - previous_index:
+                    anchor = min(anchor, self.low[previous_index])
+                previous_index = long_touch_index + 2
+                if self._long_recovery_bar < 0 or self._long_recovery_bar <= self.bar_index - previous_index:
+                    anchor = min(anchor, self.low[previous_index])
+                self._long_pullback_extreme = anchor
+                self._long_setup_atr = long_touch_atr
+                self._long_invalidation = anchor - 0.1 * self._long_setup_atr
+                self._long_stop_reference = anchor - 0.15 * self._long_setup_atr
+                self._pullback_event = True
+            if short_touch_eligible and not self._short_wait_recovery and not self._short_pullback_armed and short_touch_source_bar > self._short_used_touch_bar and short_touch_source_bar > self._short_recovery_bar:
+                self._short_pullback_armed = True
+                self._short_pullback_bar = self.bar_index
+                self._short_pullback_source_bar = short_touch_source_bar
+                anchor = self.high[short_touch_index]
+                previous_index = short_touch_index + 1
+                if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - previous_index:
+                    anchor = max(anchor, self.high[previous_index])
+                previous_index = short_touch_index + 2
+                if self._short_recovery_bar < 0 or self._short_recovery_bar <= self.bar_index - previous_index:
+                    anchor = max(anchor, self.high[previous_index])
+                self._short_pullback_extreme = anchor
+                self._short_setup_atr = short_touch_atr
+                self._short_invalidation = anchor + 0.1 * self._short_setup_atr
+                self._short_stop_reference = anchor + 0.15 * self._short_setup_atr
+                self._pullback_event = True
+
+            long_trigger = self.close[1] > entry_fast[1] and self.close[1] > entry_slow[1] and self.close[1] > self.open[1] and self.close[1] > self.high[2]
+            short_trigger = self.close[1] < entry_fast[1] and self.close[1] < entry_slow[1] and self.close[1] < self.open[1] and self.close[1] < self.low[2]
+            long_age = self.bar_index - 1 - self._long_pullback_source_bar
+            short_age = self.bar_index - 1 - self._short_pullback_source_bar
+            long_candidate = self._long_pullback_armed and long_bias and long_trigger and self.low[1] > self._long_invalidation and long_age >= 1 and long_age <= 6
+            short_candidate = self._short_pullback_armed and short_bias and short_trigger and self.high[1] < self._short_invalidation and short_age >= 1 and short_age <= 6
+
+            if long_candidate:
+                candidate_side = 1
+                candidate_touch_anchor = self._long_pullback_extreme
+                candidate_setup_atr = self._long_setup_atr
+                candidate_invalidation = self._long_invalidation
+                candidate_stop_reference = self._long_stop_reference
+                touch_offset = self.bar_index - self._long_pullback_source_bar
+                candidate_touch_utc = int(self.time[touch_offset])
+                candidate_trigger_utc = int(self.time[1])
+            elif short_candidate:
+                candidate_side = -1
+                candidate_touch_anchor = self._short_pullback_extreme
+                candidate_setup_atr = self._short_setup_atr
+                candidate_invalidation = self._short_invalidation
+                candidate_stop_reference = self._short_stop_reference
+                touch_offset = self.bar_index - self._short_pullback_source_bar
+                candidate_touch_utc = int(self.time[touch_offset])
+                candidate_trigger_utc = int(self.time[1])
+
+            if candidate_side != 0:
+                self._trigger_event = True
+                execution_minutes = int(execution_seconds / 60)
+                candidate_side_text = 'LONG' if candidate_side == 1 else 'SHORT'
+                candidate_id = (self.info.exchange_code + '|' + self.info.ticker + '|' + str(execution_minutes) + 'm|' +
+                                candidate_side_text + '|' + str(candidate_touch_utc) + '|' + str(candidate_trigger_utc) +
+                                '|BTC-PERP-PULLBACK-P1')
+                self._last_candidate_id = candidate_id
+
+                candidate_planned_entry = self.open[0]
+                candidate_blocker = 'NONE'
+                if candidate_planned_entry <= 0.0 or candidate_setup_atr <= 0.0:
+                    candidate_blocker = 'INVALID ENTRY OR ATR'
+                elif candidate_side == 1 and candidate_stop_reference >= candidate_planned_entry:
+                    candidate_blocker = 'INVALID STOP'
+                elif candidate_side == -1 and candidate_stop_reference <= candidate_planned_entry:
+                    candidate_blocker = 'INVALID STOP'
+                else:
+                    candidate_stop_distance = max(abs(candidate_planned_entry - candidate_stop_reference), 1 * candidate_setup_atr)
+                    candidate_cost_r = candidate_planned_entry * self._cost_fraction / candidate_stop_distance
+                    if candidate_side == 1:
+                        candidate_stop = candidate_planned_entry - candidate_stop_distance
+                        candidate_target = candidate_planned_entry + 1.5 * candidate_stop_distance
+                    else:
+                        candidate_stop = candidate_planned_entry + candidate_stop_distance
+                        candidate_target = candidate_planned_entry - 1.5 * candidate_stop_distance
+                    if candidate_stop_distance > 2.5 * candidate_setup_atr:
+                        candidate_blocker = 'STOP > 2.5 ATR'
+                    elif candidate_cost_r > 0.2:
+                        candidate_blocker = 'COST > 0.2R'
+
+                self._long_used_touch_bar = self.bar_index - 1 if candidate_side == 1 else self._long_used_touch_bar
+                self._short_used_touch_bar = self.bar_index - 1 if candidate_side == -1 else self._short_used_touch_bar
+                if candidate_side == 1:
+                    self._long_pullback_armed = False
+                    self._long_pullback_bar = -1
+                    self._long_pullback_source_bar = -1
+                    self._long_pullback_extreme = nan
+                    self._long_setup_atr = nan
+                    self._long_invalidation = nan
+                    self._long_stop_reference = nan
+                    self._long_wait_recovery = True
+                    self._long_recovery_bar = -1
+                else:
+                    self._short_pullback_armed = False
+                    self._short_pullback_bar = -1
+                    self._short_pullback_source_bar = -1
+                    self._short_pullback_extreme = nan
+                    self._short_setup_atr = nan
+                    self._short_invalidation = nan
+                    self._short_stop_reference = nan
+                    self._short_wait_recovery = True
+                    self._short_recovery_bar = -1
+        # END GENERATED SHARED CANDIDATE CORE
+        # BEGIN GENERATED STRATEGY EXECUTION ADAPTER
+        if candidate_side != 0:
+            execution_candidate_event_code = 1.0
+            execution_candidate_trigger_utc_s = float(candidate_trigger_utc)
+            execution_candidate_reason_code = 0.0
+            if candidate_blocker == 'INVALID ENTRY OR ATR':
+                execution_candidate_reason_code = 10.0
+            elif candidate_blocker == 'INVALID STOP':
+                execution_candidate_reason_code = 11.0
+            elif candidate_blocker == 'STOP > 2.5 ATR':
+                execution_candidate_reason_code = 12.0
+            elif candidate_blocker == 'COST > 0.2R':
+                execution_candidate_reason_code = 13.0
+            elif position_size != 0:
+                execution_candidate_reason_code = 20.0
+            elif self._pending is not None or pending_was_resolved:
+                execution_candidate_reason_code = 21.0
+            elif self.bar_index - self._last_exit_bar <= 3 or self.bar_index - self._last_signal_bar <= 3:
+                execution_candidate_reason_code = 22.0
+            elif self.trading.cash <= 0.0:
+                execution_candidate_reason_code = 23.0
+            else:
+                tick_size = self.info.tick_size
+                if tick_size <= 0.0 or self._quantity_step <= 0.0 or self._minimum_quantity <= 0.0 or self._maximum_market_quantity <= 0.0 or self._minimum_notional_quote <= 0.0:
+                    execution_candidate_reason_code = 24.0
+                else:
+                    planned_entry = candidate_planned_entry
+                    raw_limit_quote = planned_entry * (1.0 + 0.0002) if candidate_side == 1 else planned_entry * (1.0 - 0.0002)
+                    order_limit_quote = nan
+                    execution_stop = nan
+                    execution_target = nan
+                    if candidate_side == 1:
+                        order_limit_quote = floor(raw_limit_quote / tick_size) * tick_size
+                        execution_stop = ceil(candidate_stop / tick_size) * tick_size
+                    else:
+                        order_limit_quote = ceil(raw_limit_quote / tick_size) * tick_size
+                        execution_stop = floor(candidate_stop / tick_size) * tick_size
+
+                    valid_levels = order_limit_quote > 0.0 and execution_stop > 0.0
+                    if candidate_side == 1:
+                        valid_levels = valid_levels and execution_stop < order_limit_quote
+                    else:
+                        valid_levels = valid_levels and execution_stop > order_limit_quote
+
+                    if not valid_levels:
+                        execution_candidate_reason_code = 25.0
+                    else:
+                        # cost_fraction is the complete non-funding cost scenario, including
+                        # the simulator's entry/exit commissions. It is reserved once against
+                        # loss sizing; the simulator separately debits its commission cashflows.
+                        execution_cost_per_btc = order_limit_quote * self._cost_fraction
+                        execution_stop_distance = abs(order_limit_quote - execution_stop)
+                        risk_budget = min(self.trading.cash * self._risk_fraction, self._maximum_loss_quote)
+                        risk_size = risk_budget / (execution_stop_distance + execution_cost_per_btc)
+                        cash_size = self.trading.cash / (order_limit_quote * 1.001)
+                        raw_size = min(risk_size, cash_size, self._maximum_market_quantity)
+                        if raw_size > 0.0:
+                            size = floor(raw_size / self._quantity_step) * self._quantity_step
+                            instrument_info = self.trading.instrument_info
+                            minimum_quantity = max(instrument_info.min_order_size, self._minimum_quantity)
+                            minimum_notional = max(instrument_info.min_order_value, self._minimum_notional_quote)
+                            modeled_all_in_loss = size * (execution_stop_distance + execution_cost_per_btc)
+                            if size < minimum_quantity:
+                                execution_candidate_reason_code = 26.0
+                            else:
+                                half_cost_fraction = self._cost_fraction / 2.0
+                                if candidate_side == 1:
+                                    raw_target = (self._minimum_net_target_quote / size + order_limit_quote * (1.0 + half_cost_fraction)) / (1.0 - half_cost_fraction)
+                                    execution_target = ceil(raw_target / tick_size) * tick_size
+                                else:
+                                    raw_target = (order_limit_quote * (1.0 - half_cost_fraction) - self._minimum_net_target_quote / size) / (1.0 + half_cost_fraction)
+                                    execution_target = floor(raw_target / tick_size) * tick_size
+                                target_direction = 1.0 if candidate_side == 1 else -1.0
+                                modeled_target_net = size * target_direction * (execution_target - order_limit_quote) - self._cost_fraction * size * (order_limit_quote + execution_target) / 2.0
+                                execution_candidate_target_quote = execution_target
+                                valid_target = execution_target > 0.0 and modeled_target_net >= self._minimum_net_target_quote and modeled_target_net > 5.0
+                                if not valid_target:
+                                    execution_candidate_reason_code = 30.0
+                                else:
+                                    protective_notional = size * min(order_limit_quote, execution_stop, execution_target)
+                                    if protective_notional < minimum_notional:
+                                        execution_candidate_reason_code = 26.0
+                                    elif size > self._maximum_market_quantity:
+                                        execution_candidate_reason_code = 27.0
+                                    elif modeled_all_in_loss > risk_budget:
+                                        execution_candidate_reason_code = 28.0
+                                    else:
+                                        if candidate_side == 1:
+                                            self._pending = (self.trading.place_order(order_side.BUY, size=size)
+                                                             .limit(price=order_limit_quote)
+                                                             .stop_loss(stop=execution_stop)
+                                                             .take_profit(stop=execution_target)
+                                                             .submit())
+                                        else:
+                                            self._pending = (self.trading.place_order(order_side.SELL, size=size)
+                                                             .limit(price=order_limit_quote)
+                                                             .stop_loss(stop=execution_stop)
+                                                             .take_profit(stop=execution_target)
+                                                             .submit())
+                                        self._pending_bar = self.bar_index
+                                        self._cancel_requested = False
+                                        self._last_signal_bar = self.bar_index
+                                        execution_candidate_reason_code = 2.0
+                        else:
+                            execution_candidate_reason_code = 29.0
+        # END GENERATED STRATEGY EXECUTION ADAPTER
+
+        return (entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0],
+                execution_candidate_event_code, execution_candidate_reason_code,
+                execution_candidate_trigger_utc_s, execution_candidate_target_quote)

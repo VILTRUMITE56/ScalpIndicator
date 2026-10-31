@@ -1,0 +1,168 @@
+{
+  "schema_version": 1,
+  "manifest_id": "btc-perp-p1-portfolio-shadow-2026-10-31",
+  "generated_at_utc": "2026-10-31T07:06:18.631Z",
+  "model_id": "BTC-PERP-P1-PORTFOLIO-SHADOW-2026-10",
+  "status": "conditional_portfolio_replay_complete_profitability_unproven",
+  "hash_convention": "CSV inputs/artifacts use raw-byte SHA-256; text uses UTF-8 BOM stripping and CRLF/CR to LF normalization.",
+  "source_inputs": [
+    {
+      "path": "research/specs/p1_portfolio_shadow.json",
+      "sha256": "cfbd21671fffdf498111d665576b99c81fb86de8aeda954532d174c371324eb2",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/specs/p2_net_target_policy.json",
+      "sha256": "3da9dd7eb5091e0efe5087be4da92e5a78672828d88351541c333fdf6a0a3d5d",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/specs/candidate_contract_p1.json",
+      "sha256": "cd63652d535f45945595c366dd904680e4f548131f2f093f84501f10e5ea4256",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/specs/candidate_economics_p1.json",
+      "sha256": "a0e959afca89044549e893b1c737a6705a82f1badc7195de07495cc477bd2ddc",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/specs/contract_risk_controls_p1.json",
+      "sha256": "acf4e5fec99d95beae99586af4072763f473bf09a3600a1b13142ebfda082629",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/specs/execution_cost_risk.json",
+      "sha256": "e960d737de503afd058eeb68622af0690e72697cebccb8fb04ffe6ac5c7f4710",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "indie/btc_pullback_strategy_p1.indie",
+      "sha256": "ad87c6b7bd6a12d999913087995333b7e26af6049aa5952c1621e4a2f2019d54",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/templates/strategy_candidate_adapter.indie.in",
+      "sha256": "54144f92594fc42c8cecffa506ccda5c7ae4a34f5349868245a52fa181936eb4",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/candidate_economics_shadow.mjs",
+      "sha256": "fa7edb0ddbdfff12754bd987ac0ff63ee0111d257b5cede013db2bfc0a8fda5c",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/reports/candidate_economics_report.json",
+      "sha256": "7a9a183561aa1355c179fbdd728fab621c365aa1c007e7df35e9c4f33e7ae144",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/reports/candidate_event_ledger.csv",
+      "sha256": "8e5691c46f9a45d638357228fdcc06b93eb41df9a20f6ea6d7cecbdb1866a9b1",
+      "method": "raw bytes"
+    },
+    {
+      "path": "research/reports/pre_cost_shadow_ledger.csv",
+      "sha256": "bd70b1368660ffa1e55a29449ec7fadc407f900d64549435bf08183b0ccb6665",
+      "method": "raw bytes"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
+      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
+      "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1",
+      "method": "raw bytes"
+    },
+    {
+      "path": "research/data/binance_btcusdt_contract_snapshot.json",
+      "sha256": "535cfdfed510443e2661cd06a2152b51816e765f07a8d14553c8b72e6b1b40fa",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "research/p1_portfolio_shadow.mjs",
+      "sha256": "308d0947121fcff4d73992833673fd1760760910eccb4a948a471d767e267db1",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/build_p1_portfolio_shadow_manifest.mjs",
+      "sha256": "1bda686d1d52a21bca0f8fd6cc48b0c70fb91778aae7193d5051797b937a3ca6",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/verify_p1_portfolio_shadow_manifest.mjs",
+      "sha256": "a1779b7456bc09060a18513723851857425f3a78398f75d574041bad9e125272",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/README_CANDIDATE_P1.md",
+      "sha256": "fa210c25f6b15abce23d11cb1aa56f73c677ec0163bd301ff238fc3bfe283858",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "docs/IMPROVEMENT_PLAN_2026-10-31.md",
+      "sha256": "bd8dd890ea2f6551924678bd4b8b3738055babb492fa0cfe7c12358f31fcf67b",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/reports/p1_portfolio_shadow_report.json",
+      "sha256": "b69fe3f5d3bdfc51fe26dab1477570ea5e95c214a2ce6007615b68f280fd7c45",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/reports/p1_portfolio_shadow_report.md",
+      "sha256": "874cef610fb5e793633df0a48a3b0f51a87cef280f2fef28b7adf48e03b9d85b",
+      "method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
+    },
+    {
+      "path": "research/reports/p1_portfolio_event_ledger.csv",
+      "sha256": "3ce2eb0c4d9391bca27f3474f4d3e145bdf63e20f84944a3b5d92759960679b0",
+      "method": "raw bytes"
+    },
+    {
+      "path": "research/reports/p1_portfolio_trade_ledger.csv",
+      "sha256": "4f1e89fbf7ff2b8a568101ab06316b458af3f7731e061411aa0d43820db1409f",
+      "method": "raw bytes"
+    },
+    {
+      "path": "research/reports/p1_portfolio_daily_equity.csv",
+      "sha256": "0060eb2fb2bc3e3741ca4bce54b623591b9d186c870c2ab993b1068dcde22830",
+      "method": "raw bytes"
+    },
+    {
+      "path": "research/reports/p1_portfolio_monthly_summary.csv",
+      "sha256": "e568c08bf7080e4e55990b4dcf9591aea8e94b9c5f9828cc1a8f65e915b73919",
+      "method": "raw bytes"
+    }
+  ],
+  "result_summary": {
+    "candidate_count": 6815,
+    "profiles": [
+      {
+        "profile": "5m",
+        "triggers": 5262,
+        "gate_passes_15bp": 117,
+        "conditional_entries": 76,
+        "closed_trades": 76,
+        "net_pnl_15bp_quote": -11.32704040000001,
+        "net_profit_factor_15bp": 0.6995613420265565
+      },
+      {
+        "profile": "15m",
+        "triggers": 1553,
+        "gate_passes_15bp": 174,
+        "conditional_entries": 92,
+        "closed_trades": 92,
+        "net_pnl_15bp_quote": -17.292846674999968,
+        "net_profit_factor_15bp": 0.6397843608791924
+      }
+    ],
+    "actual_orders": "NOT_OBSERVED",
+    "actual_fills": "UNKNOWN",
+    "profitability": "unproven; hypothetical immediate fills and inspected history do not establish live or prospective profitability"
+  }
+}

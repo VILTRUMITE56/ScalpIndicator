@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "run_id": "replace-with-unique-run-id",
+  "supersedes_run_id": null,
+  "status": "DRAFT",
+  "environment": "PAPER_SHADOW_ONLY",
+  "started_at_utc": null,
+  "events_path": "events.jsonl",
+  "report_path": "reconciliation_report.json",
+  "instrument": {
+    "venue_code": "CXBNF8",
+    "venue_name": "Binance USD-M Futures (research proxy; not user-confirmed)",
+    "ticker": "BTC/USDT.P",
+    "contract_type": "PERPETUAL",
+    "quote_currency": "USDT",
+    "signal_profiles": [
+      { "execution_minutes": 5, "higher_minutes": 15 },
+      { "execution_minutes": 15, "higher_minutes": 60 }
+    ]
+  },
+  "source_lock": {
+    "signal_contract_version": "BTC-PERP-PULLBACK-P1",
+    "indicator_path": "indie/btc_pullback_indicator_p1.indie",
+    "indicator_sha256_lf_utf8": "5b26a8fae30c73ffaeec8201387d5fdbac999211f771db047bd8071a68fb66b7",
+    "takeprofit_indicator_working_copy_version": 29,
+    "p1_execution_policy_version": "BTC-PERP-EXEC-1",
+    "p1_strategy_path": "indie/btc_pullback_strategy_p1.indie",
+    "p1_strategy_sha256_lf_utf8": "ad87c6b7bd6a12d999913087995333b7e26af6049aa5952c1621e4a2f2019d54",
+    "takeprofit_p1_strategy_working_copy_version": 21,
+    "p2_execution_policy_version": "BTC-PERP-EXEC-2",
+    "p2_strategy_path": "indie/btc_pullback_strategy_p2.indie",
+    "p2_strategy_sha256_lf_utf8": "568a9c1b9b1db3a97bc8309314a2b67d7007090f736dc0faa491e07bb08b7b60",
+    "p2_takeprofit_validation_copy_ephemeral": true
+  },
+  "confirmations": {
+    "chart_or_export_uses_locked_local_source": false,
+    "intended_venue_and_market_confirmed": false,
+    "fee_schedule_and_rebates_confirmed": false,
+    "current_contract_filters_captured": false,
+    "funding_source_and_accounting_confirmed": false
+  },
+  "cost_evidence": {
+    "maker_fee_rate_fraction": null,
+    "taker_fee_rate_fraction": null,
+    "fee_source": null,
+    "funding_source": null,
+    "funding_method": null,
+    "captured_at_utc": null
+  },
+  "policy": {
+    "live_order_routing_allowed": false,
+    "paper_fill_evidence_types": ["QUOTE_SIMULATION", "TESTNET_FILL"],
+    "separate_metrics_by_fill_evidence_type": true,
+    "p1_target": "Frozen 1.5R reference",
+    "p2_target": "At least 5.01 USDT modeled net after the 15 bp scenario; funding excluded",
+    "do_not_tune_during_collection": true
+  },
+  "promotion_gates": {
+    "minimum_calendar_weeks": 8,
+    "minimum_reconciled_closed_paper_trades": 100,
+    "target_out_of_sample_closed_trades": 300,
+    "minimum_net_profit_factor": 1.25,
+    "requires_positive_net_expectancy_and_cost_stress": true
+  }
+}

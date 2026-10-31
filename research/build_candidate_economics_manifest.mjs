@@ -52,7 +52,7 @@ assert.equal(report.candidate_parity.candidate_id_matches, report.overall.trigge
 
 const manifest = {
   schema_version: 1,
-  manifest_id: 'btc-perp-p1-precost-feasibility-2026-10-30',
+  manifest_id: 'btc-perp-p1-precost-feasibility-2026-10-31',
   generated_at_utc: new Date().toISOString(),
   status: report.status,
   experiment_spec: specPath,

@@ -10,6 +10,7 @@ const hashFile = relative => crypto.createHash('sha256')
   .digest('hex');
 const report = JSON.parse(fs.readFileSync(path.join(root, 'research/reports/order_lifecycle_report.json'), 'utf8'));
 const contract = JSON.parse(fs.readFileSync(path.join(root, 'research/specs/order_lifecycle_p1.json'), 'utf8'));
+const candidateContract = JSON.parse(fs.readFileSync(path.join(root, 'research/specs/candidate_contract_p1.json'), 'utf8'));
 const files = [
   'indie/btc_pullback_indicator_p1.indie',
   'indie/btc_pullback_strategy_p1.indie',
@@ -26,7 +27,7 @@ const files = [
 
 const manifest = {
   schema_version: 1,
-  manifest_id: 'btc-perp-order-lifecycle-p1-2026-10-30',
+  manifest_id: 'btc-perp-order-lifecycle-p1-2026-10-31',
   generated_at_utc: new Date().toISOString(),
   contract_version: contract.contract_version,
   status: 'local_fixtures_and_emulator_contract_verified_live_exchange_execution_unconfirmed',
@@ -38,6 +39,17 @@ const manifest = {
     'Handle documented active and terminal order statuses explicitly; unknown states fail closed.',
     'Keep an active parent as an entry guard until cancellation acknowledgment; no timed exits are enabled.',
   ],
+  strategy_execution_policy_version: candidateContract.execution_separation.execution_policy_version,
+  current_local_source_validation: {
+    script_id: '92254833-5b23-4439-a9c2-8f46975debd9',
+    script_version: 1,
+    source_path: 'indie/btc_pullback_strategy_p1.indie',
+    source_sha256: hashFile('indie/btc_pullback_strategy_p1.indie'),
+    compile: 'PASS',
+    runtime_quick: 'PASS',
+    series_items: 5000,
+    saved_to_platform: false,
+  },
   fixture_run: {
     command: 'node research/order_lifecycle_check.mjs',
     fixtures: report.fixture_count,
@@ -47,7 +59,11 @@ const manifest = {
     accounting_invariants_pass: true,
   },
   lower_interval_replay: report.historical_replay,
-  takeprofit_working_copies: report.platform_validation,
+  takeprofit_working_copies: {
+    report_generation_snapshot: report.platform_validation,
+    current_source_match: false,
+    current_note: 'TakeProfit indicator working copy v29 exactly matches the current local source and compiled, but remains unsaved because it is based on v16 while v19 is latest. Strategy working copy v21 still differs from local; the lifecycle validation above used earlier source copies.',
+  },
   takeprofit_backtest: report.platform_backtest,
   docs_basis: [
     'https://takeprofit.com/docs/indie/Strategies/Orders#statuses-and-lifecycle',

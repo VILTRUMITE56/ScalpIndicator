@@ -1,6 +1,8 @@
 # Current assessment: accuracy and profitability
 
-Updated 30 October 2026. Strategy working copy v16 has refreshed 5m and 15m backtests; both produced zero completed trades and flag insufficient history. Strategy v16 passes compile and `runtime_quick` validation on 5,000 candles. The chart indicator working copy is now v24 (UID `dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3`) and also passes compile and `runtime_quick` on 5,000 candles. Its latest saved private platform version is v19 (UID `b0WWgU3721kqgpvBweE24`). The v24 diagnostic edit is unsaved because it is based on v16; TakeProfit blocks saving a stale copy and blocks loading v19 while the copy has unsaved changes.
+Historical snapshot updated 30 October 2026. For the 31 October local P1 cost reserve, execution reason outputs, and platform source comparison, use [`IMPROVEMENT_PLAN_2026-10-31.md`](IMPROVEMENT_PLAN_2026-10-31.md). In this snapshot, strategy working copy v16 has refreshed 5m and 15m backtests; both produced zero completed trades and flagged insufficient history. Its chart indicator was working copy v24 (UID `dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3`), while its latest saved private version was v19 (UID `b0WWgU3721kqgpvBweE24`).
+
+Current local-source update: the P1 indicator now includes an off-by-default B4 anti-chase research gate and extension/reason telemetry. The exact source compiles on TakeProfit working copy v29, but remains unsaved and has no runtime or profitability validation. The P1/P2 strategy sources do not apply B4; see the current improvement plan before enabling or relying on it.
 
 ## Baseline freeze checkpoint
 
