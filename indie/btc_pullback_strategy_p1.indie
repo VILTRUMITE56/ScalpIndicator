@@ -46,6 +46,7 @@ class Main(MainStrategyContext):
         self._long_recovery_bar = -1
         self._short_recovery_bar = -1
         self._was_in_position = False
+        self._last_observed_position_size = 0.0
         self._last_htf_boundary_bar = -1
         self._last_htf_boundary_complete = False
         self._trend_event = False
@@ -136,11 +137,17 @@ class Main(MainStrategyContext):
                 htf_count[0] = htf_count[1] + 1
 
         position_size = self.trading.position.size
+        previous_position_size = self._last_observed_position_size
+        position_closed_this_calc = False
+        position_reduced_this_calc = False
         if position_size != 0 and not self._was_in_position:
             self._was_in_position = True
+        if previous_position_size != 0 and position_size != 0 and previous_position_size * position_size > 0 and abs(position_size) < abs(previous_position_size):
+            position_reduced_this_calc = True
         if position_size == 0 and self._was_in_position:
             self._was_in_position = False
             self._last_exit_bar = self.bar_index
+            position_closed_this_calc = True
 
         pending_was_resolved = False
         if self._pending is not None:
@@ -149,16 +156,42 @@ class Main(MainStrategyContext):
                 if position_size == 0:
                     self._last_exit_bar = self.bar_index
                 self._pending = None
+                self._pending_bar = -1
                 self._cancel_requested = False
                 pending_was_resolved = True
-            elif pending_status == order_status.CANCELED or pending_status == order_status.REJECTED or pending_status == order_status.PARTIALLY_FILLED_CLOSED:
+            elif pending_status == order_status.PARTIALLY_FILLED_CLOSED:
+                # The parent can finish partially filled after its bracket exits in the
+                # same bar, before a calc call ever observes non-zero position size.
+                if position_size == 0:
+                    self._last_exit_bar = self.bar_index
                 self._pending = None
+                self._pending_bar = -1
                 self._cancel_requested = False
                 pending_was_resolved = True
-            else:
-                if self.bar_index > self._pending_bar and not self._cancel_requested:
+            elif pending_status == order_status.CANCELED or pending_status == order_status.REJECTED:
+                self._pending = None
+                self._pending_bar = -1
+                self._cancel_requested = False
+                pending_was_resolved = True
+            elif pending_status == order_status.CREATED or pending_status == order_status.PLACED or pending_status == order_status.PENDING_PLACED or pending_status == order_status.PARTIALLY_FILLED:
+                # A partial fill with no current exposure means a bracket may have
+                # closed the filled amount while the parent remainder is still live.
+                # Cancel that remainder immediately; keep it pending until ack so a
+                # late fill cannot race a replacement entry.
+                partial_fill_closed_position = pending_status == order_status.PARTIALLY_FILLED and position_size == 0
+                cancel_after_exit = position_closed_this_calc or position_reduced_this_calc or partial_fill_closed_position
+                cancel_after_expiry = self.bar_index > self._pending_bar
+                if (cancel_after_exit or cancel_after_expiry) and not self._cancel_requested:
                     self.trading.cancel_order(self._pending.value().id)
                     self._cancel_requested = True
+            else:
+                # Unknown statuses fail closed: request cancellation once and keep the
+                # pending-order guard until a documented terminal state is observed.
+                if not self._cancel_requested:
+                    self.trading.cancel_order(self._pending.value().id)
+                    self._cancel_requested = True
+
+        self._last_observed_position_size = position_size
 
         htf_ready = profile_valid and htf_count[0] >= 250
         # BEGIN GENERATED SHARED CANDIDATE CORE

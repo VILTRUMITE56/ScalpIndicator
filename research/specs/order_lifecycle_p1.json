@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "contract_version": "BTC-PERP-ORDER-LIFECYCLE-P1",
+  "status": "research_validation_model",
+  "scope": "TakeProfit strategy emulator behavior plus deterministic safety fixtures; not a live exchange execution guarantee.",
+  "order_statuses": {
+    "active": ["CREATED", "PLACED", "PENDING_PLACED", "PARTIALLY_FILLED"],
+    "terminal": ["FILLED", "PARTIALLY_FILLED_CLOSED", "CANCELED", "REJECTED"],
+    "unknown_status_policy": "Fail closed: request cancellation once and keep blocking new entries until a documented terminal status is observed."
+  },
+  "events": [
+    "candidate",
+    "setup_qualified",
+    "submission",
+    "acknowledgment",
+    "partial_fill",
+    "full_fill",
+    "cancellation_request",
+    "cancellation_acknowledgment",
+    "expiry",
+    "rejection",
+    "take_profit_exit",
+    "stop_exit",
+    "gap_through_stop_exit",
+    "ambiguous_barrier_exit"
+  ],
+  "invariants": [
+    "At most one active parent entry order exists.",
+    "A new candidate cannot submit while a parent order is active, a position is open, or an order resolved during the same strategy update.",
+    "A fill may arrive after a cancellation request and before its acknowledgment; the active parent remains a guard throughout that interval.",
+    "After a partial parent fill, protection quantity equals absolute open position size in the TakeProfit backtesting emulator.",
+    "A protective exit reduces exposure only and cannot cross flat or reverse the position.",
+    "Any observed reduction or closure of a position while a partial parent entry remains active requests cancellation of the parent remainder.",
+    "A fill after cancellation acknowledgment is an exchange/emulator discrepancy and is not silently accepted by the reference model.",
+    "A same-minute candle touching both stop and target remains ambiguous; stop-first is reported only as a conservative bound.",
+    "Timed exits remain disabled until a reducing-close and outstanding-entry cancellation sequence is separately verified."
+  ],
+  "observation_model": {
+    "entry": "The historical barrier-path sensitivity replay assumes a fill at the immutable planned next-bar-open quote. It does not infer a fill from a limit touch, queue position, or actual execution.",
+    "lower_interval": "Use aligned Binance trade 1m and mark 1m OHLC bars to determine which barrier was reached first across minutes.",
+    "within_one_minute": "If both barriers are inside the same 1m high-low range and the open did not gap through the stop, retain AMBIGUOUS and report a separate stop-first conservative bound.",
+    "stop_gap": "If a 1m open gaps beyond the stop, record the open as a hypothetical adverse gap fill; it is not an observed exchange fill.",
+    "brackets": "TakeProfit documents emulator brackets as position-level OCO orders whose quantity follows the current position. Live attached-order behavior is controlled by the selected exchange and remains unknown.",
+    "reload": "The deterministic model persists candidate IDs, order state, position, bracket state, cooldown state, and event sequence; replaying the same event suffix after restoration must produce identical outputs."
+  },
+  "deferred": [
+    "No timed or maximum-hold exit is added.",
+    "No live exchange order behavior is inferred; Binance is only a research proxy and the actual venue is unset.",
+    "No actual fill prices, queue priority, partial-fill rates, fee schedule, or slippage are inferred from OHLC data."
+  ]
+}

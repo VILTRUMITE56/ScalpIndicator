@@ -40,3 +40,7 @@ The run manifest `CANDIDATE_CONTRACT_MANIFEST.json` records source/data hashes, 
 ## Interpretation
 
 The report describes candidate parity and risk blockers only. The current cost gate rejects many candidates, and the retained history has no observed TakeProfit fills for this P1 run. Do not infer expectancy, win rate, or profitability from candidate counts. Venue filters, account fee tier, order-book spread, slippage, funding, and the cancel/fill race still need execution evidence.
+
+## Order lifecycle checkpoint (#6)
+
+Run `node order_lifecycle_check.mjs` to execute deterministic order/position accounting fixtures and replay the 304 risk-pass candidate plans against aligned 1m trade and mark OHLC histories. This assumes a planned-quote fill solely to test barrier ordering; it cannot infer limit fills. Read `reports/order_lifecycle_report.md` and `ORDER_LIFECYCLE_MANIFEST.json` for fixture outcomes, platform validation, and emulator/live limitations. Run `node generate_candidate_logic.mjs --check` alongside it to verify the shared candidate source is still generated identically.

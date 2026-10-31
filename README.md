@@ -16,6 +16,8 @@ This repository contains a frozen B0 reference and a versioned P1 candidate impl
 - [research/specs/candidate_contract_p1.json](research/specs/candidate_contract_p1.json): versioned P1 candidate, quote, stop, target, cost gate, and execution separation rules.
 - [research/CANDIDATE_CONTRACT_MANIFEST.json](research/CANDIDATE_CONTRACT_MANIFEST.json): P1 source and data hashes, B0 integrity, TakeProfit working-copy validation, and full/truncated comparison results.
 - [research/reports/candidate_parity_report.md](research/reports/candidate_parity_report.md) and [candidate_event_ledger.csv](research/reports/candidate_event_ledger.csv): independent reference replay and candidate-level fields, risk blockers, planned levels, and unknown fill status.
+- [research/specs/order_lifecycle_p1.json](research/specs/order_lifecycle_p1.json), [order lifecycle check](research/order_lifecycle_check.mjs), and [lifecycle report](research/reports/order_lifecycle_report.md): deterministic cancel/fill/bracket fixtures and separate 1m trade/mark barrier-path sensitivity; not actual fills or a profitability backtest.
+- [research/ORDER_LIFECYCLE_MANIFEST.json](research/ORDER_LIFECYCLE_MANIFEST.json): source/report hashes, fixture counts, and TakeProfit validation/backtest limits for issue #6.
 - [research/README_CANDIDATE_P1.md](research/README_CANDIDATE_P1.md): source-of-truth map and reproduction commands for P1.
 - [docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md](docs/EXECUTION_COST_AND_RISK_REQUIREMENTS.md): provisional Binance research proxy, cost-component status, research risk defaults, and user decisions still needed for GitHub issue #3.
 - [research/specs/execution_cost_risk.json](research/specs/execution_cost_risk.json): versioned machine-readable venue/cost/risk assumptions with official source links and checked timestamps.
@@ -34,7 +36,7 @@ This repository contains a frozen B0 reference and a versioned P1 candidate impl
 
 ## TakeProfit setup
 
-The P1 indicator and strategy were synced to TakeProfit working copies v27 and v20 and passed compile, runtime_quick, and runtime_full validation on 5,000 series items. The working copies remain unsaved; the saved private indicator baseline is v19 and the library title cannot be renamed through the current save endpoint. No alerts or automation are configured.
+The P1 indicator and strategy were synced to TakeProfit working copies v28 and v21 and remain unsaved. Strategy v21 passed compile, runtime_quick, and runtime_full validation on 5,000 series items. Indicator v28 passed compile and runtime_quick on 5,000 items; runtime_full was not confirmed because TakeProfit returned `[wasm] Compilation is not finished yet, retry later` and its guidance says not to retry that infrastructure result. The fixed-window strategy backtest was limited by the account's 5,060-bar allowance and returned zero orders/trades with insufficient history. No alerts or automation are configured.
 
 The code supports 5-minute execution with a completed 15-minute EMA(20/50) trend, and 15-minute execution with a completed 1-hour EMA(20/50) trend. It resets the bias and warms up again after a timestamp gap; it requires 250 completed higher-timeframe bars. The dashboard shows the chart instrument, current model levels, estimated cost in R, and historical filter counts. Its markers and levels are chart-model outputs using an assumed bar-open fill, not guaranteed fills or exchange-position tracking.
 
