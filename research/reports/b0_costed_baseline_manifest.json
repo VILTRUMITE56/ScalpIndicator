@@ -1,6 +1,6 @@
 {
   "manifest_id": "BTC-PERP-B0-COSTED-2026-10-31",
-  "generated_at_utc": "2026-10-31T00:38:46.340Z",
+  "generated_at_utc": "2026-10-31T03:13:58.302Z",
   "evaluation_policy_path": "research/specs/baseline_evaluation_p0.json",
   "evaluation_policy_sha256": "536cbf1f21faf91d31dafaa949ab5ef6e14b0e8718e5b71452321100b3b9c76d",
   "evaluator_path": "research/b0_costed_baseline.mjs",
@@ -103,18 +103,18 @@
     },
     {
       "path": "research/reports/b0_costed_baseline_report.json",
-      "sha256": "3641c2f4c24ac2b1ea35c75a2d4657ccb54fb99cb1613d254439225fc6b1a80a",
+      "sha256": "afe2cc19a2355e180d92dbdfd983c7f2f2e118ee6ca6ec31f791b378cf87f1be",
       "bytes": 119690
     },
     {
       "path": "research/reports/b0_costed_baseline_report.md",
-      "sha256": "c4ae19fef85a75826b8544909f680f3d0bc0c1bbeaeb750ff90d3db08404b457",
+      "sha256": "52624ceeca7474fca4f873261c879595b2c0dc833603a5f18897cff5c15d7085",
       "bytes": 8774
     },
     {
       "path": "research/reports/b0_native_takeprofit_reconciliation.json",
       "sha256": "39d133af8fb778758e38df8ff1ec15e907d2215aae1f63a252d2b37d4219bcf8",
-      "bytes": 2793
+      "bytes": 2856
     }
   ],
   "ledger_rows": {

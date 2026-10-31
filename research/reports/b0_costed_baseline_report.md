@@ -1,6 +1,6 @@
 # Costed B0 Baseline: Findings and Decision
 
-Generated: 2026-10-31T00:38:46.340Z
+Generated: 2026-10-31T03:13:58.302Z
 
 **Decision: REVISE_RESEARCH_HYPOTHESIS; KEEP_FEATURE_EXPERIMENTS_BLOCKED.** The B0 1.5R payoff geometry cannot meet the user-confirmed >$5 target under a <=$1 all-in loss cap. Historical performance remains conditional on unobserved fills, unmeasured execution costs, unknown account fees, unavailable platform minimum filters, and non-holdout data. Do not infer live profitability; complete native parity and collect venue-specific quotes/fills before deciding whether to continue or pivot the signal.
 

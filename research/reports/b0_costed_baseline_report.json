@@ -1,6 +1,6 @@
 {
   "report_id": "BTC-PERP-B0-COSTED-2026-10-31",
-  "generated_at_utc": "2026-10-31T00:38:46.340Z",
+  "generated_at_utc": "2026-10-31T03:13:58.302Z",
   "scope": "Frozen local B0 full-history reference replay with conditional assumed fills and explicit hypothetical cost/funding accounting.",
   "decision": {
     "choice": "REVISE_RESEARCH_HYPOTHESIS; KEEP_FEATURE_EXPERIMENTS_BLOCKED",
