@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "status": "FRESH_OFFICIAL_METADATA",
+  "captured_at_utc": "2026-10-31T04:33:14.976Z",
+  "endpoint": "https://fapi.binance.com/fapi/v1/exchangeInfo?symbol=BTCUSDT",
+  "freshness_reference_endpoint": "https://fapi.binance.com/fapi/v1/time",
+  "exchange_info_server_time_ms_ignored": 1793352576476,
+  "freshness_reference_server_time_ms": 1793421194681,
+  "capture_to_reference_delta_seconds": -0.295,
+  "freshness_threshold_seconds": 300,
+  "symbol": {
+    "symbol": "BTCUSDT",
+    "contract_type": "PERPETUAL",
+    "status": "TRADING",
+    "base_asset": "BTC",
+    "quote_asset": "USDT",
+    "margin_asset": "USDT",
+    "contract_model": "LINEAR_BASE_QUANTITY",
+    "quantity_unit": "BTC base-asset units",
+    "multiplier_base_per_quantity": 1,
+    "multiplier_note": "Linear model convention for BTCUSDT quantity expressed in BTC; this multiplier is explicit in the research model and is not copied from a precision field."
+  },
+  "filters": {
+    "price_filter": {
+      "minPrice": "556.80",
+      "filterType": "PRICE_FILTER",
+      "tickSize": "0.10",
+      "maxPrice": "4529764"
+    },
+    "limit_lot_size": {
+      "maxQty": "1000",
+      "minQty": "0.001",
+      "filterType": "LOT_SIZE",
+      "stepSize": "0.001"
+    },
+    "market_lot_size": {
+      "filterType": "MARKET_LOT_SIZE",
+      "minQty": "0.001",
+      "maxQty": "120",
+      "stepSize": "0.001"
+    },
+    "min_notional_or_notional": {
+      "filterType": "MIN_NOTIONAL",
+      "notional": "50"
+    },
+    "percent_price": {
+      "filterType": "PERCENT_PRICE",
+      "multiplierUp": "1.0300",
+      "multiplierDown": "0.9700",
+      "multiplierDecimal": "4"
+    },
+    "all_symbol_filters": [
+      {
+        "minPrice": "556.80",
+        "filterType": "PRICE_FILTER",
+        "tickSize": "0.10",
+        "maxPrice": "4529764"
+      },
+      {
+        "maxQty": "1000",
+        "minQty": "0.001",
+        "filterType": "LOT_SIZE",
+        "stepSize": "0.001"
+      },
+      {
+        "filterType": "MARKET_LOT_SIZE",
+        "minQty": "0.001",
+        "maxQty": "120",
+        "stepSize": "0.001"
+      },
+      {
+        "filterType": "MAX_NUM_ORDERS",
+        "limit": 200
+      },
+      {
+        "filterType": "MIN_NOTIONAL",
+        "notional": "50"
+      },
+      {
+        "filterType": "PERCENT_PRICE",
+        "multiplierUp": "1.0300",
+        "multiplierDown": "0.9700",
+        "multiplierDecimal": "4"
+      },
+      {
+        "positionControlSide": "NONE",
+        "filterType": "POSITION_RISK_CONTROL"
+      }
+    ]
+  },
+  "raw_response_sha256_utf8": "3fec9c4a958ffe35ada65d67b6d4fe0c4ff6427b95f0d84296403c25d46faaa4",
+  "raw_symbol_sha256": "c3f13a781105dc07bbf08a85ad79527f4e230f10bd5da61462465d9eba294f7b",
+  "source_docs": [
+    "https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usd-s-m-futures/api/rest-api/market-data#exchange-information",
+    "https://developers.binance.com/en/docs/products/derivatives-trading-usds-margined-futures/common-definition"
+  ],
+  "freshness_method": "Compare captured_at_utc with the subsequent official /fapi/v1/time serverTime. Binance documentation says to ignore exchangeInfo.serverTime for current server time.",
+  "limits": "Freshness is checked against the official server-time endpoint. Metadata does not establish historical filters, user-specific fees, actual fills, or execution venue selection."
+}

@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "status": "DIAGNOSTIC_ONLY_INSUFFICIENT_HISTORY_NOT_PROFITABILITY_EVIDENCE",
+  "captured_at_utc": "2026-10-31T04:34:02.907131Z",
+  "source": {
+    "takeprofit_script_id": "5113f0ea-0801-47d3-81dd-c4f970af8753",
+    "script_version": 3,
+    "validation": "compile and runtime_quick passed on exact local P1 strategy source; 5,000 bars, 1/1 runtime ok",
+    "source_scope": "ephemeral disposable script; protected linked platform copy was not modified"
+  },
+  "instrument": {
+    "ticker": "BTC/USDT.P",
+    "exchange_code": "CXBNF8",
+    "exchange_alias": "BINANCE",
+    "product": "BTCUSDT perpetual; research proxy only"
+  },
+  "window_utc": {
+    "from": "2026-10-16T00:00:00Z",
+    "to": "2026-10-31T00:00:00Z",
+    "last_bar_at": "2026-10-31T00:00:00Z",
+    "history_sufficient": false,
+    "has_more_items_on_left": true,
+    "note": "The platform reports insufficient bounded history; this 15-day window cannot establish expectancy or stability."
+  },
+  "inputs": {
+    "initial_capital_usdt": 10000,
+    "research_leverage": 1,
+    "simulator_commission_per_side": 0.0005,
+    "cost_fraction_for_eligibility_and_sizing": 0.0015,
+    "maximum_modeled_loss_usdt": 1,
+    "quantity_step_btc": 0.001,
+    "minimum_quantity_btc": 0.001,
+    "maximum_market_quantity_btc": 120,
+    "minimum_notional_usdt": 50,
+    "intrabar_order_filter": "No Filter"
+  },
+  "profiles": {
+    "5m_execution_15m_bias": {
+      "indicator_instance_id": "eb9f3df8-409c-4936-9c25-1900c71c0fc0",
+      "history_sufficient": false,
+      "final_capital_usdt": 10000,
+      "net_pnl_usdt": 0,
+      "trades": 0,
+      "commission_usdt": 0,
+      "interpretation": "INCONCLUSIVE_NO_TRADES"
+    },
+    "15m_execution_1h_bias": {
+      "indicator_instance_id": "2a02bd58-e4d0-404f-a621-934073a8df7a",
+      "history_sufficient": false,
+      "final_capital_usdt": 9999.6350583,
+      "net_pnl_usdt": -0.3649417,
+      "trades": 1,
+      "wins": 0,
+      "losses": 1,
+      "profit_factor": 0,
+      "max_equity_drawdown_usdt": 0.3649417,
+      "commission_usdt": 0.0803417,
+      "trade": {
+        "side": "SHORT",
+        "quantity_btc": 0.001,
+        "requested_limit_price": 79850.7,
+        "simulated_entry_fill": 80199.4,
+        "simulated_stop_fill": 80484,
+        "gross_trade_pnl_usdt": -0.2846,
+        "net_trade_pnl_usdt": -0.3649417,
+        "duration_minutes": 0,
+        "note": "Entry and stop are timestamped in the same 15m bar. This single simulator path does not resolve intrabar execution ambiguity."
+      },
+      "interpretation": "ONE_SIMULATED_LOSS_NOT_EXPECTANCY"
+    }
+  },
+  "limitations": [
+    "These are TakeProfit simulator fills, not user or exchange fills.",
+    "The 15 bp cost_fraction informs candidate eligibility and sizing; it is not directly debited as a complete spread/slippage cost in these simulator PnL metrics.",
+    "The tool-applied commission is 5 bp per side. The account's actual fee tier, spread, slippage and funding remain unknown.",
+    "The configured reward target remains 1.5R, so a $1 risk cap cannot produce the user's desired $5 or more gross target without a separate reward/risk hypothesis; this run does not test such a change.",
+    "The dynamic Binance PERCENT_PRICE filter is captured in the evidence snapshot but is not checked by the native strategy adapter.",
+    "Do not infer profitability from zero trades or one losing simulated trade."
+  ]
+}

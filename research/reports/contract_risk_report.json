@@ -1,10 +1,11 @@
 {
   "schema_version": 1,
   "policy_id": "BTC-PERP-RISK-OPS-P1",
-  "generated_at_utc": "2026-10-30T17:04:29.629Z",
+  "generated_at_utc": "2026-10-31T04:35:11.097Z",
   "status": "PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_UNCONFIRMED_PERSONAL_LOCKS_DISABLED_BY_USER_CHOICE",
   "venue_proxy": "Binance USD-M BTCUSDT perpetual; research-only",
-  "live_filter_snapshot": "NOT_CAPTURED: official public exchangeInfo returned HTTP 451 in the research environment; no filter values were invented",
+  "live_filter_snapshot": "FRESH_OFFICIAL_METADATA_RESEARCH_PROXY: captured -0.295 seconds from the official /time reference; research proxy only",
+  "observed_filter_snapshot": "research/data/binance_btcusdt_contract_snapshot.json; tick 0.1, limit step/min 0.001/0.001, market step/min/max 0.001/0.001/120, minimum notional 50 USDT, PERCENT_PRICE 0.97-1.03; fresh at capture, research-only",
   "user_per_trade_loss_budget_quote": 1,
   "user_daily_loss_limit_quote": null,
   "user_max_drawdown_fraction": null,
@@ -12,6 +13,97 @@
   "user_funding_reserve": null,
   "hold_policy": "TP/SL only; no maximum holding time or timed exit added",
   "native_platform_limit": "TakeProfit documents context.info.tick_size and price_precision plus strategy min order size/value; it does not document exact Binance quantity steps, account fees, or account-level marked equity/day PnL/high-water equity.",
+  "native_platform_validation": {
+    "status": "PASS_COMPILE_AND_RUNTIME_QUICK_ON_EPHEMERAL_COPY",
+    "script_id": "5113f0ea-0801-47d3-81dd-c4f970af8753",
+    "script_version": 3,
+    "validation_mode": "runtime_quick",
+    "source_sha256": "14ea0b0bbdc2e2e421618e4b91bb1f01218a69fd695554af40237bd24861ee99",
+    "bars_executed": 5000,
+    "run_status": "1/1 ok",
+    "orders_emitted": 0,
+    "scope": "Disposable script only; the protected linked platform copy was not modified. This validates compilation and runtime safety, not trade performance or order execution parity."
+  },
+  "native_platform_backtest_summary": {
+    "schema_version": 1,
+    "status": "DIAGNOSTIC_ONLY_INSUFFICIENT_HISTORY_NOT_PROFITABILITY_EVIDENCE",
+    "captured_at_utc": "2026-10-31T04:34:02.907131Z",
+    "source": {
+      "takeprofit_script_id": "5113f0ea-0801-47d3-81dd-c4f970af8753",
+      "script_version": 3,
+      "validation": "compile and runtime_quick passed on exact local P1 strategy source; 5,000 bars, 1/1 runtime ok",
+      "source_scope": "ephemeral disposable script; protected linked platform copy was not modified"
+    },
+    "instrument": {
+      "ticker": "BTC/USDT.P",
+      "exchange_code": "CXBNF8",
+      "exchange_alias": "BINANCE",
+      "product": "BTCUSDT perpetual; research proxy only"
+    },
+    "window_utc": {
+      "from": "2026-10-16T00:00:00Z",
+      "to": "2026-10-31T00:00:00Z",
+      "last_bar_at": "2026-10-31T00:00:00Z",
+      "history_sufficient": false,
+      "has_more_items_on_left": true,
+      "note": "The platform reports insufficient bounded history; this 15-day window cannot establish expectancy or stability."
+    },
+    "inputs": {
+      "initial_capital_usdt": 10000,
+      "research_leverage": 1,
+      "simulator_commission_per_side": 0.0005,
+      "cost_fraction_for_eligibility_and_sizing": 0.0015,
+      "maximum_modeled_loss_usdt": 1,
+      "quantity_step_btc": 0.001,
+      "minimum_quantity_btc": 0.001,
+      "maximum_market_quantity_btc": 120,
+      "minimum_notional_usdt": 50,
+      "intrabar_order_filter": "No Filter"
+    },
+    "profiles": {
+      "5m_execution_15m_bias": {
+        "indicator_instance_id": "eb9f3df8-409c-4936-9c25-1900c71c0fc0",
+        "history_sufficient": false,
+        "final_capital_usdt": 10000,
+        "net_pnl_usdt": 0,
+        "trades": 0,
+        "commission_usdt": 0,
+        "interpretation": "INCONCLUSIVE_NO_TRADES"
+      },
+      "15m_execution_1h_bias": {
+        "indicator_instance_id": "2a02bd58-e4d0-404f-a621-934073a8df7a",
+        "history_sufficient": false,
+        "final_capital_usdt": 9999.6350583,
+        "net_pnl_usdt": -0.3649417,
+        "trades": 1,
+        "wins": 0,
+        "losses": 1,
+        "profit_factor": 0,
+        "max_equity_drawdown_usdt": 0.3649417,
+        "commission_usdt": 0.0803417,
+        "trade": {
+          "side": "SHORT",
+          "quantity_btc": 0.001,
+          "requested_limit_price": 79850.7,
+          "simulated_entry_fill": 80199.4,
+          "simulated_stop_fill": 80484,
+          "gross_trade_pnl_usdt": -0.2846,
+          "net_trade_pnl_usdt": -0.3649417,
+          "duration_minutes": 0,
+          "note": "Entry and stop are timestamped in the same 15m bar. This single simulator path does not resolve intrabar execution ambiguity."
+        },
+        "interpretation": "ONE_SIMULATED_LOSS_NOT_EXPECTANCY"
+      }
+    },
+    "limitations": [
+      "These are TakeProfit simulator fills, not user or exchange fills.",
+      "The 15 bp cost_fraction informs candidate eligibility and sizing; it is not directly debited as a complete spread/slippage cost in these simulator PnL metrics.",
+      "The tool-applied commission is 5 bp per side. The account's actual fee tier, spread, slippage and funding remain unknown.",
+      "The configured reward target remains 1.5R, so a $1 risk cap cannot produce the user's desired $5 or more gross target without a separate reward/risk hypothesis; this run does not test such a change.",
+      "The dynamic Binance PERCENT_PRICE filter is captured in the evidence snapshot but is not checked by the native strategy adapter.",
+      "Do not infer profitability from zero trades or one losing simulated trade."
+    ]
+  },
   "fixture_count": 24,
   "all_fixtures_pass": true,
   "fixtures": [
@@ -138,14 +230,15 @@
   ],
   "acceptance_status": {
     "rounding_and_formula_engine": "PASS_ON_SYNTHETIC_FIXTURES",
-    "live_binance_filter_snapshot": "OPEN_REQUIRED",
+    "live_binance_filter_snapshot": "PASS_FRESH_OFFICIAL_METADATA_AT_CAPTURE_RESEARCH_PROXY_ONLY",
     "supplied_fill_reconciliation_engine": "PASS_PARTIAL_FILLS_FEES_FUNDING_MARKED_EQUITY_STOP_STRESS_AND_PROTECTION_FIXTURES",
     "realized_user_fill_reconciliation": "OPEN_NO_OBSERVED_USER_OR_EXCHANGE_FILL_DATA; synthetic fixtures only",
     "user_daily_drawdown_limits": "APPROVED_DISABLED_BY_USER; parameterized controls are fixture-tested but personal locks are not active",
     "native_account_equity_locks": "NOT_AVAILABLE_IN_DOCUMENTED_STRATEGY_FIELDS",
     "risk_lock_fixtures": "PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_PER_TRADE_GAP_BREACH_AND_EXPLICIT_RESET",
     "hold_policy_registration": "PASS_TP_SL_ONLY_VERSIONED_NO_TIME_EXIT_ADDED",
-    "issue_8_close": "BLOCKED_LIVE_FILTERS_NATIVE_STRATEGY_GRID_INTEGRATION_AND_OBSERVED_FILL_COST_RECONCILIATION",
+    "native_strategy_grid_integration": "SOURCE_COMPILED_RUNTIME_QUICK_PASS_AND_TAKEPROFIT_BACKTESTED; 5m had zero trades, 15m one simulated short loss; dynamic PERCENT_PRICE and real fill behavior remain unverified",
+    "issue_8_close": "BLOCKED_DYNAMIC_PERCENT_PRICE_ACTUAL_FILL_COST_AND_EXECUTION_VENUE_RECONCILIATION",
     "profitability": "NOT_EVALUATED; no claim"
   }
 }

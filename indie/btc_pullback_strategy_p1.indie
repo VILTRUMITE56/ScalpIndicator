@@ -2,7 +2,7 @@
 from indie import strategy, MainStrategyContext, param, plot, color, Optional, MutSeries, MutSeriesF
 from indie.algorithms import Ema, Atr
 from indie.strategies import Commission, commission_type, order_side, Order, order_status, intrabar_order_filter
-from math import nan
+from math import nan, floor, ceil
 
 @strategy('BTC Perp Pullback Strategy P1 - Research', overlay_main_pane=True,
           initial_capital=10000.0,
@@ -10,16 +10,24 @@ from math import nan
           intrabar_order_filter=intrabar_order_filter.NO_FILTER)
 @param.float('risk_fraction', default=0.0025, min=0.0001, max=0.01)
 @param.float('cost_fraction', default=0.0015, min=0.0001, max=0.01)
-@param.float('quantity_step', default=0.001, min=0.00001, max=10.0)
+@param.float('maximum_loss_quote', default=1.0, min=0.01, max=10000.0, title='Maximum modeled loss per trade (USDT; research cap)')
+@param.float('quantity_step', default=0.001, min=0.00001, max=10.0, title='Common entry and protective-exit quantity step (Binance proxy)')
+@param.float('minimum_quantity', default=0.001, min=0.00001, max=1000.0, title='Minimum quantity (last-observed Binance proxy)')
+@param.float('maximum_market_quantity', default=120.0, min=0.00001, max=10000.0, title='Maximum protective market quantity (last-observed Binance proxy)')
+@param.float('minimum_notional_quote', default=50.0, min=0.01, max=1000000.0, title='Minimum entry/protection notional (last-observed Binance proxy USDT)')
 @plot.line('Entry EMA 20', color=color.AQUA)
 @plot.line('Entry EMA 50', color=color.ORANGE)
 @plot.line('HTF EMA 20', color=color.BLUE)
 @plot.line('HTF EMA 50', color=color.YELLOW)
 class Main(MainStrategyContext):
-    def __init__(self, risk_fraction, cost_fraction, quantity_step):
+    def __init__(self, risk_fraction, cost_fraction, maximum_loss_quote, quantity_step, minimum_quantity, maximum_market_quantity, minimum_notional_quote):
         self._risk_fraction = risk_fraction
         self._cost_fraction = cost_fraction
+        self._maximum_loss_quote = maximum_loss_quote
         self._quantity_step = quantity_step
+        self._minimum_quantity = minimum_quantity
+        self._maximum_market_quantity = maximum_market_quantity
+        self._minimum_notional_quote = minimum_notional_quote
         self._pending: Optional[Order] = None
         self._pending_bar = -1
         self._cancel_requested = False
@@ -476,32 +484,62 @@ class Main(MainStrategyContext):
                 execution_blocker = 'COOLDOWN'
 
             if execution_blocker == 'NONE' and self.trading.cash > 0.0:
-                planned_entry = candidate_planned_entry
-                order_limit_quote = planned_entry * (1.0 + 0.0002) if candidate_side == 1 else planned_entry * (1.0 - 0.0002)
-                execution_cost_per_btc = order_limit_quote * self._cost_fraction
-                execution_stop_distance = abs(order_limit_quote - candidate_stop)
-                risk_size = self.trading.cash * self._risk_fraction / (execution_stop_distance + execution_cost_per_btc)
-                cash_size = self.trading.cash / (order_limit_quote * 1.001)
-                raw_size = min(risk_size, cash_size)
-                if raw_size > 0.0:
-                    size = int(raw_size / self._quantity_step) * self._quantity_step
-                    instrument_info = self.trading.instrument_info
-                    if size >= instrument_info.min_order_size and size * order_limit_quote >= instrument_info.min_order_value:
-                        if candidate_side == 1:
-                            self._pending = (self.trading.place_order(order_side.BUY, size=size)
-                                             .limit(price=order_limit_quote)
-                                             .stop_loss(stop=candidate_stop)
-                                             .take_profit(stop=candidate_target)
-                                             .submit())
-                        else:
-                            self._pending = (self.trading.place_order(order_side.SELL, size=size)
-                                             .limit(price=order_limit_quote)
-                                             .stop_loss(stop=candidate_stop)
-                                             .take_profit(stop=candidate_target)
-                                             .submit())
-                        self._pending_bar = self.bar_index
-                        self._cancel_requested = False
-                        self._last_signal_bar = self.bar_index
+                tick_size = self.info.tick_size
+                if tick_size <= 0.0 or self._quantity_step <= 0.0 or self._minimum_quantity <= 0.0 or self._maximum_market_quantity <= 0.0 or self._minimum_notional_quote <= 0.0:
+                    execution_blocker = 'INVALID CONTRACT FILTER GRID'
+                else:
+                    planned_entry = candidate_planned_entry
+                    raw_limit_quote = planned_entry * (1.0 + 0.0002) if candidate_side == 1 else planned_entry * (1.0 - 0.0002)
+                    order_limit_quote = nan
+                    execution_stop = nan
+                    execution_target = nan
+                    if candidate_side == 1:
+                        order_limit_quote = floor(raw_limit_quote / tick_size) * tick_size
+                        execution_stop = ceil(candidate_stop / tick_size) * tick_size
+                        execution_target = ceil(candidate_target / tick_size) * tick_size
+                    else:
+                        order_limit_quote = ceil(raw_limit_quote / tick_size) * tick_size
+                        execution_stop = floor(candidate_stop / tick_size) * tick_size
+                        execution_target = floor(candidate_target / tick_size) * tick_size
+
+                    valid_levels = order_limit_quote > 0.0 and execution_stop > 0.0 and execution_target > 0.0
+                    if candidate_side == 1:
+                        valid_levels = valid_levels and execution_stop < order_limit_quote and execution_target > order_limit_quote
+                    else:
+                        valid_levels = valid_levels and execution_stop > order_limit_quote and execution_target < order_limit_quote
+
+                    if valid_levels:
+                        # cost_fraction is the round-trip execution proxy; add the strategy's
+                        # modeled 5 bp entry and exit commission before applying the risk cap.
+                        execution_cost_per_btc = order_limit_quote * (self._cost_fraction + 0.001)
+                        execution_stop_distance = abs(order_limit_quote - execution_stop)
+                        risk_budget = min(self.trading.cash * self._risk_fraction, self._maximum_loss_quote)
+                        risk_size = risk_budget / (execution_stop_distance + execution_cost_per_btc)
+                        cash_size = self.trading.cash / (order_limit_quote * 1.001)
+                        raw_size = min(risk_size, cash_size, self._maximum_market_quantity)
+                        if raw_size > 0.0:
+                            size = floor(raw_size / self._quantity_step) * self._quantity_step
+                            instrument_info = self.trading.instrument_info
+                            minimum_quantity = max(instrument_info.min_order_size, self._minimum_quantity)
+                            minimum_notional = max(instrument_info.min_order_value, self._minimum_notional_quote)
+                            protective_notional = size * min(order_limit_quote, execution_stop, execution_target)
+                            modeled_all_in_loss = size * (execution_stop_distance + execution_cost_per_btc)
+                            if size >= minimum_quantity and size <= self._maximum_market_quantity and protective_notional >= minimum_notional and modeled_all_in_loss <= risk_budget:
+                                if candidate_side == 1:
+                                    self._pending = (self.trading.place_order(order_side.BUY, size=size)
+                                                     .limit(price=order_limit_quote)
+                                                     .stop_loss(stop=execution_stop)
+                                                     .take_profit(stop=execution_target)
+                                                     .submit())
+                                else:
+                                    self._pending = (self.trading.place_order(order_side.SELL, size=size)
+                                                     .limit(price=order_limit_quote)
+                                                     .stop_loss(stop=execution_stop)
+                                                     .take_profit(stop=execution_target)
+                                                     .submit())
+                                self._pending_bar = self.bar_index
+                                self._cancel_requested = False
+                                self._last_signal_bar = self.bar_index
         # END GENERATED STRATEGY EXECUTION ADAPTER
 
         return entry_fast[0], entry_slow[0], htf_fast[0], htf_slow[0]

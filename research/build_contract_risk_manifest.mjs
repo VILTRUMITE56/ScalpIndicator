@@ -17,12 +17,16 @@ const files = [
   'research/specs/contract_risk_controls_p1.json',
   'research/risk_controls_reference.mjs',
   'research/capture_binance_contract_snapshot.mjs',
+  'research/data/binance_btcusdt_contract_snapshot.json',
   'research/build_contract_risk_manifest.mjs',
   'research/verify_contract_risk_manifest.mjs',
   'research/README_CANDIDATE_P1.md',
   'research/reports/contract_risk_report.json',
   'research/reports/contract_risk_report.md',
   'research/reports/contract_risk_fixtures.csv',
+  'research/reports/p1_native_risk_backtest_summary.json',
+  'indie/btc_pullback_strategy_p1.indie',
+  'docs/EXCHANGE_FILTER_EVIDENCE.md',
 ];
 
 const manifest = {
@@ -30,8 +34,8 @@ const manifest = {
   manifest_id: 'btc-perp-contract-risk-p1-2026-10-30',
   generated_at_utc: new Date().toISOString(),
   policy_id: contract.policy_id,
-  parent_commit: 'ca2e55001d9c50a80878a8903ca9a79c1f7f184d',
-  status: 'paper_reference_fixtures_verified_live_filters_and_fills_unconfirmed_user_locks_disabled',
+  parent_commit: 'f7d324abe8e3ea7483c1ceecd4d98fd496335fcd',
+  status: 'paper_reference_fixtures_verified_binance_proxy_snapshot_captured_actual_execution_filters_fills_and_user_locks_unconfirmed_or_disabled',
   hash_normalization: 'UTF-8 text; CRLF normalized to LF before SHA-256',
   verification: {
     command: 'node research/risk_controls_reference.mjs',
@@ -58,8 +62,8 @@ const manifest = {
     'No profitability statistic is produced by contract and ledger fixtures.',
   ],
   docs_basis: [
-    'https://developers.binance.com/en/docs/products/derivatives-trading-usds-futures/common-definition',
-    'https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usds-margined-futures/api/rest-api/market-data#exchange-information',
+    'https://developers.binance.com/en/docs/products/derivatives-trading-usds-margined-futures/common-definition',
+    'https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usd-s-m-futures/api/rest-api/market-data#exchange-information',
     'https://takeprofit.com/docs/indie/Library-reference/package-indie',
     'https://takeprofit.com/docs/indie/Library-reference/package-indie-strategies',
   ],

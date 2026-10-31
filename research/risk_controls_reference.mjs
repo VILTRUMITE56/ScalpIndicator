@@ -2,11 +2,16 @@
 // Synthetic filters in fixtures are deliberately not labelled as Binance data.
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const reportDir = path.join(root, 'research/reports');
+const nativeStrategySource = fs.readFileSync(path.join(root, 'indie/btc_pullback_strategy_p1.indie'), 'utf8').replace(/\r\n/g, '\n');
+const nativeStrategySourceSha256 = crypto.createHash('sha256').update(nativeStrategySource, 'utf8').digest('hex');
+const contractSpec = JSON.parse(fs.readFileSync(path.join(root, 'research/specs/contract_risk_controls_p1.json'), 'utf8'));
+const nativeRiskBacktest = JSON.parse(fs.readFileSync(path.join(root, 'research/reports/p1_native_risk_backtest_summary.json'), 'utf8'));
 
 function plainDecimal(value) {
   const source = String(value).trim().toLowerCase();
@@ -737,13 +742,16 @@ function writeCsv(file, rows) {
 }
 
 function buildReport(fixtures) {
+  const snapshot = contractSpec.live_contract_snapshot;
+  const snapshotFresh = snapshot.status === 'FRESH_OFFICIAL_METADATA_RESEARCH_PROXY';
   return {
     schema_version: 1,
     policy_id: 'BTC-PERP-RISK-OPS-P1',
     generated_at_utc: new Date().toISOString(),
     status: 'PAPER_REFERENCE_FIXTURES_PASS_LIVE_VENUE_UNCONFIRMED_PERSONAL_LOCKS_DISABLED_BY_USER_CHOICE',
     venue_proxy: 'Binance USD-M BTCUSDT perpetual; research-only',
-    live_filter_snapshot: 'NOT_CAPTURED: official public exchangeInfo returned HTTP 451 in the research environment; no filter values were invented',
+    live_filter_snapshot: `${snapshot.status}: captured ${snapshot.capture_to_reference_delta_seconds} seconds from the official /time reference; research proxy only`,
+    observed_filter_snapshot: `${snapshot.snapshot_file}; tick ${snapshot.price_tick}, limit step/min ${snapshot.limit_quantity_step}/${snapshot.limit_quantity_min}, market step/min/max ${snapshot.market_quantity_step}/${snapshot.market_quantity_min}/${snapshot.market_quantity_max}, minimum notional ${snapshot.minimum_notional} USDT, PERCENT_PRICE ${snapshot.percent_price_multiplier_down}-${snapshot.percent_price_multiplier_up}; ${snapshotFresh ? 'fresh at capture' : 'freshness gate failed'}, research-only`,
     user_per_trade_loss_budget_quote: 1,
     user_daily_loss_limit_quote: null,
     user_max_drawdown_fraction: null,
@@ -751,19 +759,32 @@ function buildReport(fixtures) {
     user_funding_reserve: null,
     hold_policy: 'TP/SL only; no maximum holding time or timed exit added',
     native_platform_limit: 'TakeProfit documents context.info.tick_size and price_precision plus strategy min order size/value; it does not document exact Binance quantity steps, account fees, or account-level marked equity/day PnL/high-water equity.',
+    native_platform_validation: {
+      status: 'PASS_COMPILE_AND_RUNTIME_QUICK_ON_EPHEMERAL_COPY',
+      script_id: '5113f0ea-0801-47d3-81dd-c4f970af8753',
+      script_version: 3,
+      validation_mode: 'runtime_quick',
+      source_sha256: nativeStrategySourceSha256,
+      bars_executed: 5000,
+      run_status: '1/1 ok',
+      orders_emitted: 0,
+      scope: 'Disposable script only; the protected linked platform copy was not modified. This validates compilation and runtime safety, not trade performance or order execution parity.',
+    },
+    native_platform_backtest_summary: nativeRiskBacktest,
     fixture_count: fixtures.length,
     all_fixtures_pass: true,
     fixtures,
     acceptance_status: {
       rounding_and_formula_engine: 'PASS_ON_SYNTHETIC_FIXTURES',
-      live_binance_filter_snapshot: 'OPEN_REQUIRED',
+      live_binance_filter_snapshot: snapshotFresh ? 'PASS_FRESH_OFFICIAL_METADATA_AT_CAPTURE_RESEARCH_PROXY_ONLY' : 'OPEN_SNAPSHOT_NOT_FRESH_AT_CAPTURE',
       supplied_fill_reconciliation_engine: 'PASS_PARTIAL_FILLS_FEES_FUNDING_MARKED_EQUITY_STOP_STRESS_AND_PROTECTION_FIXTURES',
       realized_user_fill_reconciliation: 'OPEN_NO_OBSERVED_USER_OR_EXCHANGE_FILL_DATA; synthetic fixtures only',
       user_daily_drawdown_limits: 'APPROVED_DISABLED_BY_USER; parameterized controls are fixture-tested but personal locks are not active',
       native_account_equity_locks: 'NOT_AVAILABLE_IN_DOCUMENTED_STRATEGY_FIELDS',
       risk_lock_fixtures: 'PASS_DAY_BOUNDARIES_OPEN_LOSSES_PARTIAL_FILLS_PROTECTION_GAPS_PER_TRADE_GAP_BREACH_AND_EXPLICIT_RESET',
       hold_policy_registration: 'PASS_TP_SL_ONLY_VERSIONED_NO_TIME_EXIT_ADDED',
-      issue_8_close: 'BLOCKED_LIVE_FILTERS_NATIVE_STRATEGY_GRID_INTEGRATION_AND_OBSERVED_FILL_COST_RECONCILIATION',
+      native_strategy_grid_integration: 'SOURCE_COMPILED_RUNTIME_QUICK_PASS_AND_TAKEPROFIT_BACKTESTED; 5m had zero trades, 15m one simulated short loss; dynamic PERCENT_PRICE and real fill behavior remain unverified',
+      issue_8_close: 'BLOCKED_DYNAMIC_PERCENT_PRICE_ACTUAL_FILL_COST_AND_EXECUTION_VENUE_RECONCILIATION',
       profitability: 'NOT_EVALUATED; no claim',
     },
   };
@@ -789,15 +810,16 @@ const md = [
   '- No time exit or signal change was added. Personal daily/drawdown values remain null and therefore disabled.', '',
   '## Results and unresolved inputs', '',
   `- Synthetic deterministic fixtures: ${report.fixture_count}/${report.fixture_count} pass. Fixture filter values are test data only.`,
-  '- Live Binance BTCUSDT filter snapshot: not captured. The official public exchangeInfo endpoint returned HTTP 451 from this environment. The capture script is included and writes a snapshot only after validating a successful live response.',
+  `- Binance BTCUSDT metadata was captured from the official public exchangeInfo endpoint at ${contractSpec.live_contract_snapshot.captured_at_utc}. The exchangeInfo response and subsequent /time reference were ${contractSpec.live_contract_snapshot.capture_to_reference_delta_seconds} seconds apart, within the 300-second gate. The snapshot records the dynamic PERCENT_PRICE filter; the native adapter does not enforce that reference-price-based filter. This is the Binance research proxy only.`,
+  '- TakeProfit diagnostic backtest: 5m produced 0 trades; 15m produced 1 simulated short, stopped for -$0.3649 net with $0.0803 commission. Both bounded windows are flagged history-insufficient. The single 15m entry and stop share a timestamp, so intrabar execution is unresolved. See `research/reports/p1_native_risk_backtest_summary.json`; these are simulator fills, not exchange fills or profitability evidence.',
   '- Account maker/taker fees, user fills, historical slippage/spread and funding reserve remain unavailable. Sizing is blocked unless fees, slippage and funding reserve are explicitly supplied. Reconciliation fixtures use synthetic fills and costs only.',
   '- Personal daily-loss/drawdown limits remain intentionally disabled by the user. Generic fixture thresholds test control behavior only; they are not personal limits, and no personal lock is active.',
   '- The $1 stop budget is an intended model cap. A gap, liquidation, exchange failure or fill race can exceed it; existing protection is kept and no unverified flatten order is invented.',
-  '- TakeProfit documents `self.info.tick_size` and `self.info.price_precision` through `Context.info` (inherited by `MainStrategyContext`) and exposes strategy min order size/value. This permits platform-context price tick handling but is not a captured Binance filter snapshot. Exact quantity steps/maxima, account fees, marked account equity, daily PnL, peak equity and user margin tier remain unavailable as documented script fields.', '',
+  '- TakeProfit documents `self.info.tick_size` and `self.info.price_precision` through `Context.info` (inherited by `MainStrategyContext`) and exposes strategy min order size/value. The native adapter uses chart tick data plus configured Binance research-proxy quantity filters; the chart context does not expose Binance LOT_SIZE or MARKET_LOT_SIZE automatically. Account fees, marked account equity, daily PnL, peak equity and user margin tier remain unavailable as documented script fields.', '',
   '## Issue #8 acceptance state', '',
-  '- Reference rounding and post-rounding risk eligibility: fixture-verified with synthetic venue filters; current venue rules are still unverified.',
+  '- Reference rounding and post-rounding risk eligibility: fixture-verified with synthetic filters; current Binance research-proxy filters were captured, but actual execution venue rules remain unconfirmed.',
   '- Supplied-fill reconciliation: fixture-verified for partial fills, fees, funding, marked equity, stressed stop loss, planned size and protective coverage; user/exchange fill records remain absent.',
-  '- Native execution integration: not complete. The strategy still relies on a user-entered quantity step and has not been switched to verified venue filters; keep it research-only.',
+  '- Native execution adapter: source now uses the chart tick size, conservative directional price rounding, a configurable common quantity step, captured minimum quantity/notional and market maximum defaults, and post-rounding risk sizing capped at the user-confirmed $1 research budget. The exact local source compiled and passed runtime_quick on a disposable TakeProfit copy (5,000 bars). The 5m/15m bounded backtest emitted no 5m trades and one losing 15m simulator trade; both history windows are insufficient. The dynamic PERCENT_PRICE filter is not implemented by the native adapter. Keep it research-only.',
   '- Daily/drawdown policy: the user-approved choice to leave personal thresholds unset is recorded; generic lock and reset behavior is fixture-verified, while personal account locks remain disabled.',
   '- Holding policy: TP/SL-only with no maximum hold is recorded as BTC-PERP-EXIT-TP-SL-ONLY-1; changes require a separate experiment.',
   '- Profitability: not evaluated by these engineering fixtures.', '',
@@ -811,7 +833,7 @@ const md = [
   '```', '',
   'The capture command requires access to the public Binance USD-M exchangeInfo endpoint. It never uses account credentials and refuses to write a partial or synthetic snapshot.', '',
   '## Decision', '',
-  'The reference rounding, supplied-fill reconciliation, equity and lock behavior is fixture-verified. Issue #8 cannot be fully closed yet: current Binance filters, native strategy use of a verified quantity grid, and observed account fill/cost data are absent. The user-approved choice to keep personal daily/drawdown locks disabled is recorded; do not present those controls as active protection. Do not enable live sizing from these fixtures.',
+  'The reference rounding, supplied-fill reconciliation, equity and lock behavior is fixture-verified. A fresh Binance research-proxy snapshot is captured, and the native grid adapter compiles, runs and places a simulated 15m order on an ephemeral copy. Issue #8 cannot be fully closed yet: the adapter does not check the dynamic PERCENT_PRICE filter, the only bounded 15m sample is one loss with same-bar ambiguity, and account fills, fees, spread, slippage and funding remain unobserved. The execution venue is not confirmed. The user-approved choice to keep personal daily/drawdown locks disabled is recorded; do not present those controls as active protection. Do not enable live sizing from simulator fills or unconfirmed account settings.',
 ].join('\n');
 fs.writeFileSync(path.join(reportDir, 'contract_risk_report.md'), md + '\n', 'utf8');
 

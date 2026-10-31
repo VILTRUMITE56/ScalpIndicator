@@ -12,26 +12,37 @@
     "execution_venue_confirmed": false
   },
   "live_contract_snapshot": {
-    "status": "NOT_CAPTURED_HTTP_451",
-    "checked_utc_date": "2026-10-30",
+    "status": "FRESH_OFFICIAL_METADATA_RESEARCH_PROXY",
+    "checked_utc_date": "2026-10-31",
     "endpoint": "https://fapi.binance.com/fapi/v1/exchangeInfo?symbol=BTCUSDT",
-    "http_status": 451,
-    "contract_status": null,
-    "base_asset": null,
-    "quote_asset": null,
-    "margin_asset": null,
-    "price_tick": null,
-    "price_min": null,
-    "price_max": null,
-    "limit_quantity_step": null,
-    "limit_quantity_min": null,
-    "limit_quantity_max": null,
-    "market_quantity_step": null,
-    "market_quantity_min": null,
-    "market_quantity_max": null,
-    "minimum_notional": null,
-    "linear_multiplier_base_per_quantity": null,
-    "capture_note": "The official public endpoint could not be retrieved from this environment. The capture script is provided; synthetic fixture filters are test data, not Binance filter values."
+    "freshness_reference_endpoint": "https://fapi.binance.com/fapi/v1/time",
+    "captured_at_utc": "2026-10-31T04:33:14.976Z",
+    "exchange_info_server_time_ms_ignored": 1793352576476,
+    "freshness_reference_server_time_ms": 1793421194681,
+    "capture_to_reference_delta_seconds": -0.295,
+    "freshness_threshold_seconds": 300,
+    "response_sha256_utf8": "3fec9c4a958ffe35ada65d67b6d4fe0c4ff6427b95f0d84296403c25d46faaa4",
+    "symbol": "BTCUSDT",
+    "contract_status": "TRADING",
+    "contract_type": "PERPETUAL",
+    "base_asset": "BTC",
+    "quote_asset": "USDT",
+    "margin_asset": "USDT",
+    "price_tick": 0.1,
+    "price_min": 556.8,
+    "price_max": 4529764,
+    "limit_quantity_step": 0.001,
+    "limit_quantity_min": 0.001,
+    "limit_quantity_max": 1000,
+    "market_quantity_step": 0.001,
+    "market_quantity_min": 0.001,
+    "market_quantity_max": 120,
+    "minimum_notional": 50,
+    "percent_price_multiplier_up": 1.03,
+    "percent_price_multiplier_down": 0.97,
+    "linear_multiplier_base_per_quantity": 1,
+    "snapshot_file": "research/data/binance_btcusdt_contract_snapshot.json",
+    "capture_note": "Official metadata captured within the 300-second freshness threshold using the subsequent /fapi/v1/time response. Binance is a research proxy only; execution venue is unconfirmed."
   },
   "contract_models": {
     "LINEAR_BASE_QUANTITY": {
@@ -49,15 +60,24 @@
   },
   "rounding": {
     "filter_grid_anchor": "Binance PRICE_FILTER uses minPrice + integer*tickSize; LOT_SIZE and MARKET_LOT_SIZE use minQty + integer*stepSize.",
-    "entry_limit": { "LONG": "floor_to_tick", "SHORT": "ceil_to_tick" },
-    "stop_trigger": { "LONG": "ceil_to_tick_toward_entry", "SHORT": "floor_to_tick_toward_entry" },
-    "target": { "LONG": "ceil_to_tick_preserve_reward", "SHORT": "floor_to_tick_preserve_reward" },
+    "entry_limit": {
+      "LONG": "floor_to_tick",
+      "SHORT": "ceil_to_tick"
+    },
+    "stop_trigger": {
+      "LONG": "ceil_to_tick_toward_entry",
+      "SHORT": "floor_to_tick_toward_entry"
+    },
+    "target": {
+      "LONG": "ceil_to_tick_preserve_reward",
+      "SHORT": "floor_to_tick_preserve_reward"
+    },
     "quantity": "floor_to_lot_step; never round up",
     "post_rounding": "Recheck directional geometry, price bounds, limit and market quantity grids/bounds, entry and protective-exit minimum notionals, margin notional cap and all-in stop loss. Reject any invalid plan.",
     "protective_exit_order_assumption": "Validate both SL and TP against market lot and configured minimum exit notional; actual venue exit order types must be verified before deployment."
   },
   "per_trade_risk": {
-    "user_loss_budget_quote": 1.0,
+    "user_loss_budget_quote": 1,
     "basis": "user-confirmed maximum total trade loss including fees and slippage; not a guaranteed maximum during gaps, liquidation or venue failure",
     "actual_fill_reconciliation": "recompute projected all-in PnL at a stressed stop from supplied average fills, realized partial exits, recorded fees and funding, current mark/equity, planned quantity and protective coverage; entry locking is explicit",
     "account_fee_rate": null,
@@ -93,15 +113,32 @@
     "future_exit_changes": "register as a separately versioned exit-policy experiment; do not change entry logic silently"
   },
   "takeprofit_native_limits": {
-    "documented_strategy_fields": ["trading.cash", "trading.position.size", "trading.position.price", "context.info.tick_size", "context.info.price_precision", "trading.instrument_info.min_order_size", "trading.instrument_info.min_order_value"],
-    "tick_size_note": "Context.info.tick_size is documented and inherited by MainStrategyContext; the selected Binance BTCUSDT value has not been captured and is not a substitute for a verified exchange filter snapshot.",
-    "not_documented_as_available_to_strategy": ["account_equity", "daily_net_pnl", "peak_equity", "account_margin_tier", "Binance_LOT_SIZE_stepSize", "Binance_MARKET_LOT_SIZE_stepSize", "Binance_quantity_maxima"],
-    "policy": "Do not treat available simulator cash as marked account equity. Exact quantity-grid integration and personalized daily/drawdown locks require verified metadata and documented account fields."
+    "documented_strategy_fields": [
+      "trading.cash",
+      "trading.position.size",
+      "trading.position.price",
+      "context.info.tick_size",
+      "context.info.price_precision",
+      "trading.instrument_info.min_order_size",
+      "trading.instrument_info.min_order_value"
+    ],
+    "tick_size_note": "Context.info.tick_size is documented and inherited by MainStrategyContext. The research-proxy snapshot captured a 0.10 BTCUSDT tick; platform context must be checked against the selected chart instrument.",
+    "not_documented_as_available_to_strategy": [
+      "account_equity",
+      "daily_net_pnl",
+      "peak_equity",
+      "account_margin_tier",
+      "Binance_LOT_SIZE_stepSize",
+      "Binance_MARKET_LOT_SIZE_stepSize",
+      "Binance_quantity_maxima"
+    ],
+    "policy": "Do not treat available simulator cash as marked account equity. The native source uses configurable quantity-grid parameters sourced from the research-proxy snapshot; validate platform behavior and refresh filters before execution. Personalized daily/drawdown locks require documented account fields."
   },
   "deployment_blockers": [
-    "Live Binance BTCUSDT exchangeInfo snapshot and verified current filters are missing.",
-    "The user selected Binance only as a research proxy; no execution venue is confirmed.",
-    "Native P1 strategy execution still uses a manually entered quantity step and raw unrounded price levels; filter-grid parity is not implemented.",
+    "Binance is a research proxy only; actual execution venue is unconfirmed.",
+    "Native P1 strategy source now rounds prices to platform tick size and applies configurable captured Binance quantity/notional defaults. It compiles and passes runtime_quick on a disposable copy; native order/fill behavior is still unobserved.",
+    "Native P1 does not enforce the dynamic Binance PERCENT_PRICE reference-price bounds; this and order/fill behavior remain research-only until platform execution semantics are verified.",
+    "The public Binance metadata snapshot is fresh for the capture time, but must be recaptured before any future execution deployment.",
     "Account fee rates and measured spread/slippage are unavailable.",
     "Funding inclusion in the per-trade $1 cap is unspecified.",
     "Personal daily-loss and drawdown locks are intentionally disabled by user choice; do not present them as active account protection.",
