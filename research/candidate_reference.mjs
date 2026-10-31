@@ -116,30 +116,43 @@ function planRisk(side, entry, stopReference, setupAtr) {
   return { distance, stop, target, costR, blocker };
 }
 
-function runProfile(bars, profile) {
+function runProfile(bars, profile, options = {}) {
   const minutes = profile.execution_minutes;
   const htfMinutes = profile.higher_minutes;
   const intervalMs = minutes * 60_000;
   const htfMs = htfMinutes * 60_000;
   const barsPerHtf = htfMinutes / minutes;
+  const excludedExecutionTimes = options.excludedExecutionTimes ?? new Set();
+  const excludedHtfBuckets = options.excludedHtfBuckets ?? new Set();
+  bars = bars.filter(bar => !excludedExecutionTimes.has(bar.timeMs));
   const fast = ema(bars.map(x => x.close), config.emaFast);
   const slow = ema(bars.map(x => x.close), config.emaSlow);
   const atr = wilderAtr(bars, config.atrLength);
   const events = [];
+  const setups = [];
+  const eligibleBars = [];
   let htfFast = Number.NaN;
   let htfSlow = Number.NaN;
   let htfClose = Number.NaN;
   let htfSlowHistory = [];
   let htfCount = 0;
+  let htfResetPending = false;
   const state = {
-    long: { armed: false, touch: -1, anchor: Number.NaN, atr: Number.NaN, invalidation: Number.NaN, stopRef: Number.NaN, used: -1, waitRecovery: false, recovery: -1 },
-    short: { armed: false, touch: -1, anchor: Number.NaN, atr: Number.NaN, invalidation: Number.NaN, stopRef: Number.NaN, used: -1, waitRecovery: false, recovery: -1 },
+    long: { armed: false, touch: -1, anchor: Number.NaN, atr: Number.NaN, invalidation: Number.NaN, stopRef: Number.NaN, setupIndex: -1, used: -1, waitRecovery: false, recovery: -1 },
+    short: { armed: false, touch: -1, anchor: Number.NaN, atr: Number.NaN, invalidation: Number.NaN, stopRef: Number.NaN, setupIndex: -1, used: -1, waitRecovery: false, recovery: -1 },
   };
 
-  function resetSetup(side, usedAt) {
+  function resetSetup(side, usedAt, reason = 'RESET', triggeredCandidateId = '') {
     const s = state[side];
+    if (s.armed && s.setupIndex >= 0) {
+      const setup = setups[s.setupIndex];
+      setup.outcome = reason;
+      setup.resolution_time_utc = asIso(Math.floor(bars[Math.min(usedAt, bars.length - 1)].timeMs / 1000));
+      setup.duration_bars = Math.max(0, usedAt - setup.touch_index);
+      setup.triggered_candidate_id = triggeredCandidateId;
+    }
     s.armed = false; s.touch = -1; s.anchor = Number.NaN; s.atr = Number.NaN;
-    s.invalidation = Number.NaN; s.stopRef = Number.NaN; s.used = usedAt;
+    s.invalidation = Number.NaN; s.stopRef = Number.NaN; s.setupIndex = -1; s.used = usedAt;
     s.waitRecovery = true; s.recovery = -1;
   }
 
@@ -150,30 +163,44 @@ function runProfile(bars, profile) {
     const currentBucket = Math.floor(bar.timeMs / htfMs);
     const nextBucket = Math.floor(next.timeMs / htfMs);
     const closesHtf = currentBucket !== nextBucket;
+    let conflictingHtfBoundary = false;
     if (isGap) {
       htfFast = Number.NaN; htfSlow = Number.NaN; htfClose = Number.NaN;
-      htfSlowHistory = []; htfCount = 0;
-      resetSetup('long', i); resetSetup('short', i);
+      htfSlowHistory = []; htfCount = 0; htfResetPending = false;
+      resetSetup('long', i, 'DATA_GAP'); resetSetup('short', i, 'DATA_GAP');
     } else if (closesHtf) {
       const bucketStart = Math.floor(bar.timeMs / htfMs) * htfMs;
       const priorBucketBars = [];
       for (let j = i; j >= 0 && Math.floor(bars[j].timeMs / htfMs) === currentBucket; j--) priorBucketBars.push(bars[j]);
       const complete = priorBucketBars.length === barsPerHtf && priorBucketBars[priorBucketBars.length - 1].timeMs === bucketStart;
       if (complete) {
-        if (htfCount === 0) {
-          htfFast = bar.close;
-          htfSlow = bar.close;
+        if (excludedHtfBuckets.has(bucketStart)) {
+          // A disputed native HTF candle is omitted from the research series. Keep
+          // the last completed valid bias until the next clean HTF close, then
+          // reseed and re-warm from that clean candle.
+          htfResetPending = true;
+          conflictingHtfBoundary = true;
+        } else if (htfResetPending) {
+          resetSetup('long', i, 'HTF_SOURCE_CONFLICT');
+          resetSetup('short', i, 'HTF_SOURCE_CONFLICT');
+          htfFast = bar.close; htfSlow = bar.close; htfClose = bar.close;
+          htfSlowHistory = [htfSlow]; htfCount = 1; htfResetPending = false;
         } else {
-          htfFast += (2 / (config.htfFast + 1)) * (bar.close - htfFast);
-          htfSlow += (2 / (config.htfSlow + 1)) * (bar.close - htfSlow);
+          if (htfCount === 0) {
+            htfFast = bar.close;
+            htfSlow = bar.close;
+          } else {
+            htfFast += (2 / (config.htfFast + 1)) * (bar.close - htfFast);
+            htfSlow += (2 / (config.htfSlow + 1)) * (bar.close - htfSlow);
+          }
+          htfClose = bar.close;
+          htfSlowHistory.push(htfSlow);
+          htfCount++;
         }
-        htfClose = bar.close;
-        htfSlowHistory.push(htfSlow);
-        htfCount++;
       } else {
         htfFast = Number.NaN; htfSlow = Number.NaN; htfClose = Number.NaN;
-        htfSlowHistory = []; htfCount = 0;
-        resetSetup('long', i); resetSetup('short', i);
+        htfSlowHistory = []; htfCount = 0; htfResetPending = false;
+        resetSetup('long', i, 'INCOMPLETE_HTF'); resetSetup('short', i, 'INCOMPLETE_HTF');
       }
     }
 
@@ -183,19 +210,26 @@ function runProfile(bars, profile) {
       : Number.NaN;
     const longBias = htfClose > htfSlow && htfFast > htfSlow && htfSlow > laggedSlow;
     const shortBias = htfClose < htfSlow && htfFast < htfSlow && htfSlow < laggedSlow;
+    eligibleBars.push({
+      timeMs: bar.timeMs + intervalMs,
+      side: longBias ? 'LONG' : shortBias ? 'SHORT' : 'NEUTRAL',
+      close: bar.close,
+      atr: atr[i],
+      atrPct: atr[i] / bar.close * 100,
+    });
     const long = state.long;
     const short = state.short;
 
-    if (!longBias) resetSetup('long', i);
-    if (!shortBias) resetSetup('short', i);
+    if (!longBias) resetSetup('long', i, 'BIAS_LOSS');
+    if (!shortBias) resetSetup('short', i, 'BIAS_LOSS');
     for (const [side, s] of [['long', long], ['short', short]]) {
-      if (s.armed && i - s.touch > config.lastTriggerAge) resetSetup(side, i);
+      if (s.armed && i - s.touch > config.lastTriggerAge) resetSetup(side, i, 'EXPIRED');
     }
 
     const longInvalid = long.armed && (bar.close <= slow[i] || bar.low <= long.invalidation);
     const shortInvalid = short.armed && (bar.close >= slow[i] || bar.high >= short.invalidation);
-    if (longInvalid) resetSetup('long', i);
-    if (shortInvalid) resetSetup('short', i);
+    if (longInvalid) resetSetup('long', i, bar.close <= slow[i] ? 'CLOSE_THROUGH_EMA50' : 'STRUCTURAL_INVALIDATION');
+    if (shortInvalid) resetSetup('short', i, bar.close >= slow[i] ? 'CLOSE_THROUGH_EMA50' : 'STRUCTURAL_INVALIDATION');
 
     if (long.waitRecovery && i > long.used && bar.close > fast[i]) {
       long.waitRecovery = false; long.recovery = i;
@@ -219,6 +253,13 @@ function runProfile(bars, profile) {
       if (long.recovery < 0 || long.recovery <= i - 2) long.anchor = Math.min(long.anchor, bars[i - 2].low);
       long.invalidation = long.anchor - config.invalidationAtr * long.atr;
       long.stopRef = long.anchor - config.stopRefAtr * long.atr;
+      const touchSeconds = Math.floor(bar.timeMs / 1000);
+      long.setupIndex = setups.push({
+        setup_id: [config.venueCode, config.symbol, `${minutes}m`, 'LONG', String(touchSeconds), config.ruleVersion, 'SETUP'].join('|'),
+        execution_timeframe: `${minutes}m`, side: 'LONG', touch_time_utc: asIso(touchSeconds),
+        touch_index: i, touch_atr: long.atr, touch_atr_pct: long.atr / bar.close * 100,
+        touch_close: bar.close, outcome: 'ARMED', resolution_time_utc: '', duration_bars: '', triggered_candidate_id: '',
+      }) - 1;
     }
     if (shortTouchEligible && !short.waitRecovery && !short.armed && i > short.used && i > short.recovery) {
       short.armed = true; short.touch = i; short.atr = atr[i];
@@ -227,6 +268,13 @@ function runProfile(bars, profile) {
       if (short.recovery < 0 || short.recovery <= i - 2) short.anchor = Math.max(short.anchor, bars[i - 2].high);
       short.invalidation = short.anchor + config.invalidationAtr * short.atr;
       short.stopRef = short.anchor + config.stopRefAtr * short.atr;
+      const touchSeconds = Math.floor(bar.timeMs / 1000);
+      short.setupIndex = setups.push({
+        setup_id: [config.venueCode, config.symbol, `${minutes}m`, 'SHORT', String(touchSeconds), config.ruleVersion, 'SETUP'].join('|'),
+        execution_timeframe: `${minutes}m`, side: 'SHORT', touch_time_utc: asIso(touchSeconds),
+        touch_index: i, touch_atr: short.atr, touch_atr_pct: short.atr / bar.close * 100,
+        touch_close: bar.close, outcome: 'ARMED', resolution_time_utc: '', duration_bars: '', triggered_candidate_id: '',
+      }) - 1;
     }
 
     const longTrigger = bar.close > fast[i] && bar.close > slow[i] && bar.close > bar.open && bar.close > bars[i - 1].high;
@@ -235,7 +283,13 @@ function runProfile(bars, profile) {
     const shortAge = i - short.touch;
     const isLong = long.armed && longBias && longTrigger && bar.low > long.invalidation && longAge >= config.firstTriggerAge && longAge <= config.lastTriggerAge;
     const isShort = short.armed && shortBias && shortTrigger && bar.high < short.invalidation && shortAge >= config.firstTriggerAge && shortAge <= config.lastTriggerAge;
-    if (!isLong && !isShort) continue;
+    if (!isLong && !isShort) {
+      if (conflictingHtfBoundary) {
+        resetSetup('long', i, 'HTF_SOURCE_CONFLICT');
+        resetSetup('short', i, 'HTF_SOURCE_CONFLICT');
+      }
+      continue;
+    }
 
     const side = isLong ? 'LONG' : 'SHORT';
     const setup = isLong ? long : short;
@@ -247,6 +301,7 @@ function runProfile(bars, profile) {
     const limitQuote = entry * (isLong ? (1 + config.limitOffset) : (1 - config.limitOffset));
     events.push({
       candidate_id: candidateId(minutes, side, touchSeconds, triggerSeconds),
+      setup_id: setup.setupIndex >= 0 ? setups[setup.setupIndex].setup_id : '',
       venue_code: config.venueCode,
       symbol: config.symbol,
       execution_timeframe: `${minutes}m`,
@@ -256,6 +311,9 @@ function runProfile(bars, profile) {
       decision_time_utc: asIso(Math.floor(next.timeMs / 1000)),
       touch_anchor: setup.anchor,
       setup_atr: setup.atr,
+      touch_atr_pct: setup.atr / bars[setup.touch].close * 100,
+      trigger_atr: atr[i],
+      trigger_atr_pct: atr[i] / bar.close * 100,
       structural_invalidation: setup.invalidation,
       planned_entry_quote: entry,
       planned_stop: plan.stop,
@@ -272,9 +330,15 @@ function runProfile(bars, profile) {
       actual_fill_status: 'UNKNOWN_NOT_SIMULATED',
       execution_difference_note: 'LIMIT_QUOTE_ONLY; actual fill unknown.',
     });
-    resetSetup(isLong ? 'long' : 'short', i);
+    resetSetup(isLong ? 'long' : 'short', i, 'TRIGGERED', events.at(-1).candidate_id);
+    if (conflictingHtfBoundary) {
+      resetSetup('long', i, 'HTF_SOURCE_CONFLICT');
+      resetSetup('short', i, 'HTF_SOURCE_CONFLICT');
+    }
   }
-  return { events, fast, slow, atr };
+  resetSetup('long', bars.length - 1, 'DATA_END_OPEN');
+  resetSetup('short', bars.length - 1, 'DATA_END_OPEN');
+  return { events, setups, eligibleBars, fast, slow, atr };
 }
 
 function legacyWindowTouch(touches, currentBar, directionalClose) {
@@ -375,22 +439,32 @@ function compareHistory(full, truncated, afterMs) {
   return { compared_candidates: fullRows.length, candidate_id_differences: 0, level_differences: 0, max_level_abs_delta: 0, tolerance: 1e-6 };
 }
 
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
 const fixtureResults = fixtureChecks();
 const profiles = [];
 const allEvents = [];
 const fullHistoryOverlap = {};
+const coverageAudit = JSON.parse(fs.readFileSync(path.join(root, 'research/reports/btc_history_coverage.json'), 'utf8'));
+const disputedBars = coverageAudit.resampling.native_reference_disputes_masked_from_scoring;
 for (const profile of contract.profiles) {
   const fileName = profile.execution_minutes === 5 ? 'trade_5m_resampled.csv' : 'trade_15m_resampled.csv';
   const file = path.join(dataDir, fileName);
-  const bars = csvRows(file);
-  const fullRun = runProfile(bars, profile);
+  const inputBars = csvRows(file);
+  const executionConflicts = new Set((disputedBars[`${profile.execution_minutes}m`] ?? []).map(row => Date.parse(row.open_time_utc)));
+  const htfKey = profile.higher_minutes === 60 ? '1h' : `${profile.higher_minutes}m`;
+  const excludedHtfBuckets = new Set((disputedBars[htfKey] ?? []).map(row => Date.parse(row.open_time_utc)));
+  const bars = inputBars.filter(bar => !executionConflicts.has(bar.timeMs));
+  const runOptions = { excludedExecutionTimes: executionConflicts, excludedHtfBuckets };
+  const fullRun = runProfile(bars, profile, runOptions);
   const preRollBars = 3500;
   const compareWindowBars = 5000;
   const truncatedStart = Math.max(0, bars.length - compareWindowBars - preRollBars);
   const truncatedBars = bars.slice(truncatedStart);
-  const tailRun = runProfile(truncatedBars, profile);
+  const tailRun = runProfile(truncatedBars, profile, runOptions);
   const comparisonStartMs = bars[Math.max(0, bars.length - compareWindowBars)].timeMs;
   const parity = compareHistory(fullRun.events, tailRun.events, comparisonStartMs);
+  const coverageProfile = coverageAudit.ema.profile_feature_gates.find(row => row.execution_timeframe === `${profile.execution_minutes}m`);
+  assert.equal(fullRun.eligibleBars.length, coverageProfile.coverage.eligible_scored_bars, 'P1 scoring mask matches issue #4 eligible-bar count exactly');
   const blockerCounts = {};
   const sideCounts = { LONG: 0, SHORT: 0 };
   for (const row of fullRun.events) {
@@ -400,7 +474,13 @@ for (const profile of contract.profiles) {
   profiles.push({
     execution_minutes: profile.execution_minutes,
     higher_minutes: profile.higher_minutes,
+    input_bars: inputBars.length,
     bars: bars.length,
+    execution_conflict_bars_masked: executionConflicts.size,
+    higher_timeframe_conflict_bars_masked: excludedHtfBuckets.size,
+    model_eligible_bars: fullRun.eligibleBars.length,
+    setups: fullRun.setups.length,
+    setup_outcomes: fullRun.setups.reduce((acc, setup) => { acc[setup.outcome] = (acc[setup.outcome] ?? 0) + 1; return acc; }, {}),
     first_bar_utc: asIso(Math.floor(bars[0].timeMs / 1000)),
     last_bar_utc: asIso(Math.floor(bars.at(-1).timeMs / 1000)),
     full_history_candidates: fullRun.events.length,
@@ -442,6 +522,7 @@ const report = {
     atr: 'True range followed by Wilder RMA(14), initialized by the first 14-value SMA, matching the documented Indie Atr -> RMA algorithm.',
     higher_timeframe: 'Execution bars grouped by UTC bucket; complete contiguous groups only; EMA20/EMA50 recursively updated from the first completed HTF close; slope uses three completed HTF bars.',
     touch_model: 'Completed bars processed once in timestamp order; first eligible range intersection arms; eligibility checks touch bias and directional EMA50 closes only within the current recovery episode.',
+    conflict_policy: 'Mask the exact disputed execution candles and omit disputed higher-timeframe buckets from the independently audited #4 stream; stale last-valid HTF bias is retained until the next clean HTF close reseeds and re-warms the series.',
     time_model: 'Unix UTC seconds at bar opens; entry quote uses next execution candle open.',
     known_fill_limit: 'No exchange order book, actual fills, fee tier, spread/slippage tape, or funding cash flows are included in this candidate parity report.',
   },
@@ -450,6 +531,8 @@ const report = {
   overall: {
     candidates: allEvents.length,
     unique_candidate_ids: candidateIds.size,
+    model_eligible_bars: profiles.reduce((sum, profile) => sum + profile.model_eligible_bars, 0),
+    setups: profiles.reduce((sum, profile) => sum + profile.setups, 0),
     event_ledger: 'candidate_event_ledger.csv',
     full_history_vs_truncated_history: 'PASS; see each profile row',
     id_and_timestamp_checks: 'PASS',
@@ -476,13 +559,14 @@ const md = [
   report.reference_method.atr,
   report.reference_method.higher_timeframe,
   report.reference_method.touch_model,
+  report.reference_method.conflict_policy,
   report.reference_method.known_fill_limit,
   '',
   '## Historical replay',
   '',
-  '| Exec / HTF | Bars | Candidates | Long | Short | Risk blocker counts | Full vs truncated |',
-  '|---|---:|---:|---:|---:|---|---|',
-  ...profiles.map(p => `| ${p.execution_minutes}m / ${p.higher_minutes}m | ${p.bars} | ${p.full_history_candidates} | ${p.side_counts.LONG} | ${p.side_counts.SHORT} | ${JSON.stringify(p.risk_blockers)} | ${p.full_vs_truncated_overlap.compared_candidates} overlapping candidates; 0 ID/level differences |`),
+  '| Exec / HTF | Audited eligible / source bars | Setups | Candidates | Long | Short | Risk blocker counts | Full vs truncated |',
+  '|---|---|---:|---:|---:|---:|---|---|',
+  ...profiles.map(p => `| ${p.execution_minutes}m / ${p.higher_minutes}m | ${p.model_eligible_bars} eligible / ${p.input_bars} source | ${p.setups} | ${p.full_history_candidates} | ${p.side_counts.LONG} | ${p.side_counts.SHORT} | ${JSON.stringify(p.risk_blockers)} | ${p.full_vs_truncated_overlap.compared_candidates} overlapping candidates; 0 ID/level differences |`),
   '',
   '## Fixtures',
   '',
@@ -498,3 +582,6 @@ const md = [
 fs.writeFileSync(path.join(outputDir, 'candidate_parity_report.md'), md, 'utf8');
 
 console.log(JSON.stringify({ report: path.relative(root, path.join(outputDir, 'candidate_parity_report.json')), ledger: path.relative(root, path.join(outputDir, 'candidate_event_ledger.csv')), fixture_results: fixtureResults, profiles, total_candidates: allEvents.length }, null, 2));
+}
+
+export { runProfile, csvRows, config, contract, ema, wilderAtr, candidateId, planRisk, asIso, fixtureChecks };

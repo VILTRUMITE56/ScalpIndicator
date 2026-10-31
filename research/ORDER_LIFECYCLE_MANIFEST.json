@@ -1,9 +1,10 @@
 {
   "schema_version": 1,
   "manifest_id": "btc-perp-order-lifecycle-p1-2026-10-30",
-  "generated_at_utc": "2026-10-30T15:07:57.414Z",
+  "generated_at_utc": "2026-10-31T03:11:15.572Z",
   "contract_version": "BTC-PERP-ORDER-LIFECYCLE-P1",
   "status": "local_fixtures_and_emulator_contract_verified_live_exchange_execution_unconfirmed",
+  "hash_normalization": "Text artifacts use SHA-256 after UTF-8 BOM stripping and CRLF/CR to LF normalization.",
   "parent_main_commit": "e7803e082535a23f75fb4d27982a9af19fcacd6e",
   "strategy_changes": [
     "Track observed signed position size and request cancellation of a partial parent remainder after any observed protective position reduction or close.",
@@ -161,7 +162,7 @@
     },
     {
       "path": "research/build_order_lifecycle_manifest.mjs",
-      "sha256": "777fb87a82c7b5de5ae570b3c3fca324f40df3eda10eedf3ea4cbe64f251424a"
+      "sha256": "587746179f3189b926cdc7ce2603986ee95568afb7ea37bda0a3130e90cf348e"
     },
     {
       "path": "research/reports/order_lifecycle_report.json",
@@ -181,7 +182,7 @@
     },
     {
       "path": "research/reports/candidate_event_ledger.csv",
-      "sha256": "b06ab15662239ebcaff488a00546cff017162316212e21284d737ad1be948173"
+      "sha256": "a6b0fd1295af193e91c1951db44810e0761b67f08e5fc83eec3afd4941945e40"
     },
     {
       "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
