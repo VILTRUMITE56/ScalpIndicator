@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "manifest_id": "btc-perp-p1-precost-feasibility-2026-10-30",
-  "generated_at_utc": "2026-10-31T03:11:16.605Z",
+  "generated_at_utc": "2026-10-31T04:59:05.893Z",
   "status": "conditional_shadow_diagnostic_no_actual_orders_or_fills_no_profitability_claim",
   "experiment_spec": "research/specs/candidate_economics_p1.json",
   "experiment_spec_sha256": "a0e959afca89044549e893b1c737a6705a82f1badc7195de07495cc477bd2ddc",
@@ -123,7 +123,7 @@
     },
     {
       "path": "research/CANDIDATE_CONTRACT_MANIFEST.json",
-      "sha256": "24fd0a4a28b6470f7fa76be47b4a7b512c2e880b4036c43604061d9b4c5aa99d",
+      "sha256": "80664065fcf4bc4d3ec24a75fa3313d0843b5bd40a8ec8f47c268cebd4b6aed7",
       "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {

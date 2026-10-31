@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "manifest_id": "btc-perp-candidate-contract-p1-2026-10-30",
-  "generated_at_utc": "2026-10-31T04:15:00.722Z",
+  "generated_at_utc": "2026-10-31T04:59:04.328Z",
   "contract_version": "BTC-PERP-PULLBACK-P1",
   "parent_frozen_baseline": "BTC-PERP-B0-2026-10-30-v16-v24",
   "status": "candidate-parity-checkpoint-complete_profitability-unproven",
@@ -56,7 +56,7 @@
       "working_copy_runtime_quick": "PASS",
       "working_copy_runtime_full": "PASS",
       "working_copy_runtime_series_items": 5000,
-      "sha256": "c64b9499efa3c36b06aa2b453b571b809ad0944da3f7346151d2cb3390082258"
+      "sha256": "14ea0b0bbdc2e2e421618e4b91bb1f01218a69fd695554af40237bd24861ee99"
     }
   ],
   "generated_shared_core": {
@@ -117,7 +117,7 @@
   "artifacts": [
     {
       "path": "research/README_CANDIDATE_P1.md",
-      "sha256": "dd7086829e7d44f55998ef45fc1e6e589b31487ac52bf0ed65c068887410047b"
+      "sha256": "98705b78e73258d3f66855a9b4dc0010d66856528250a25d39764092cfa852c1"
     },
     {
       "path": "docs/CANDIDATE_EVENT_OUTPUTS_P1.md",
@@ -137,7 +137,7 @@
     },
     {
       "path": "research/templates/strategy_candidate_adapter.indie.in",
-      "sha256": "edb9a5354d50d64660a9b9e73b8ae4ffd9690aeaae93c61f90101b9f48865791"
+      "sha256": "88db57787df88bc54325cbdb72800b6974429eb20ec1ed94f9387f63049b0aef"
     },
     {
       "path": "research/generate_candidate_logic.mjs",
