@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "report_id": "btc-perp-p1-candidate-parity-2026-10-30",
-  "generated_at_utc": "2026-10-30T15:35:21.446Z",
+  "generated_at_utc": "2026-10-31T03:08:51.797Z",
   "scope": "Independent reference calculation of P1 candidates and planned levels on the #4 audited resampled BTC perpetual history. No TakeProfit strategy fills or realized profitability are inferred.",
   "contract_version": "BTC-PERP-PULLBACK-P1",
   "reference_method": {

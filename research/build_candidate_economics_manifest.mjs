@@ -8,6 +8,12 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const digest = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
 const normalizedDigest = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file), 'utf8').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n'), 'utf8').digest('hex');
+const isMarketDataCsv = file => file.replaceAll('\\', '/').startsWith('research/data/') && file.toLowerCase().endsWith('.csv');
+const provenanceHash = file => ({
+  path: file,
+  sha256: isMarketDataCsv(file) ? digest(file) : normalizedDigest(file),
+  hash_method: isMarketDataCsv(file) ? 'raw bytes' : 'UTF-8 BOM stripped; CRLF/CR normalized to LF',
+});
 const outputFile = 'research/CANDIDATE_ECONOMICS_MANIFEST.json';
 const report = JSON.parse(fs.readFileSync(path.join(root, 'research/reports/candidate_economics_report.json'), 'utf8'));
 const candidateManifest = JSON.parse(fs.readFileSync(path.join(root, 'research/CANDIDATE_CONTRACT_MANIFEST.json'), 'utf8'));
@@ -37,7 +43,7 @@ const files = [
   'research/reports/candidate_economics_report.json',
   'research/reports/candidate_economics_report.md',
 ];
-const artifacts = files.map(file => ({ path: file, sha256: digest(file) }));
+const artifacts = files.map(provenanceHash);
 const b0Hashes = baselineManifest.current_sources.map(row => row.sha256_normalized_lf_utf8_no_bom);
 const liveB0Hashes = ['indie/btc_pullback_indicator.indie', 'indie/btc_pullback_strategy.indie'].map(normalizedDigest);
 assert.ok(b0Hashes.every((hash, index) => hash === liveB0Hashes[index]), 'Frozen B0 source hashes must remain unchanged.');
@@ -50,7 +56,8 @@ const manifest = {
   generated_at_utc: new Date().toISOString(),
   status: report.status,
   experiment_spec: specPath,
-  experiment_spec_sha256: digest(specPath),
+  experiment_spec_sha256: normalizedDigest(specPath),
+  hash_policy: 'Text files use SHA-256 after UTF-8 BOM stripping and CRLF/CR to LF normalization; research/data CSV market inputs use raw-byte SHA-256.',
   candidate_contract: report.candidate_contract,
   parent_frozen_baseline: report.frozen_b0.baseline_id,
   frozen_b0_sources_unchanged: true,

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "report_id": "BTC-PERP-P1-PRECOST-FEASIBILITY-2026-10",
-  "generated_at_utc": "2026-10-30T15:40:57.603Z",
+  "generated_at_utc": "2026-10-31T03:08:57.990Z",
   "status": "conditional_shadow_diagnostic_no_actual_orders_or_fills_no_profitability_claim",
   "candidate_contract": "BTC-PERP-PULLBACK-P1",
   "frozen_b0": {
@@ -712,39 +712,48 @@
   "source_files": [
     {
       "path": "research/candidate_reference.mjs",
-      "sha256": "ba96b1b37c1b154733270c366f2e8abefa7ad08175b83bbb297823039e43a525"
+      "sha256": "ba96b1b37c1b154733270c366f2e8abefa7ad08175b83bbb297823039e43a525",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/specs/candidate_contract_p1.json",
-      "sha256": "bb1fa68f69d01d461f48d6effa3ce5637faf20997c5ce5b2ee82c4a065820588"
+      "sha256": "bb1fa68f69d01d461f48d6effa3ce5637faf20997c5ce5b2ee82c4a065820588",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/specs/candidate_economics_p1.json",
-      "sha256": "a0e959afca89044549e893b1c737a6705a82f1badc7195de07495cc477bd2ddc"
+      "sha256": "a0e959afca89044549e893b1c737a6705a82f1badc7195de07495cc477bd2ddc",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/specs/execution_cost_risk.json",
-      "sha256": "fbaa2ab9621199340cb91ad88fa19399f2d717464b59dd7a8afcb98620d4e94e"
+      "sha256": "fbaa2ab9621199340cb91ad88fa19399f2d717464b59dd7a8afcb98620d4e94e",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/reports/candidate_event_ledger.csv",
-      "sha256": "a6b0fd1295af193e91c1951db44810e0761b67f08e5fc83eec3afd4941945e40"
+      "sha256": "a6b0fd1295af193e91c1951db44810e0761b67f08e5fc83eec3afd4941945e40",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/reports/btc_history_coverage.json",
-      "sha256": "3fe690f677d544c7c42850e5e0c364d17c8681a48f987fbd9a0f8a8d55d39c94"
+      "sha256": "3fe690f677d544c7c42850e5e0c364d17c8681a48f987fbd9a0f8a8d55d39c94",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/data/btcusdt_2024-10_2026-09/manifest.json",
-      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418"
+      "sha256": "172eeeedf9174a3bfb5ef03a5cd6e929b560d6c9218009bbc3fbcce42482e418",
+      "hash_method": "UTF-8 BOM stripped; CRLF/CR normalized to LF"
     },
     {
       "path": "research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv",
-      "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1"
+      "sha256": "8df6590dd9ff8515d6a424831d2373931a68819af53d7f481ca5400565f37ac1",
+      "hash_method": "raw bytes"
     },
     {
       "path": "research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv",
-      "sha256": "2f9c12c66b7b12aaeb99ad0c381661e87e723f86a8a46697db4d3c4097939457"
+      "sha256": "2f9c12c66b7b12aaeb99ad0c381661e87e723f86a8a46697db4d3c4097939457",
+      "hash_method": "raw bytes"
     }
   ],
   "artifacts": []

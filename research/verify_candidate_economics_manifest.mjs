@@ -10,12 +10,18 @@ const digest = file => crypto.createHash('sha256').update(fs.readFileSync(path.j
 const normalizedDigest = file => crypto.createHash('sha256')
   .update(fs.readFileSync(path.join(root, file), 'utf8').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n'), 'utf8')
   .digest('hex');
+const recordedDigest = record => {
+  if (record.hash_method === 'raw bytes') return digest(record.path);
+  if (record.hash_method === 'UTF-8 BOM stripped; CRLF/CR normalized to LF') return normalizedDigest(record.path);
+  throw new Error(`Unknown or missing hash method for ${record.path}: ${record.hash_method}`);
+};
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'research/CANDIDATE_ECONOMICS_MANIFEST.json'), 'utf8'));
 const report = JSON.parse(fs.readFileSync(path.join(root, 'research/reports/candidate_economics_report.json'), 'utf8'));
 const baseline = JSON.parse(fs.readFileSync(path.join(root, 'research/BASELINE_MANIFEST.json'), 'utf8'));
 
-for (const file of manifest.input_hashes) assert.equal(digest(file.path), file.sha256, `input hash: ${file.path}`);
-for (const file of manifest.artifacts) assert.equal(digest(file.path), file.sha256, `artifact hash: ${file.path}`);
+for (const file of manifest.input_hashes) assert.equal(recordedDigest(file), file.sha256, `input hash: ${file.path}`);
+for (const file of manifest.artifacts) assert.equal(recordedDigest(file), file.sha256, `artifact hash: ${file.path}`);
+assert.equal(normalizedDigest(manifest.experiment_spec), manifest.experiment_spec_sha256, 'experiment spec hash');
 
 const liveB0 = ['indie/btc_pullback_indicator.indie', 'indie/btc_pullback_strategy.indie'].map(normalizedDigest);
 const frozenB0 = baseline.current_sources.map(row => row.sha256_normalized_lf_utf8_no_bom);

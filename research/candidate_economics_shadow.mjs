@@ -23,6 +23,17 @@ function sha256(file) {
   return crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 }
 
+function isMarketDataCsv(relativePath) {
+  const normalizedPath = relativePath.replaceAll('\\', '/');
+  return normalizedPath.startsWith('research/data/') && normalizedPath.toLowerCase().endsWith('.csv');
+}
+
+function provenanceHash(relativePath) {
+  const file = path.join(root, relativePath);
+  if (isMarketDataCsv(relativePath)) return { path: relativePath, sha256: sha256(file), hash_method: 'raw bytes' };
+  return { path: relativePath, sha256: normalizedSha256(file), hash_method: 'UTF-8 BOM stripped; CRLF/CR normalized to LF' };
+}
+
 function normalizedSha256(file) {
   const text = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
   return crypto.createHash('sha256').update(text, 'utf8').digest('hex');
@@ -743,7 +754,7 @@ const report = {
     'research/specs/execution_cost_risk.json', 'research/reports/candidate_event_ledger.csv',
     'research/reports/btc_history_coverage.json', 'research/data/btcusdt_2024-10_2026-09/manifest.json',
     'research/data/btcusdt_2024-10_2026-09/derived/trade_1m.csv', 'research/data/btcusdt_2024-10_2026-09/derived/mark_1m.csv',
-  ].map(file => ({ path: file, sha256: sha256(path.join(root, file)) })),
+  ].map(provenanceHash),
   artifacts: [],
 };
 

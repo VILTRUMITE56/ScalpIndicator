@@ -1,6 +1,6 @@
 # BTC P1 pre-cost candidate and cost/ATR feasibility report
 
-Generated: 2026-10-30T15:40:57.603Z
+Generated: 2026-10-31T03:08:57.990Z
 
 Research event stream: `BTC-PERP-PULLBACK-P1`; frozen B0 source remains unchanged. Window: 2024-10-01T00:00:00.000Z through 2026-10-01T00:00:00.000Z (UTC).
 
