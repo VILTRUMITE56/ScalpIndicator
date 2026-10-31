@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "manifest_id": "btc-perp-candidate-contract-p1-2026-10-30",
-  "generated_at_utc": "2026-10-31T03:11:15.805Z",
+  "generated_at_utc": "2026-10-31T04:11:38.235Z",
   "contract_version": "BTC-PERP-PULLBACK-P1",
   "parent_frozen_baseline": "BTC-PERP-B0-2026-10-30-v16-v24",
   "status": "candidate-parity-checkpoint-complete_profitability-unproven",
@@ -28,12 +28,22 @@
       "script_id": "dd7d1e3f-a6db-4f3a-8a50-2b8f551e9db3",
       "takeprofit_working_copy_version": 28,
       "platform_saved": false,
-      "local_platform_source_match": true,
-      "compile": "PASS",
-      "runtime_quick": "PASS",
-      "runtime_full": "UNCONFIRMED_INFRASTRUCTURE_ERROR",
-      "runtime_series_items": 5000,
-      "sha256": "7507a3f87e78fc17c78b841ff5af64997f4b750c460105c652d1a72c15d11564"
+      "local_platform_source_match": false,
+      "preserved_platform_source_sha256": "7507a3f87e78fc17c78b841ff5af64997f4b750c460105c652d1a72c15d11564",
+      "working_copy_compile": "PASS",
+      "working_copy_runtime_quick": "PASS",
+      "working_copy_runtime_full": "UNCONFIRMED_INFRASTRUCTURE_ERROR",
+      "working_copy_runtime_series_items": 5000,
+      "current_source_ephemeral_validation": {
+        "script_id": "5aa8ccb2-c2c7-4276-8eff-0699fb166f0a",
+        "version": 3,
+        "ephemeral": true,
+        "platform_saved": false,
+        "compile": "PASS",
+        "runtime_quick": "PASS",
+        "runtime_series_items": 5000
+      },
+      "sha256": "7a5432146024f25ac04daa5c1713eca3faa75de53f5a257761d2c7d167e200aa"
     },
     {
       "role": "strategy",
@@ -42,10 +52,10 @@
       "takeprofit_working_copy_version": 21,
       "platform_saved": false,
       "local_platform_source_match": true,
-      "compile": "PASS",
-      "runtime_quick": "PASS",
-      "runtime_full": "PASS",
-      "runtime_series_items": 5000,
+      "working_copy_compile": "PASS",
+      "working_copy_runtime_quick": "PASS",
+      "working_copy_runtime_full": "PASS",
+      "working_copy_runtime_series_items": 5000,
       "sha256": "c64b9499efa3c36b06aa2b453b571b809ad0944da3f7346151d2cb3390082258"
     }
   ],
@@ -107,7 +117,11 @@
   "artifacts": [
     {
       "path": "research/README_CANDIDATE_P1.md",
-      "sha256": "e68c26c9f0c670573b60a334628c341a978245cc380ebcfb8ee23e73092f42de"
+      "sha256": "dd7086829e7d44f55998ef45fc1e6e589b31487ac52bf0ed65c068887410047b"
+    },
+    {
+      "path": "docs/CANDIDATE_EVENT_OUTPUTS_P1.md",
+      "sha256": "970acbf699439184cd2e5ee4674b35635b07a606e0171923e96c5b37e7df713e"
     },
     {
       "path": "research/specs/candidate_contract_p1.json",
@@ -135,7 +149,7 @@
     },
     {
       "path": "research/build_candidate_manifest.mjs",
-      "sha256": "407b5a65d62becce22606c5794f463b91c7c87d86102fbab9bce9f26ee621432"
+      "sha256": "ecfa9375685bb6165c384123e96e0403aa7ed5e27c8451f76dcd08ded206b494"
     },
     {
       "path": "research/reports/candidate_parity_report.json",

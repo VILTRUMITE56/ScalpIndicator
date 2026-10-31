@@ -12,6 +12,8 @@ The user confirmed Binance only as the research proxy and directed that personal
 
 Use Binance USDⓈ-M BTCUSDT perpetual as a **research proxy only**, matching the current TakeProfit Binance BTC perpetual instrument. The user has not selected Binance or confirmed the exact execution venue. The linear USDT-quoted/margined contract identity and current contract filters must be checked from the venue's current exchange-info response before venue-specific sizing or deployment. Binance's exchange-info API exposes contract type/assets and symbol filters such as tick size, lot step and minimum notional. [Official exchange-info documentation](https://developers.binance.com/en/docs/catalog/core-trading-derivatives-trading-usd-s-m-futures/api/rest-api/market-data#exchange-information)
 
+Public notices give historical BTCUSDT references (tick size changed to `0.1` in 2022; minimum notional changed to `50 USDT` in April 2026), but the current exchange-info response remains unavailable here. See the [filter evidence note](EXCHANGE_FILTER_EVIDENCE.md); do not treat those notices as a complete live filter snapshot.
+
 ## Order classification and commissions
 
 Binance classifies a fill that immediately matches existing book liquidity as taker; a fill from an order that rested and added liquidity is maker. A `LIMIT` label alone does not establish maker status. [Binance fee definitions](https://www.binance.com/en/support/faq/detail/360033544231)
